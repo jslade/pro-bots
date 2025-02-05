@@ -1,0 +1,16 @@
+import React, { useContext } from 'react';
+import Login from './Login';
+import Workspace from './workspace/Workspace';
+import { SessionContext } from './SessionContext';
+
+const User = () => {
+    const session = useContext(SessionContext);
+
+    return (
+        <div>
+            {session.name ? <Workspace /> : <Login />}
+        </div>
+    );
+};
+
+export default User;

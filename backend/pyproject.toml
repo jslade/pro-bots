@@ -1,0 +1,69 @@
+[project]
+description = "programming bots backend"
+name = "probots"
+
+[tool.mypy]
+strict = true
+
+# This option allows us to access attributes that are re-exported in __init__.py files.
+# Without this option, one would need to create a __all__ variable in __init__.py
+# modules to explicitly indicate which names are being re-exported.
+implicit_reexport = true
+
+disallow_any_unimported = true
+
+allow_redefinition = true
+
+enable_incomplete_feature = ["NewGenericSyntax"]
+
+exclude = "probots/test/"
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+module = ["probots.test.*"]
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+module = "probots.test.*"
+
+[tool.ruff]
+target-version = "py312"
+
+include = [
+  "probots/**/*.py",
+]
+
+line-length = 90
+
+[tool.ruff.lint]
+ignore = [
+  "C408", # "Unnecessary `dict` call (rewrite as a literal)"
+  "C403", # "C403 Unnecessary `list` comprehension (rewrite as a `set` comprehension)"
+  "C405", # "Unnecessary `list` literal (rewrite as a `set` literal)"
+  "C409", # "Unnecessary `tuple` literal passed to `tuple()` (remove the outer call to `tuple()`)"
+  "C413", # "Unnecessary `list` call around `sorted()`"
+  "C416", # "Unnecessary `list` comprehension (rewrite using `list()`)"
+  "B010", # "Do not call `setattr` with a constant attribute value. It is not any safer than normal property access."
+  "B018", # "Found useless expression. Either assign it to a variable or remove it."
+  "B904", # "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling"
+]
+select = [
+  # Bugbear warnings
+  "B",
+  "B9", # mccabe complexity warnings
+  "C", # Pycodestyle errors https://pycodestyle.pycqa.org/en/latest/intro.html#error-codes
+  "E", # Pyflakes violations https://flake8.pycqa.org/en/latest/user/error-codes.html
+  "F", # Pycodestyle warnings
+  "W", # pyupgrade
+  # "UP",
+  "I", # <= import sorting
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.ruff.lint.mccabe]
+max-complexity = 17
+
+[tool.ruff.lint.per-file-ignores]
+"*/__init__.py" = ["F401"]

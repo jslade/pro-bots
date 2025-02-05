@@ -1,0 +1,12 @@
+flask==3.0.2
+Flask-APScheduler
+flask-migrate
+flask-sqlalchemy==3.1.1
+flask-alembic
+ipython
+psycopg2==2.9.9
+pydantic
+pytest
+ruff
+sqlalchemy==2.0.28
+structlog
