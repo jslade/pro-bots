@@ -3,7 +3,7 @@ services:
     build:
       context: frontend/
     ports:
-      - '3000:3000'
+      - '5000:5000'
     volumes:
       - ./frontend:/app
     restart: always
@@ -12,7 +12,7 @@ services:
     build:
       context: backend/
     ports:
-      - '3001:5000'
+      - '5001:5001'
     depends_on:
       - db
     volumes:
@@ -36,7 +36,7 @@ services:
     image: dpage/pgadmin4
     restart: always
     ports:
-      - "3002:80"
+      - "5002:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: probots@probots.net
       PGADMIN_DEFAULT_PASSWORD: password

@@ -13,7 +13,7 @@ const SessionProvider = ({ children }) => {
         <SessionContext.Provider value={{
             sessionId, setSessionId,
             name, setName,
-            program, setProgram
+            program, setProgram,
         }}>
             {children}
         </SessionContext.Provider>

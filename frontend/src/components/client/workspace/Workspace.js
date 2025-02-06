@@ -1,12 +1,50 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import useWebSocket, { ReadyState } from 'react-use-websocket';
+
 import { Grid, Box } from '@mui/material';
+
+import { SessionContext } from '../SessionContext';
 import ProgrammingSpace from './ProgrammingSpace';
 import CommandSpace from './CommandSpace';
 import HUD from './HUD';
 
+const WS_BASE = `ws://${window.location.hostname}:5001`;
+
 const Workspace = () => {
-    return (
-        <Grid container spacing={2} style={{ height: '100vh' }}>
+    const session = useContext(SessionContext);
+    const [connected, setConnected] = React.useState(false);
+
+    const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
+        WS_BASE, {//}`${WS_BASE}/api/ws/${session.sessionId}`, {
+            share: false,
+            shouldReconnect: () => true,
+        },
+      )
+    
+      useEffect(() => {
+        console.log("Connection state changed", readyState)
+        if (readyState === ReadyState.OPEN) {
+            setConnected(true);
+            sendJsonMessage({
+                event: "test",
+                data: { message: "Hello, world!", sessionId: session.sessionId },
+            })
+        }
+      }, [readyState, sendJsonMessage, session.sessionId])
+    
+      useEffect(() => {
+        console.log(`message: ${lastJsonMessage}`)
+    }, [lastJsonMessage])
+    
+    return ( <>
+        <Grid item xs={12} style={{ height: '1.5em' }}>
+            <Box display="flex" flexDirection="column" height="100%">
+                <Box flex={1} border={1}>
+                    {connected ? 'Connected' : 'Disconnected'}
+                </Box>
+            </Box>
+        </Grid>
+        <Grid container spacing={2} style={{ height: 'calc(100vh - 1.5em)' }}>
             <Grid item xs={6}>
                 <Box display="flex" flexDirection="column" height="100%">
                     <Box flex={1} border={1}>
@@ -23,7 +61,7 @@ const Workspace = () => {
                 </Box>
             </Grid>
         </Grid>
-    );
+        </>);
 };
 
 export default Workspace;

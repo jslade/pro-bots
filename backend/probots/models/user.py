@@ -30,3 +30,7 @@ class User(DB.Model, PKId, UniquelyNamed):
 
     def current_program(self) -> Optional["Program"]:
         return Program.for_user(self, None)
+
+    @classmethod
+    def with_session_id(cls, session_id: str) -> Optional["User"]:
+        return cls.query.filter_by(session_id=session_id).first()

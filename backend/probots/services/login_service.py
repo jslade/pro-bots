@@ -25,13 +25,23 @@ class LoginResponse(BaseSchema):
     session_id: Optional[str]
 
 
+class ConnectRequest(BaseSchema):
+    username: str
+    session_id: str
+
+
+class ConnectResponse(BaseSchema):
+    success: bool
+    username: Optional[str]
+
+
 class LoginService:
     def login(self, request: LoginRequest) -> LoginResult:
         user = User.with_name(request.username)
 
         if user:
             if user.access_code == request.access_code:
-                user.session_id = str(uuid.uuid4())
+                user.session_id = str(uuid.uuid4())[0:8]
                 DB.session.commit()
 
                 return LoginResult(success=True, session_id=user.session_id)
@@ -41,9 +51,23 @@ class LoginService:
             user = User(
                 name=request.username,
                 access_code=request.access_code,
-                session_id=str(uuid.uuid4()),
+                session_id=str(uuid.uuid4())[0:8],
             )
             DB.session.add(user)
             DB.session.commit()
 
             return LoginResult(success=True, session_id=user.session_id)
+
+    def connect(self, request: ConnectRequest) -> Optional[User]:
+        user = User.with_name(request.username)
+
+        if user and user.session_id == request.session_id:
+            LOGGER.info("User connected", user=user.name, session_id=request.session_id)
+            return user
+        else:
+            LOGGER.info(
+                "Invalid connection attempt",
+                user=request.username,
+                session_id=request.session_id,
+            )
+            return None
