@@ -16,8 +16,10 @@ LOGGER = structlog.get_logger(__name__)
 class User(DB.Model, PKId, UniquelyNamed):
     __tablename__ = "users"
 
-    password: Mapped[str] = mapped_column(DB.String(40), nullable=False)
+    access_code: Mapped[str] = mapped_column(DB.String(10), nullable=False)
     display_name: Mapped[str] = mapped_column(DB.String(40), nullable=True)
+
+    session_id: Mapped[str] = mapped_column(DB.String(40), nullable=True, index=True)
 
     updated_at: Mapped[datetime] = mapped_column(
         DB.DateTime, nullable=True, onupdate=datetime.now(tz=UTC)
