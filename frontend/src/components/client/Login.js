@@ -1,31 +1,51 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query'
 
 import { Container, Box, Button, TextField, Typography } from '@mui/material';
 
-import { ApiContext } from '../ApiContext';
+import { SessionContext } from './SessionContext';
+import { POST } from '../../api';
 
 const Login = () => {
-    const api = useContext(ApiContext);
+    const session = useContext(SessionContext);
+
     const [username, setUsername] = React.useState('');
     const [accessCode, setAccessCode] = React.useState('');
+    const [errorMsg, setErrorMsg] = React.useState(null);
 
-    const { isFetching, data: login_result, refetch } = useQuery({
+    const inputRefs = useRef([]);
+
+    const loginQuery = useQuery({
         queryKey: ['login'],
-        queryFn: () => api.POST(
-            { path: `/login`, body: { username, accessCode } }
-        ).then((data) => handleResult(data)),
+        queryFn: () => POST(
+            `/login`, { username, accessCode }
+        ).then(handleResult).catch(handleError),
+
         refetchOnWindowFocus: false,
-        enabled: false
+        enabled: false,
+        retry: false,
     });
 
     const handleSubmit = () => {
-        refetch();
+        loginQuery.refetch();
     }
 
     const handleResult = (data) => {
-        console.log(data);
+        if (data?.sessionId) {
+            session.setSessionId(data.sessionId);
+            session.setName(username);
+        }
+
         return data;
+    }
+
+    const handleError = (error) => {
+        if (error.response.status === 401) {
+            const data = error.response.data;
+            setErrorMsg(data.message || "Something went wrong");
+        } else {
+            setErrorMsg(`Something went wrong: ${error.message}`);
+        }
     }
 
     return (
@@ -51,6 +71,7 @@ const Login = () => {
 
             <Box
                 component="form"
+                autoComplete="off"
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -58,12 +79,20 @@ const Login = () => {
                     width: '300px',
                 }}
             >
-                <form autocomplete="off">
-                    <TextField label="Username" variant="outlined" fullWidth 
-                        onChange={e => setUsername(e.target.value)}/>
-                    <TextField label="Access Code" variant="outlined" fullWidth
-                        onChange={e => setAccessCode(e.target.value)}/>
-                </form>
+                <TextField label="Username" variant="outlined" fullWidth 
+                    autoFocus={true}
+                    onChange={e => setUsername(e.target.value)}
+                    onKeyDown={(e) => (
+                        e.key === 'Enter' ? inputRefs.current[1].focus() : null
+                        )}
+                />
+                <TextField label="Access Code" variant="outlined" fullWidth
+                    inputRef={(ref) => (inputRefs.current[1] = ref)}
+                    onChange={e => setAccessCode(e.target.value)}
+                    onKeyDown={(e) => (
+                        e.key === 'Enter' ? handleSubmit() : null
+                    )}
+                />
                 <Button 
                     variant="contained" 
                     color="primary" 
@@ -73,6 +102,12 @@ const Login = () => {
                     Login
                 </Button>
             </Box>
+
+            {errorMsg ? <Box>
+                <Typography variant="body1" align="center" gutterBottom>
+                    Login failed: {errorMsg}
+                </Typography>
+            </Box> : null}
         </Container>
     );
 };

@@ -6,10 +6,10 @@ import {
 } from '@tanstack/react-query'
   
   
-import API from '../api'
+//import API from '../api'
 
 const queryClient = new QueryClient()
-const api = new API();
+const api = null;//new API(); -- TODO: remove me
 
 const ApiContext = createContext();
 

@@ -8,7 +8,7 @@ const User = () => {
 
     return (
         <div>
-            {session.name ? <Workspace /> : <Login />}
+            {session.sessionId ? <Workspace /> : <Login />}
         </div>
     );
 };
