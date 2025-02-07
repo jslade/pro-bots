@@ -41,7 +41,7 @@ class LoginService:
 
         if user:
             if user.access_code == request.access_code:
-                user.session_id = str(uuid.uuid4())[0:8]
+                user.session_id = self.generate_user_session_id()
                 DB.session.commit()
 
                 return LoginResult(success=True, session_id=user.session_id)
@@ -51,7 +51,7 @@ class LoginService:
             user = User(
                 name=request.username,
                 access_code=request.access_code,
-                session_id=str(uuid.uuid4())[0:8],
+                session_id=self.generate_user_session_id(),
             )
             DB.session.add(user)
             DB.session.commit()
@@ -71,3 +71,6 @@ class LoginService:
                 session_id=request.session_id,
             )
             return None
+
+    def generate_user_session_id(self) -> str:
+        return "user-" + str(uuid.uuid4())[0:8]
