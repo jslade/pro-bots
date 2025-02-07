@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import Login from './Login';
 import Workspace from './workspace/Workspace';
-import { SessionContext } from './SessionContext';
+import { SessionContext } from '../SessionContext';
 
 const User = () => {
     const session = useContext(SessionContext);

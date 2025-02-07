@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { Container, Box, Button, TextField, Typography } from '@mui/material';
 
-import { SessionContext } from './SessionContext';
+import { SessionContext } from '../SessionContext';
 import { POST } from '../../api';
 
 const Login = () => {

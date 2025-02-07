@@ -6,14 +6,16 @@ const SessionContext = createContext();
 // Create a provider component
 const SessionProvider = ({ children }) => {
     const [sessionId, setSessionId] = useState(null);
-    const [name, setName] = useState(null);
-    const [program, setProgram] = useState('');
+    const [connected, setConnected] = useState(false);
+
+    // Move to user:
+    //const [name, setName] = useState(null);
+    //const [program, setProgram] = useState('');
 
     return (
         <SessionContext.Provider value={{
             sessionId, setSessionId,
-            name, setName,
-            program, setProgram,
+            connected, setConnected,
         }}>
             {children}
         </SessionContext.Provider>

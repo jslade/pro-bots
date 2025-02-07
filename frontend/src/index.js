@@ -16,6 +16,7 @@ import reportWebVitals from './reportWebVitals';
 import Client from './components/client/Client';
 import Server from './components/server/Server';
 import { ApiProvider } from './components/ApiContext';
+import { SessionProvider } from './components/SessionContext';
 
 const router = createBrowserRouter([
   {
@@ -31,9 +32,11 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <ApiProvider>
-      <RouterProvider router={router} />
-    </ApiProvider>
+    <SessionProvider>
+      <ApiProvider>
+        <RouterProvider router={router} />
+      </ApiProvider>
+    </SessionProvider>
   </React.StrictMode>
 );
 
