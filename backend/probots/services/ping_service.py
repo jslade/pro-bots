@@ -1,6 +1,7 @@
 import structlog
 
 from probots.models.session import Session
+from .dispatcher import DISPATCHER
 from .session_service import SessionService, SESSIONS
 
 LOGGER = structlog.get_logger(__name__)
@@ -16,3 +17,5 @@ class PingService:
 
     def ping_session(self, session: Session):
         LOGGER.info("ping session", session=session.id)
+
+        DISPATCHER.send(session, "connection", "ping", {})

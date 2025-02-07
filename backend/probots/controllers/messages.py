@@ -27,16 +27,10 @@ def handle_ws(ws: WebSocket):
         return
 
     LOGGER.info("Connection request received", session=session.id)
-    connection_response = Message(
-        type="connection",
-        event="accepted",
-        session_id=session.id,
-        data={},
-    )
-    ws.send(connection_response.model_dump_json())
+    DISPATCHER.send(session, "connection", "accepted", {})
 
     # Add session to dispatcher
-    DISPATCHER.add_session(session, ws)
+    DISPATCHER.add_connection(session, ws)
 
     # Handle incoming, outgoing messages
     try:
@@ -54,4 +48,4 @@ def handle_ws(ws: WebSocket):
             DISPATCHER.receive(message, session)
     finally:
         LOGGER.info("Websocket connection closed", session=session.id)
-        SESSIONS.remove_session(session)
+        DISPATCHER.remove_connection(session, ws)
