@@ -15,25 +15,31 @@ const Workspace = () => {
     const [connected, setConnected] = React.useState(false);
 
     const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
-        WS_BASE, {//}`${WS_BASE}/api/ws/${session.sessionId}`, {
+        WS_BASE, {
             share: false,
             shouldReconnect: () => true,
         },
-      )
+    )
     
-      useEffect(() => {
+    useEffect(() => {
         console.log("Connection state changed", readyState)
-        if (readyState === ReadyState.OPEN) {
+        if (readyState === ReadyState.OPEN && !connected) {
             setConnected(true);
             sendJsonMessage({
-                event: "test",
-                data: { message: "Hello, world!", sessionId: session.sessionId },
+                event: "connected",
+                sessionId: session.sessionId,
+                data: { message: "Hello, world!",  },
             })
         }
-      }, [readyState, sendJsonMessage, session.sessionId])
+        if ((readyState === ReadyState.CONNECTING || readyState === ReadyState.CLOSED)
+             && connected) {
+            setConnected(false);
+        }
+    }, [readyState, sendJsonMessage, session.sessionId, connected])
     
-      useEffect(() => {
-        console.log(`message: ${lastJsonMessage}`)
+    useEffect(() => {
+        if (!lastJsonMessage) return;
+        console.log("message:", lastJsonMessage)
     }, [lastJsonMessage])
     
     return ( <>
@@ -61,7 +67,7 @@ const Workspace = () => {
                 </Box>
             </Grid>
         </Grid>
-        </>);
+    </>);
 };
 
 export default Workspace;
