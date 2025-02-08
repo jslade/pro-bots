@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Self
 
 
 @dataclass
@@ -40,3 +41,11 @@ class Grid:
             s.append(row_sep)
 
         return "\n".join(s)
+
+    @classmethod
+    def blank(cls, width: int, height: int) -> Self:
+        return cls(
+            width=width,
+            height=height,
+            cells=[Cell(x=i % width, y=int(i / width)) for i in range(width * height)],
+        )

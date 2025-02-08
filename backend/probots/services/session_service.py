@@ -1,13 +1,20 @@
+from datetime import datetime
 from typing import Optional
 
 import structlog
 
+from ..models.websocket import WebSocket
 from ..models.session import Session, SessionType
 
 LOGGER = structlog.get_logger(__name__)
 
 
 class SessionService:
+    """Keeps track of all of the sessions. A session is created when a user/client
+    exists, but it does not necessarily go away if the client disconnects.
+    Because of the tenouous nature of websocket connects, it allows for
+    disconnecting and then reconnecting, resuming the session."""
+
     def __init__(self):
         self.all_sessions = {}
         self.user_sessions = {}
@@ -22,7 +29,7 @@ class SessionService:
 
         session_type = Session.type_from_id(session_id)
 
-        session = Session(type=session_type, id=session_id)
+        session = Session(type=session_type, id=session_id, created_at=datetime.now())
         self.all_sessions[session.id] = session
 
         match session.type:
@@ -41,6 +48,15 @@ class SessionService:
                 del self.user_sessions[session.id]
             case SessionType.SERVER:
                 del self.server_sessions[session.id]
+
+    def connected(self, session: Session, ws: WebSocket) -> None:
+        session.ws = ws
+        session.connected_at = datetime.now()
+        session.disconnected_at = None
+
+    def disconnected(self, session: Session) -> None:
+        session.ws = None
+        session.disconnected_at = datetime.now()
 
     def for_each_session(self):
         for session in self.all_sessions.values():

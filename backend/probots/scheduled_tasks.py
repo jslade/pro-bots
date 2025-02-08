@@ -2,7 +2,6 @@ import structlog
 from flask_apscheduler import APScheduler
 
 from .app import APP
-from .services.ping_service import PingService
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -10,10 +9,19 @@ SCHEDULER = APScheduler()
 SCHEDULER.init_app(APP)
 
 
-@SCHEDULER.task("interval", id="periodically_ping", seconds=60)
+# @SCHEDULER.task(trigger="interval", seconds=60)
 def periodically_ping() -> None:
+    from .services.ping_service import PingService
+
     LOGGER.info("ping")
 
     ping_service = PingService()
 
     ping_service.ping_all()
+
+
+@SCHEDULER.task(trigger="interval", seconds=60)
+def cleanup_stale_sessions() -> None:
+    from .services.monitor import MONITOR
+
+    MONITOR.cleanup_stale_sessions()

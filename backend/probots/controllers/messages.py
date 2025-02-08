@@ -23,9 +23,9 @@ def handle_ws(ws: WebSocket):
         # Add a session and associated it with this websocket.
         # If the session already exists, it will be reused.
         session = SESSIONS.add_session(message.session_id)
-        session.ws = ws
+        SESSIONS.connected(session, ws)
     except Exception as e:
-        LOGGER.error("Failed to parse connection request", error=e)
+        LOGGER.error("Failed to handle connection request", error=e)
         return
 
     # Add session to dispatcher, and dispatch this initial message
@@ -50,4 +50,4 @@ def handle_ws(ws: WebSocket):
     finally:
         LOGGER.info("Websocket connection closed", session=session.id)
         DISPATCHER.remove_connection(session, ws)
-        session.ws = None
+        SESSIONS.disconnected(session)

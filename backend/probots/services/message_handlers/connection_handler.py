@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 import structlog
 
@@ -29,9 +30,10 @@ class ConnectionHandler(MessageHandler):
         request = ConnectionRequest(**message.data)
 
         LOGGER.info("Connection request received", session=session.id)
+        session.connected_at = datetime.now()
 
+        user = User.with_session_id(session.id)
         if session.type == SessionType.USER:
-            user = User.with_session_id(session.id)
             if not user:
                 raise Exception("No user matching that session")
 

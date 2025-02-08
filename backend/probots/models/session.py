@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -16,14 +17,18 @@ class SessionType(str, Enum):
 class UserInfo:
     user: User
     display_name: str
-    score: int = 0
 
 
 @dataclass
 class Session:
     type: SessionType
     id: str
+    created_at: Optional[datetime] = None
+
+    # Connection info
     ws: Optional[WebSocket] = None
+    connected_at: Optional[datetime] = None
+    disconnected_at: Optional[datetime] = None
 
     user: Optional[UserInfo] = None
 

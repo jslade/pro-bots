@@ -6,12 +6,7 @@ from ...models.game.map import Grid, Cell
 
 class MapMaker:
     def generate(self, width: int, height: int) -> Grid:
-        grid = Grid(
-            width=width,
-            height=height,
-            cells=[Cell(x=i % width, y=int(i / width)) for i in range(width * height)],
-        )
-
+        grid = Grid.blank(width, height)
         self.randomize_crystals(grid)
 
         return grid
