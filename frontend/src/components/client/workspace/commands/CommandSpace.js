@@ -1,7 +1,9 @@
+import { TerminalComponent } from "./Terminal";
+
 const CommandSpace = () => {
     return (
         <div>
-            Command Space
+            <TerminalComponent />
         </div>
     );
 };

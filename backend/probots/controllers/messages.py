@@ -20,6 +20,8 @@ def handle_ws(ws: WebSocket):
         data: str = ws.receive()
         message = Message.from_json(data)
 
+        # Add a session and associated it with this websocket.
+        # If the session already exists, it will be reused.
         session = SESSIONS.add_session(message.session_id)
         session.ws = ws
     except Exception as e:
@@ -32,7 +34,8 @@ def handle_ws(ws: WebSocket):
     # Add session to dispatcher
     DISPATCHER.add_connection(session, ws)
 
-    # Handle incoming, outgoing messages
+    # Handle incoming, dispatcher will route to the correct service
+    # and also handle sending any outgoing messages
     try:
         while True:
             try:
@@ -45,7 +48,8 @@ def handle_ws(ws: WebSocket):
                 LOGGER.error("Failed to parse message", error=e)
                 break
 
-            DISPATCHER.receive(message, session)
+            DISPATCHER.receive(session, message)
     finally:
         LOGGER.info("Websocket connection closed", session=session.id)
         DISPATCHER.remove_connection(session, ws)
+        session.ws = None

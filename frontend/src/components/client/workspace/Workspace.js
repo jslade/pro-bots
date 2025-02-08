@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 
 import { Grid, Box } from '@mui/material';
 
 import { SessionContext } from '../../SessionContext';
 import ProgrammingSpace from './ProgrammingSpace';
-import CommandSpace from './CommandSpace';
+import CommandSpace from './commands/CommandSpace';
 import HUD from './HUD';
 
 const Workspace = () => {

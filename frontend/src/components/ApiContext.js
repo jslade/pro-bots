@@ -66,7 +66,7 @@ const ApiProvider = ({ children }) => {
             dispatchRef.current[key] = [];
         }
 
-        dispatchRef.current[key].add(handler);
+        dispatchRef.current[key].push(handler);
     }, []);
 
     useEffect(() => {
@@ -98,18 +98,18 @@ const ApiProvider = ({ children }) => {
 
         console.log("Received message", lastJsonMessage);
 
-        const { type, event } = lastJsonMessage;
+        const { type, event, data } = lastJsonMessage;
 
         // For handlers that are specific to a type and event
         const type_event_key = `${type}:${event}`;
         if (dispatchRef.current[type_event_key]) {
-            dispatchRef.current[type_event_key]?.forEach(handler => handler(lastJsonMessage));
+            dispatchRef.current[type_event_key]?.forEach(handler => handler(data, type, event));
         }
 
         // For handlers that are for all event of a type
         const type_key = `${type}:`;
         if (dispatchRef.current[type_key]) {
-            dispatchRef.current[type_key]?.forEach(handler => handler(lastJsonMessage));
+            dispatchRef.current[type_key]?.forEach(handler => handler(data, type, event));
         }
 
     }, [lastJsonMessage])
