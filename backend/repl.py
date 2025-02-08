@@ -8,7 +8,7 @@ import IPython
 from probots.app import APP
 from probots.db import DB, DbSession  # noqa: F401
 from probots.models.all import *  # noqa: F403
-from probots.services import *  # noqa: F403
+from probots.services.all import *  # noqa: F403
 
 # IPython setup -- enable auto-reload of source files
 ipython = IPython.get_ipython()

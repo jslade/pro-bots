@@ -26,7 +26,14 @@ class TerminalHandler(MessageHandler):
     ) -> None:
         input = TerminalInput(**message.data)
 
+        if input.input == "map":
+            from probots.services.game.map_maker import MapMaker
+
+            grid = MapMaker().generate(10, 10)
+            output = TerminalOutput(output=grid.to_str())
+            dispatcher.send(session, "terminal", "output", output.model_dump())
+            return
+
         # For now, just echo the input
         output = TerminalOutput(output=input.input)
-
         dispatcher.send(session, "terminal", "output", output.model_dump())

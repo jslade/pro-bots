@@ -12,4 +12,5 @@ pytest
 ruff
 sqlalchemy==2.0.28
 structlog
+tatsu>=5.13.1
 

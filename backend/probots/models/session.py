@@ -13,12 +13,19 @@ class SessionType(str, Enum):
 
 
 @dataclass
+class UserInfo:
+    user: User
+    display_name: str
+    score: int = 0
+
+
+@dataclass
 class Session:
     type: SessionType
     id: str
     ws: Optional[WebSocket] = None
 
-    user: Optional[User] = None
+    user: Optional[UserInfo] = None
 
     @classmethod
     def type_from_id(cls, session_id: str) -> SessionType:
