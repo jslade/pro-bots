@@ -79,7 +79,7 @@ const ApiProvider = ({ children }) => {
 
         if (readyState === ReadyState.OPEN && !session.connected) {
             session.setConnected(true);
-            sendMessage("session", "connected")
+            sendMessage("connection", "connected")
         }
         if ((readyState === ReadyState.CONNECTING || readyState === ReadyState.CLOSED)
              && session.connected) {

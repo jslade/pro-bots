@@ -1,4 +1,5 @@
 from typing import Optional
+
 import structlog
 
 from ..models.session import Session, SessionType

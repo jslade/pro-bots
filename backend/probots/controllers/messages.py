@@ -28,11 +28,9 @@ def handle_ws(ws: WebSocket):
         LOGGER.error("Failed to parse connection request", error=e)
         return
 
-    LOGGER.info("Connection request received", session=session.id)
-    DISPATCHER.send(session, "connection", "accepted", {})
-
-    # Add session to dispatcher
+    # Add session to dispatcher, and dispatch this initial message
     DISPATCHER.add_connection(session, ws)
+    DISPATCHER.receive(session, message)
 
     # Handle incoming, dispatcher will route to the correct service
     # and also handle sending any outgoing messages

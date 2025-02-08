@@ -1,12 +1,14 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Terminal, { ColorMode, TerminalOutput } from 'react-terminal-ui';
 
-import { SessionContext } from '../../../SessionContext';
 import { ApiContext } from '../../../ApiContext';
 import './Terminal.css';
 
+function formatWithLeadingZeros(number, places) {
+    return `${number.toString().padStart(places ? places : 2, '0')}`;
+}
+
 const TerminalComponent = () => {
-    const session = useContext(SessionContext);
     const api = useContext(ApiContext);
     const [terminalLineData, setTerminalLineData] = useState([]);
 
@@ -18,7 +20,7 @@ const TerminalComponent = () => {
             // Show the input line
             setTerminalLineData([
                 ...terminalLineData,
-                <TerminalOutput key={terminalLineData.length}>
+                <TerminalOutput key={terminalInput.length}>
                 &gt;&gt;&gt;&nbsp;{terminalInput}
                 </TerminalOutput>,
             ])
@@ -30,13 +32,11 @@ const TerminalComponent = () => {
         }
     }, [api, terminalLineData])
 
-    const onOutput = useCallback((terminalOutput) => {
-        console.log("!!!", terminalOutput);
-        
+    const onOutput = useCallback((output) => {
         setTerminalLineData([
             ...terminalLineData,
             <TerminalOutput key={terminalLineData.length}>
-            !!! {terminalOutput}
+            {output}
             </TerminalOutput>,
         ])
     }, [terminalLineData]);
