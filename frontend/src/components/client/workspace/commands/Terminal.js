@@ -4,10 +4,6 @@ import Terminal, { ColorMode, TerminalOutput } from 'react-terminal-ui';
 import { ApiContext } from '../../../ApiContext';
 import './Terminal.css';
 
-function formatWithLeadingZeros(number, places) {
-    return `${number.toString().padStart(places ? places : 2, '0')}`;
-}
-
 const TerminalComponent = () => {
     const api = useContext(ApiContext);
     const [terminalLineData, setTerminalLineData] = useState([]);
@@ -54,6 +50,7 @@ const TerminalComponent = () => {
             name=""
             colorMode={ColorMode.Dark}
             TopButtonsPanel={()=> null}
+            height="20em"
             prompt=">>>"
             onInput={onInput}
         >

@@ -3,6 +3,7 @@ from typing import Optional
 
 from dataclasses import dataclass
 
+from .user import User
 from .websocket import WebSocket
 
 
@@ -16,6 +17,8 @@ class Session:
     type: SessionType
     id: str
     ws: Optional[WebSocket] = None
+
+    user: Optional[User] = None
 
     @classmethod
     def type_from_id(cls, session_id: str) -> SessionType:
