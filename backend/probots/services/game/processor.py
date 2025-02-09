@@ -4,7 +4,7 @@ import queue
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Callable, Optional, Self, TypeAlias
+from typing import Callable, ClassVar, Optional, Self, Type, TypeAlias
 
 import structlog
 
@@ -18,20 +18,35 @@ WorkFunc: TypeAlias = Callable[[], None]
 @functools.total_ordering
 @dataclass
 class Work:
-    """Represents work that needs to be done to advance the game state
-    - process a statement from a program
-    - update a transition
+    """Represents work that needs to be done to advance the game state.
+    Any callable function can be scheduled as work to run in the queue.
     """
 
     func: WorkFunc
+    id: int
     not_before_ticks: int
     critical: bool = False
 
+    TOTAL_COUNT: ClassVar[int] = 0
+
+    @classmethod
+    def next_id(cls) -> int:
+        i = cls.TOTAL_COUNT
+        cls.TOTAL_COUNT += 1
+        return i
+
     def __lt__(self, other: Self) -> bool:
-        return self.not_before_ticks < other.not_before_ticks
+        """Comparison is based on scheduled tick time. If they are
+        scheduled for the same tick, tie-breaker based on id, assuming
+        lower id means it was created first, so should run first"""
+        if self.not_before_ticks < other.not_before_ticks:
+            return True
+        if self.not_before_ticks == other.not_before_ticks:
+            return self.id < other.id
+        return False
 
     def __eq__(self, other: Self) -> bool:
-        return self.not_before_ticks == other.not_before_ticks
+        return self.not_before_ticks == other.not_before_ticks and self.id == other.id
 
 
 class WorkQueue:
@@ -51,6 +66,20 @@ class WorkQueue:
         if self.is_empty():
             return None
         return self.heap[0]
+
+    def remove(self, item: Work) -> None:
+        try:
+            self.heap.remove(item)
+            heapq.heapify(self.heap)
+        except ValueError:
+            pass
+
+    def remove_where(self, predicate: Callable[[Work], bool]) -> None:
+        try:
+            self.heap = [i for i in self.heap if not predicate(i)]
+            heapq.heapify(self.heap)
+        except ValueError:
+            pass
 
     def __len__(self) -> int:
         return len(self.heap)
@@ -187,13 +216,28 @@ class Processor:
         delay: int = 0,
         delay_seconds: float = 0,
         critical: bool = False,
-    ) -> None:
+        work_type: Type[Work] = Work,
+    ) -> Work:
         if delay <= 0:
             if delay_seconds > 0:
                 delay = int(delay_seconds / self.tick_interval.total_seconds())
 
-        work = Work(func=func, not_before_ticks=self.ticks + delay, critical=critical)
+        work = work_type(
+            func=func,
+            id=work_type.next_id(),
+            not_before_ticks=self.ticks + delay,
+            critical=critical,
+        )
         self.work_queue.push(work)
+
+        # LOGGER.info("pushed", work=func, id=work.id)
+        return work
+
+    def cancel_work(self, item: Work) -> None:
+        self.work_queue.remove(item)
+
+    def cancel_work_where(self, predicate: Callable[[Work], bool]) -> None:
+        self.work_queue.remove_where(predicate)
 
     def stop(self) -> None:
         LOGGER.info("Processor stopped")

@@ -1,12 +1,15 @@
+from pydantic import Field
 from enum import Enum
 from typing import ClassVar, Optional, Self
 
+
 from ..mixins.pydantic_base import BaseSchema
 from .player import Player
+from .program import ProgramState
 from .transition import Transition
 
 
-class Orientation(str, Enum):
+class ProbotOrientation(str, Enum):
     N = "N"
     W = "W"
     E = "E"
@@ -30,13 +33,15 @@ class Probot(BaseSchema):
     name: Optional[str]
     x: int
     y: int
-    orientation: Orientation
+    orientation: ProbotOrientation
 
     state: ProbotState
     energy: int
     crystals: int
 
     transitions: list[Transition] = []
+
+    program_state: Optional[ProgramState] = Field(None, exclude=True)
 
     @classmethod
     def create_at(cls, player: Player, id: int, x: int, y: int) -> Self:
@@ -46,7 +51,7 @@ class Probot(BaseSchema):
             name=None,
             x=x,
             y=y,
-            orientation=Orientation.N,
+            orientation=ProbotOrientation.N,
             energy=cls.MAX_ENERGY,
             crystals=0,
         )
