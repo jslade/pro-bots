@@ -52,6 +52,12 @@ class Dispatcher:
             LOGGER.warn("Failed to send message", session=session.id, error=e)
             self.remove_connection(session, ws)
 
+    def broadcast(self, mtype: str, event: str, data: dict) -> None:
+        """Immediately send a message out to each of the connection sessions"""
+        for session in self.sessions:
+            # TODO: this redoes the seralization for each call to send()
+            self.send(session, mtype, event, data)
+
     def register_handler(
         self, mtype: str, event: Optional[str], handler: HandlerType
     ) -> None:

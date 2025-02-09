@@ -1,8 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { Grid, Box } from '@mui/material';
 
 import { SessionContext } from '../../SessionContext';
+import { ApiContext } from '../../ApiContext';
 import ProgrammingSpace from './ProgrammingSpace';
 import CommandSpace from './commands/CommandSpace';
 import Display from './Display';
@@ -10,7 +11,7 @@ import Controls from './Controls';
 
 const Workspace = () => {
     const session = useContext(SessionContext);
-    
+
     return ( <>
         <Grid item xs={12} style={{ height: '1.5em' }}>
             <Box display="flex" flexDirection="column" height="100%">

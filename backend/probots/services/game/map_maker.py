@@ -1,7 +1,7 @@
 import math
 import random
 
-from ...models.game.map import Grid, Cell
+from ...models.game.grid import Grid, Cell
 
 
 class MapMaker:

@@ -1,16 +1,16 @@
 from dataclasses import dataclass
 from typing import Self
 
+from ..mixins.pydantic_base import BaseSchema
 
-@dataclass
-class Cell:
+
+class Cell(BaseSchema):
     x: int
     y: int
     crystals: int = 0
 
 
-@dataclass
-class Grid:
+class Grid(BaseSchema):
     width: int
     height: int
     cells: list[Cell]
