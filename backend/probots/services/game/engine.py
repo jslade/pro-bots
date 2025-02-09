@@ -6,7 +6,7 @@ from typing import Callable, Optional, TypeAlias
 import structlog
 
 from ...models.all import BaseSchema, Message
-from ...models.game.all import Grid, Player, Probot, ProbotState, ProbotOrientation
+from ...models.game.all import Cell, Grid, Player, Probot, ProbotState, ProbotOrientation
 from ..dispatcher import DISPATCHER
 from ..session_service import SESSIONS
 from .map_maker import MapMaker
@@ -183,7 +183,14 @@ class Engine:
             "probots",
             probots=[p for p in self.probots],
         )
-        LOGGER.info("\n" + self.grid.to_str())
+
+        def decorate_cell(cell: Cell, value: str) -> str:
+            for probot in self.probots:
+                if probot.x == cell.x and probot.y == cell.y:
+                    value = "<{:02d}>".format(probot.id)
+            return value
+
+        LOGGER.info("\n" + self.grid.to_str(decorator=decorate_cell))
 
         self.processor.add_work(self.report_game_state, delay_seconds=5)
 
@@ -255,15 +262,7 @@ class Engine:
 
         x, y = self.random_spawn_location()
 
-        orientation = ProbotOrientation.W
-        if x < self.grid.width / 2:
-            if y < self.grid.height / 2:
-                orientation = ProbotOrientation.E
-            else:
-                orientation = ProbotOrientation.S
-        else:
-            if y < self.grid.height / 2:
-                orientation = ProbotOrientation.N
+        orientation = random.choice(list(ProbotOrientation))
 
         probot = Probot(
             player=player,

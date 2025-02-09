@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Self
+from typing import Callable, Optional, Self
 
 from ..mixins.pydantic_base import BaseSchema
 
@@ -24,7 +24,7 @@ class Grid(BaseSchema):
 
         return self.cells[y * self.width + x]
 
-    def to_str(self) -> str:
+    def to_str(self, decorator: Optional[Callable[[Cell, str], str]] = None) -> str:
         x_vals = [" {:2d} ".format(x) for x in range(self.width)]
         row_sep = "   +" + "+".join(["----" for x in range(self.width)]) + "+"
 
@@ -33,7 +33,10 @@ class Grid(BaseSchema):
 
         def c_str(x: int, y: int) -> str:
             cell = self.get(x, y)
-            return " {:2d} ".format(cell.crystals) if cell.crystals else "    "
+            s = " {:2d} ".format(cell.crystals) if cell.crystals else "    "
+            if decorator:
+                s = decorator(cell, s)
+            return s
 
         for y in range(self.height):
             c_vals = [c_str(x, y) for x in range(self.width)]
