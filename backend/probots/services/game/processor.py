@@ -201,8 +201,9 @@ class Processor:
                 try:
                     work = self.work_queue.pop()
                     work.func()
+
                 except Exception as e:
-                    LOGGER.exception(e)
+                    LOGGER.exception(e, func=work.func, work=work.id)
                     if work.critical:
                         self.stop()
 
@@ -221,6 +222,9 @@ class Processor:
         if delay <= 0:
             if delay_seconds > 0:
                 delay = int(delay_seconds / self.tick_interval.total_seconds())
+
+        if delay <= 0:
+            delay = 1
 
         work = work_type(
             func=func,

@@ -39,19 +39,13 @@ class Probot(BaseSchema):
     energy: int
     crystals: int
 
-    transitions: list[Transition] = []
+    # For transitioning
+    dx: Optional[float] = 0
+    dy: Optional[float] = 0
+    dorient: Optional[float] = 0
 
     program_state: Optional[ProgramState] = Field(None, exclude=True)
 
-    @classmethod
-    def create_at(cls, player: Player, id: int, x: int, y: int) -> Self:
-        return Probot(
-            player=player,
-            id=id,
-            name=None,
-            x=x,
-            y=y,
-            orientation=ProbotOrientation.N,
-            energy=cls.MAX_ENERGY,
-            crystals=0,
-        )
+    @property
+    def position(self) -> tuple[int, int, ProbotOrientation]:
+        return (self.x, self.y, self.orientation)

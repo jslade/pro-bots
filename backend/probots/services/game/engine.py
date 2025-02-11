@@ -10,7 +10,9 @@ from ...models.game.all import Cell, Grid, Player, Probot, ProbotState, ProbotOr
 from ..dispatcher import DISPATCHER
 from ..session_service import SESSIONS
 from .map_maker import MapMaker
+from .movement import MovementService
 from .processor import Processor, Work, WorkFunc
+from .transitioner import TransitionService
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -45,6 +47,10 @@ class Engine:
         self.grid: Grid = Grid.blank(1, 1)
         self.players: list[Player] = []
         self.probots: list[Probot] = []
+
+        # Helper services
+        self.transitioner = TransitionService(self)
+        self.mover = MovementService(self)
 
     def run(self) -> None:
         """This is the entrypoint for the main game thread. It should never exit
@@ -162,7 +168,9 @@ class Engine:
 
         # Some standard tasks
         # self.processor.add_work(self.report_ticks)
-        self.processor.add_work(self.report_game_state)
+        self.add_game_work(
+            self.report_game_state, repeat_interval_seconds=1
+        )  # TODO: For testing
 
     def report_ticks(self) -> None:
         # TODO: Move to a separate service
@@ -192,7 +200,18 @@ class Engine:
 
         LOGGER.info("\n" + self.grid.to_str(decorator=decorate_cell))
 
-        self.processor.add_work(self.report_game_state, delay_seconds=5)
+    def randomly_move(self, probot: Probot) -> None:
+        # TODO: This is just for testing
+        r = random.randint(0, 4)
+        match r:
+            case 0:
+                self.mover.move(probot, backward=True)
+            case 1:
+                self.mover.turn(probot, "left")
+            case 2:
+                self.mover.turn(probot, "right")
+            case _:
+                self.mover.move(probot)
 
     def add_player(self, player: Player) -> None:
         if player in self.players:
@@ -224,7 +243,7 @@ class Engine:
         self.add_probot_work(
             probot,
             func=self.collect_energy,
-            every=10,
+            repeat_interval=10,
         )
 
         LOGGER.info(
@@ -255,6 +274,10 @@ class Engine:
 
         probot = self.spawn_probot(player)
         self.add_probot(probot)
+
+        self.add_probot_work(
+            probot, self.randomly_move, delay=10, repeat_interval_seconds=1
+        )
 
     def spawn_probot(self, player: Player) -> None:
         """Create a new probot controlled by the given player.
@@ -287,42 +310,105 @@ class Engine:
             if self.is_empty_cell(x, y):
                 return (x, y)
 
-    def is_empty_cell(self, x: int, y: int) -> bool:
-        cell = self.grid.get(x, y)
-        if cell.crystals != 0:
-            return False
-
+    def is_empty_cell(self, x: int, y: int, ignore_crystals: bool = True) -> bool:
         for probot in self.probots:
             if probot.x == x and probot.y == y:
                 return False
 
+        cell = self.grid.get(x, y)
+        if cell.crystals != 0 and not ignore_crystals:
+            return False
+
         return True
+
+    def add_player_work(
+        self,
+        player: Player,
+        func: ProbotWorkFunc,
+        delay: int = 0,
+        delay_seconds: float = 0,
+        repeat_interval: Optional[int] = None,
+        repeat_interval_seconds: Optional[float] = None,
+        critical: bool = False,
+    ) -> "GameWork":
+        """Add a work callback that takes a player as an argument"""
+
+        def once():
+            func(player)
+
+        return self.add_game_work(
+            func=once,
+            delay=delay,
+            delay_seconds=delay_seconds,
+            repeat_interval=repeat_interval,
+            repeat_interval_seconds=repeat_interval_seconds,
+            critical=critical,
+            player=player,
+        )
 
     def add_probot_work(
         self,
         probot: Probot,
         func: ProbotWorkFunc,
         delay: int = 0,
-        every: Optional[int] = None,
+        delay_seconds: float = 0,
+        repeat_interval: Optional[int] = None,
+        repeat_interval_seconds: Optional[float] = None,
         critical: bool = False,
     ) -> "GameWork":
+        """Add a work callback that takes a probot as an argument"""
+
         def once():
             func(probot)
 
-        def repeating():
-            once()
+        return self.add_game_work(
+            func=once,
+            delay=delay,
+            repeat_interval=repeat_interval,
+            repeat_interval_seconds=repeat_interval_seconds,
+            critical=critical,
+            probot=probot,
+            player=probot.player,
+        )
 
-            item = self.processor.add_work(
-                repeating, every, critical=critical, work_type=GameWork
-            )
-            item.probot = probot
-            item.player = probot.player
+    def add_game_work(
+        self,
+        func: ProbotWorkFunc,
+        delay: int = 0,
+        delay_seconds: float = 0,
+        repeat_interval: Optional[int] = None,
+        repeat_interval_seconds: Optional[float] = 0,
+        critical: bool = False,
+        probot: Optional[Probot] = None,
+        player: Optional[Player] = None,
+    ) -> "GameWork":
+        if repeat_interval or repeat_interval_seconds:
+            once = func
+
+            def repeating():
+                once()
+
+                item = self.processor.add_work(
+                    repeating,
+                    delay=repeat_interval or 0,
+                    delay_seconds=repeat_interval_seconds,
+                    critical=critical,
+                    work_type=GameWork,
+                )
+                item.probot = probot
+                item.player = probot.player if probot else None
+
+            func = repeating
 
         item = self.processor.add_work(
-            repeating if every else once, delay, critical=critical, work_type=GameWork
+            func,
+            delay=delay,
+            delay_seconds=delay_seconds,
+            critical=critical,
+            work_type=GameWork,
         )
         item.probot = probot
-        item.player = probot.player
+        item.player = probot.player if probot else None
 
         return item
 
