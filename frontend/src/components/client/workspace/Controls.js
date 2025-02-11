@@ -35,7 +35,7 @@ const Controls = () => {
                 <Button variant="contained" onClick={onTurnRight}>turn&nbsp;R</Button>
             </Grid>
             <Grid item xs={2}>
-                <Typography >Score: {player.score}</Typography>
+                <Typography >Score: {player?.score || 0}</Typography>
             </Grid>
         </Grid>
     );

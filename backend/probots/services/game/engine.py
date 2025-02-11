@@ -314,9 +314,9 @@ class Engine:
 
         probot = self.spawn_probot(player)
 
-        # self.add_probot_work(
-        #    probot, self.randomly_move, delay=10, repeat_interval_seconds=1
-        # )
+        self.add_probot_work(
+            probot, self.randomly_move, delay=10, repeat_interval_seconds=3
+        )
 
     def spawn_probot(self, player: Player) -> Probot:
         """Create a new probot controlled by the given player.
