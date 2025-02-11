@@ -14,9 +14,15 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 
 import Client from './components/client/Client';
-import Server from './components/server/Server';
-import { ApiProvider } from './components/ApiContext';
-import { SessionProvider } from './components/SessionContext';
+import Watcher from './components/watcher/Watcher';
+import { SessionProvider } from './contexts/SessionContext';
+
+import {
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
 
 const router = createBrowserRouter([
   {
@@ -24,8 +30,8 @@ const router = createBrowserRouter([
     element: <Client />,
   },
   {
-    path: "/server",
-    element: <Server />
+    path: "/watch",
+    element: <Watcher />
   },
 ]);
 
@@ -33,9 +39,9 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <SessionProvider>
-      <ApiProvider>
+      <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
-      </ApiProvider>
+      </QueryClientProvider>
     </SessionProvider>
   </React.StrictMode>
 );

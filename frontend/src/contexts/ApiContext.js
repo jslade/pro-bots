@@ -8,16 +8,9 @@ import React, {
 } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
-import {
-    QueryClient,
-    QueryClientProvider,
-} from '@tanstack/react-query'
-
 import { SessionContext } from './SessionContext';
 
 const WS_BASE = `ws://${window.location.hostname}:5001`;
-
-const queryClient = new QueryClient()
 
 const ApiContext = createContext();
 
@@ -37,6 +30,8 @@ const ApiContext = createContext();
 const ApiProvider = ({ children }) => {
     const session = useContext(SessionContext);
     const [prevReadyState, setPrevReadyState] = useState(ReadyState.CONNECTING);
+    const [connected, setConnected] = useState(false);
+    const [accepted, setAccepted] = useState(false);
     const dispatchRef = useRef({});
 
     const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
@@ -44,10 +39,10 @@ const ApiProvider = ({ children }) => {
             share: false,
             shouldReconnect: () => true,
         },
-    )
+    );
     
     const sendMessage = useCallback((type, event, data) => {
-        if (!session.sessionId) return;
+        if (!connected) return;
 
         const message = {
             type,
@@ -58,7 +53,7 @@ const ApiProvider = ({ children }) => {
         console.log("Sending message", message);
         sendJsonMessage(message);
 
-    }, [session.sessionId, sendJsonMessage]);
+    }, [session?.sessionId, connected, sendJsonMessage]);
 
     const registerCallback = useCallback((type, event, handler) => {
         const key = `${type}:${event ? event : ''}`;
@@ -70,7 +65,7 @@ const ApiProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        if (!session.sessionId) return;
+        if (!session?.sessionId) return;
 
         if (prevReadyState !== readyState) {
             console.log("Connection state changed", readyState)
@@ -78,25 +73,26 @@ const ApiProvider = ({ children }) => {
         }
 
         if (readyState === ReadyState.OPEN && !session.connected) {
-            session.setConnected(true);
+            setConnected(true);
             sendMessage("connection", "connected")
         }
         if ((readyState === ReadyState.CONNECTING || readyState === ReadyState.CLOSED)
              && session.connected) {
-            session.setConnected(false);
+            setConnected(false);
+            setAccepted(false);
         }
     }, [
         readyState,
         prevReadyState, setPrevReadyState,
         sendMessage,
         session, session.sessionId,
-        session.connected, session.setConnected
+        connected, setConnected
     ])
     
     useEffect(() => {
         if (!lastJsonMessage) return;
 
-        console.log("Received message", lastJsonMessage);
+        //console.log("Received message", lastJsonMessage);
 
         const { type, event, data } = lastJsonMessage;
 
@@ -114,11 +110,24 @@ const ApiProvider = ({ children }) => {
 
     }, [lastJsonMessage])
 
+    const sessionAccepted = useCallback(() => {
+        console.log("SESSION ACCEPTED");
+        setAccepted(true);
+
+        return () => {
+            setAccepted(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        registerCallback("connection", "accepted", sessionAccepted);
+    }, [registerCallback, sessionAccepted]);
+
     return (
-        <ApiContext.Provider value={{ sendMessage, registerCallback }}>
-            <QueryClientProvider client={queryClient}>
-                {children}
-            </QueryClientProvider>
+        <ApiContext.Provider value={
+            accepted ? { sendMessage, registerCallback } : null
+        }>
+            {children}
         </ApiContext.Provider>
     );
 };

@@ -1,9 +1,11 @@
 from typing import Optional
+
 import structlog
 
 from ...models.all import Message, Session
 from ...models.mixins.pydantic_base import BaseSchema
 from ..dispatcher import Dispatcher
+from ..game.engine import ENGINE
 from .base import MessageHandler
 
 LOGGER = structlog.get_logger(__name__)
@@ -25,4 +27,14 @@ class ManualControlHandler(MessageHandler):
     ) -> None:
         event = MovementEvent(**message.data)
 
-        LOGGER.info("manual movement", ev=event)
+        probot = ENGINE.probot_for_session(session)
+        if not probot:
+            LOGGER.warning("no probot for session", session=session.id)
+            return
+
+        LOGGER.info("manual movement", ev=event, probot=probot)
+
+        if event.move:
+            ENGINE.mover.move(probot)
+        elif event.turn:
+            ENGINE.mover.turn(probot, dir=event.turn)

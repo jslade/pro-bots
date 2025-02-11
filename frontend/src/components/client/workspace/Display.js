@@ -1,25 +1,24 @@
 import React, { useEffect, useContext, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { ApiContext } from '../../ApiContext';
+import { GameContext } from '../../../contexts/GameContext';
 
 const Display = () => {
-    const api = useContext(ApiContext);
+    const { probot } = useContext(GameContext);
 
-    const [ gameState, setGameState ] = useState({})
-
-    useEffect(() => {
-        api.registerCallback('game', 'current_state', (data) => {
-            setGameState(data);
-        });
-    }, [api, api.registerCallback, setGameState]);
+    const renderProbot = () => {
+        return (                <>
+            <Box position={[-1.2, 0, 0]} />
+            <Box position={[1.2, 0, 0]} rotation={[1, 2, 3]} />
+            </>
+        )
+    };
 
     return (
         <Canvas>
             <ambientLight intensity={Math.PI / 2} />
             <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
             <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-            <Box position={[-1.2, 0, 0]} />
-            <Box position={[1.2, 0, 0]} rotation={[1, 2, 3]} />
+            {probot ? renderProbot(): <></>}
         </Canvas>
    );
 };

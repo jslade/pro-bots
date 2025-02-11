@@ -112,6 +112,8 @@ class MovementService:
         probot.state = ProbotState.moving
         probot.energy -= required_energy
 
+        self.engine.notify_of_probot_change(probot)
+
     def update_move(self, probot: Probot, transit: Transition) -> None:
         dtick = 1.0 / transit.total_steps
 
@@ -125,10 +127,14 @@ class MovementService:
             case ProbotOrientation.W:
                 probot.dx -= dtick
 
+        self.engine.notify_of_probot_change(probot)
+
     def complete_move(self, probot: Probot, transit: Transition) -> None:
         probot.state = ProbotState.idle
         probot.dx = 0
         probot.dy = 0
+
+        self.engine.notify_of_probot_change(probot)
 
     def turn(self, probot: Probot, dir: str) -> bool:
         """Just rotating in place"""
@@ -181,6 +187,8 @@ class MovementService:
         probot.state = ProbotState.turning
         probot.energy -= required_energy
 
+        self.engine.notify_of_probot_change(probot)
+
     def update_turn(self, probot: Probot, transit: Transition, dir: str) -> None:
         dtick = 90.0 / transit.total_steps
         if dir == "left":
@@ -188,9 +196,13 @@ class MovementService:
         else:
             probot.dorient -= dtick
 
+        self.engine.notify_of_probot_change(probot)
+
     def complete_turn(
         self, probot: Probot, transit: Transition, new_orient: ProbotOrientation
     ) -> None:
         probot.state = ProbotState.idle
         probot.orientation = new_orient
         probot.dorient = 0
+
+        self.engine.notify_of_probot_change(probot)

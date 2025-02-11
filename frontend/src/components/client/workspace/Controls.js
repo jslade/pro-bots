@@ -2,7 +2,7 @@ import { useCallback, useContext } from 'react';
 
 import { Grid, Button } from '@mui/material';
 
-import { ApiContext } from '../../ApiContext';
+import { ApiContext } from '../../../contexts/ApiContext';
 
 const Controls = () => {
     const api = useContext(ApiContext);

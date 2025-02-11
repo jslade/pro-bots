@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Terminal, { ColorMode, TerminalOutput } from 'react-terminal-ui';
 
-import { ApiContext } from '../../../ApiContext';
+import { ApiContext } from '../../../../contexts/ApiContext';
 import './Terminal.css';
 
 const TerminalComponent = () => {
@@ -38,10 +38,12 @@ const TerminalComponent = () => {
     }, [terminalLineData]);
 
     useEffect(() => {
+        if (!api) return;
+
         api.registerCallback('terminal', 'output', (data) => {
             onOutput(data.output);
         });
-    }, [api, api.registerCallback, onOutput]);
+    }, [api, api?.registerCallback, onOutput]);
 
 
     return (

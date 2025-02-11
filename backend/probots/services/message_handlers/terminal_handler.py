@@ -26,12 +26,32 @@ class TerminalHandler(MessageHandler):
     ) -> None:
         input = TerminalInput(**message.data)
 
+        # TODO: Just for testing
         if input.input == "map":
-            from probots.services.game.map_maker import MapMaker
+            from ..game.engine import ENGINE
 
-            grid = MapMaker().generate(10, 10)
-            output = TerminalOutput(output=grid.to_str())
+            if grid := ENGINE.grid:
+                output = TerminalOutput(output=grid.to_str())
+            else:
+                output = TerminalOutput(output="n/a")
             dispatcher.send(session, "terminal", "output", output.model_dump())
+            return
+
+        # TODO: Just for testing
+        if input.input == "move":
+            from ..game.engine import ENGINE
+
+            probot = ENGINE.probots[0]
+            ENGINE.mover.move(probot)
+            return
+
+        # TODO: Just for testing
+        if input.input.startswith("turn"):
+            from ..game.engine import ENGINE
+
+            dir = input.input.split()[1]
+            probot = ENGINE.probots[0]
+            ENGINE.mover.turn(probot, dir)
             return
 
         # For now, just echo the input

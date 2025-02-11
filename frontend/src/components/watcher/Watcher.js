@@ -1,6 +1,6 @@
 import React from 'react';
 import { useContext, useEffect } from 'react';
-import { SessionContext } from '../SessionContext';
+import { SessionContext } from '../../contexts/SessionContext';
 
 function generateServerSessionId() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -11,7 +11,7 @@ function generateServerSessionId() {
     return result;
 }
 
-function Server() {
+function Watcher() {
     const session = useContext(SessionContext);
 
     useEffect(() => {
@@ -23,9 +23,9 @@ function Server() {
 
     return (
         <div>
-            This is the server view
+            This is the watcher view
         </div>
     );
 }
 
-export default Server;
+export default Watcher;

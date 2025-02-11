@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import Field, field_serializer
 from enum import Enum
 from typing import ClassVar, Optional, Self
 
@@ -49,3 +49,7 @@ class Probot(BaseSchema):
     @property
     def position(self) -> tuple[int, int, ProbotOrientation]:
         return (self.x, self.y, self.orientation)
+
+    @field_serializer("player")
+    def serializer_player(self, player: Player) -> str:
+        return player.name

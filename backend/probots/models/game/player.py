@@ -14,6 +14,8 @@ class Player(BaseSchema):
     A player's behavior is defined by the program it is running."""
 
     name: str
-    score: int
+    score: int = 0
+
+    session_id: Optional[str] = None
 
     program: Optional[Program] = None

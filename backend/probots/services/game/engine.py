@@ -1,17 +1,17 @@
-import random
 import queue
+import random
 import threading
 from typing import Callable, Optional, TypeAlias
 
 import structlog
 
-from ...models.all import BaseSchema, Message
-from ...models.game.all import Cell, Grid, Player, Probot, ProbotState, ProbotOrientation
+from ...models.all import BaseSchema, Message, Session, User
+from ...models.game.all import Cell, Grid, Player, Probot, ProbotOrientation, ProbotState
 from ..dispatcher import DISPATCHER
 from ..session_service import SESSIONS
 from .map_maker import MapMaker
 from .movement import MovementService
-from .processor import Processor, Work, WorkFunc
+from .processor import Processor, Work
 from .transitioner import TransitionService
 
 LOGGER = structlog.get_logger(__name__)
@@ -47,6 +47,7 @@ class Engine:
         self.grid: Grid = Grid.blank(1, 1)
         self.players: list[Player] = []
         self.probots: list[Probot] = []
+        self.player_sessions: {}
 
         # Helper services
         self.transitioner = TransitionService(self)
@@ -85,6 +86,7 @@ class Engine:
         """Send out a message. This method is called in the context of the
         "main" thread, not the game thread, so it can directly use the
         main dispatcher"""
+        # LOGGER.info("OUTGOING", message=message)
         if message.session_id:
             session = SESSIONS.get_session(message.session_id)
             if session:
@@ -119,13 +121,7 @@ class Engine:
         mm = MapMaker()
         self.grid = mm.generate(10, 10)
 
-        game = GameResetData(
-            current=GameCurrentStateData(
-                grid=self.grid,
-                players=[p for p in self.players],
-                probots=[p for p in self.probots],
-            )
-        )
+        game = GameResetData(current=self.construct_current_state())
 
         # reset players
         for player in self.players:
@@ -136,13 +132,7 @@ class Engine:
             self.reset_probot(probot)
 
         # Tell everyone about the new game state
-        message = Message(
-            type="game",
-            event="reset",
-            session_id="",
-            data=game.model_dump(),
-        )
-        self.outgoing.put(message)
+        self.send_broadcast(event="reset", data=game.model_dump(by_alias=True))
 
         # Just now for testing purposes:
         if not self.players:
@@ -169,8 +159,15 @@ class Engine:
         # Some standard tasks
         # self.processor.add_work(self.report_ticks)
         self.add_game_work(
-            self.report_game_state, repeat_interval_seconds=1
+            self.report_game_state, repeat_interval_seconds=10
         )  # TODO: For testing
+
+    def construct_current_state(self) -> GameCurrentStateData:
+        return GameCurrentStateData(
+            grid=self.grid,
+            players=[p for p in self.players],
+            probots=[p for p in self.probots],
+        )
 
     def report_ticks(self) -> None:
         # TODO: Move to a separate service
@@ -213,15 +210,35 @@ class Engine:
             case _:
                 self.mover.move(probot)
 
-    def add_player(self, player: Player) -> None:
+    def add_player(self, player: Player, session: Optional[Session] = None) -> None:
         if player in self.players:
             return
 
         self.players.append(player)
+        if session:
+            player.session_id = session.id
 
         # Schedule work to make it run...
 
-        LOGGER.info("Added player", player=player.name)
+        LOGGER.info(
+            "Added player",
+            player=player.name,
+            session=session.id if session else None,
+            user=session.user.name if session and session.user else None,
+        )
+
+    def player_session(self, player: Player) -> Optional[Session]:
+        return SESSIONS.get_session(player.session_id)
+
+    def player_for_user(self, user: User) -> Optional[Session]:
+        for player in self.players:
+            if player.name == user.name:
+                return player
+
+    def player_for_session(self, session: Session) -> Optional[Session]:
+        for player in self.players:
+            if player.session_id == session.id:
+                return player
 
     def remove_player(self, player: Player) -> None:
         if player not in self.players:
@@ -254,6 +271,11 @@ class Engine:
             at=(probot.x, probot.y),
         )
 
+    def probot_for_session(self, session: Session) -> Optional[Probot]:
+        for probot in self.probots:
+            if probot.player.session_id == session.id:
+                return probot
+
     def remove_probot(self, probot: Probot) -> None:
         if probot not in self.probots:
             return
@@ -273,13 +295,12 @@ class Engine:
         self.add_player(player)
 
         probot = self.spawn_probot(player)
-        self.add_probot(probot)
 
-        self.add_probot_work(
-            probot, self.randomly_move, delay=10, repeat_interval_seconds=1
-        )
+        # self.add_probot_work(
+        #    probot, self.randomly_move, delay=10, repeat_interval_seconds=1
+        # )
 
-    def spawn_probot(self, player: Player) -> None:
+    def spawn_probot(self, player: Player) -> Probot:
         """Create a new probot controlled by the given player.
         Spawn location is random"""
 
@@ -442,6 +463,45 @@ class Engine:
         probot.energy += delta
         if probot.energy > Probot.MAX_ENERGY:
             probot.energy = Probot.MAX_ENERGY
+
+    def notify_of_probot_change(self, probot: Probot) -> None:
+        """ "Send a message to all sessions about the change in this probot.
+        Ideally would send a delta of some sort, but simple/dumb implementation
+        is to just send the full probot state"""
+        self.send_broadcast(
+            event="probot_update",
+            data=probot.model_dump(by_alias=True),
+        )
+
+    def notify_of_current_state(self, session: Session) -> None:
+        self.send_to_session(
+            session=session,
+            event="current_state",
+            data=self.construct_current_state().model_dump(by_alias=True),
+        )
+
+    def send_to_player(self, player: Player, event: str, data: dict) -> None:
+        session = self.player_session(player)
+        if session:
+            self.send_to_session(session, event, data)
+
+    def send_to_session(self, session: Session, event: str, data: dict) -> None:
+        message = Message(
+            type="game",
+            event=event,
+            session_id=session.id,
+            data=data,
+        )
+        self.outgoing.put(message)
+
+    def send_broadcast(self, event: str, data: dict) -> None:
+        message = Message(
+            type="game",
+            event=event,
+            session_id="",  # empty string means broadcast to the dispatcher
+            data=data,
+        )
+        self.outgoing.put(message)
 
 
 class GameWork(Work):

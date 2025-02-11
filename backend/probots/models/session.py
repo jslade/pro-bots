@@ -14,12 +14,6 @@ class SessionType(str, Enum):
 
 
 @dataclass
-class UserInfo:
-    user: User
-    display_name: str
-
-
-@dataclass
 class Session:
     type: SessionType
     id: str
@@ -30,7 +24,7 @@ class Session:
     connected_at: Optional[datetime] = None
     disconnected_at: Optional[datetime] = None
 
-    user: Optional[UserInfo] = None
+    user: Optional[User] = None
 
     @classmethod
     def type_from_id(cls, session_id: str) -> SessionType:

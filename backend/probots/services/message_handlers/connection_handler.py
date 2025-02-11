@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import Optional
+
 import structlog
 
-from ...models.all import Message, Session, SessionType, User, UserInfo
+from ...models.all import Message, Session, SessionType, User
 from ...models.mixins.pydantic_base import BaseSchema
 from ..dispatcher import Dispatcher
 from .base import MessageHandler
@@ -37,10 +38,7 @@ class ConnectionHandler(MessageHandler):
             if not user:
                 raise Exception("No user matching that session")
 
-            session.user = UserInfo(
-                user=user,
-                display_name=user.name,
-            )
+            session.user = user
 
         response = ConnectionResponse(username=user.name if user else None)
 

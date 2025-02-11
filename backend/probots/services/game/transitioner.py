@@ -73,7 +73,10 @@ class TransitionService:
         probot: Optional[Probot] = None,
         player: Optional[Player] = None,
     ) -> None:
-        self.transitions.remove(transit)
+        try:
+            self.transitions.remove(transit)
+        except ValueError:
+            pass
 
         if transit.on_complete:
             transit.on_complete(transit)
