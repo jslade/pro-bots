@@ -232,6 +232,9 @@ class Engine:
             user=session.user.name if session and session.user else None,
         )
 
+        # Notify all sessions
+        self.processor.add_work(self.broadcast_current_state, delay=10)
+
     def player_session(self, player: Player) -> Optional[Session]:
         return SESSIONS.get_session(player.session_id)
 
@@ -254,6 +257,9 @@ class Engine:
         self.processor.cancel_work_where(
             lambda item: isinstance(item, GameWork) and item.player == player
         )
+
+        # Notify all sessions
+        self.processor.add_work(self.broadcast_current_state, delay=10)
 
     def update_score(self, player: Player, delta: int) -> None:
         player.score += delta
@@ -488,6 +494,12 @@ class Engine:
     def notify_of_current_state(self, session: Session) -> None:
         self.send_to_session(
             session=session,
+            event="current_state",
+            data=self.construct_current_state().model_dump(by_alias=True),
+        )
+
+    def broadcast_current_state(self) -> None:
+        self.send_broadcast(
             event="current_state",
             data=self.construct_current_state().model_dump(by_alias=True),
         )

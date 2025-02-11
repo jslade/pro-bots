@@ -13,7 +13,7 @@ const Scoreboard = () => {
         const players = gameState?.players.map(player => player);
         return players.sort((a, b) => a.score - b.score);
 
-    }, [gameState, gameState?.players])
+    }, [gameState])
 
     const playerItem = (player) => {
         return (

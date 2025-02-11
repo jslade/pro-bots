@@ -6,6 +6,7 @@ import structlog
 from ...models.all import Message, Session, SessionType, User
 from ...models.mixins.pydantic_base import BaseSchema
 from ..dispatcher import Dispatcher
+from ..game.engine import ENGINE
 from .base import MessageHandler
 
 LOGGER = structlog.get_logger(__name__)
@@ -43,3 +44,5 @@ class ConnectionHandler(MessageHandler):
         response = ConnectionResponse(username=user.name if user else None)
 
         dispatcher.send(session, "connection", "accepted", response.model_dump())
+
+        ENGINE.notify_of_current_state(session)

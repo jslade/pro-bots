@@ -60,6 +60,7 @@ const ApiProvider = ({ children }) => {
 
     const onDisconnected = useCallback(() => {
         setConnected(false);
+        setAccepted(false);
         wsSendJsonRef.current = null;
     }, [setConnected])
 
@@ -131,9 +132,11 @@ const ApiWs = ({onConnected, onDisconnected, dispatch }) => {
         }
 
         if (readyState === ReadyState.OPEN) {
+            console.log("WS connected");
             onConnected(sendJsonMessage);
         }
         if (readyState === ReadyState.CONNECTING || readyState === ReadyState.CLOSED) {
+            console.log("WS disconnected");
             onDisconnected();
         }
 
