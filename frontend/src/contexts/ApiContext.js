@@ -14,35 +14,16 @@ const WS_BASE = `ws://${window.location.hostname}:5001`;
 
 const ApiContext = createContext();
 
-/**
- * @description
- * This component uses WebSocket to manage API communication and provides
- * methods to send messages and register callbacks for specific message types and events.
- * 
- * It provides a consistent way of sending and receiving messages, defining the
- * message structure, and handling connection state. When messages are received,
- * they are dispatched to the appropriate handlers based on their type and event.
- * 
- * @provides
- * - `sendMessage` function to send JSON messages via WebSocket.
- * - `registerCallback` function to register handlers for specific message types and events.
- */
 const ApiProvider = ({ children }) => {
     const session = useContext(SessionContext);
-    const [prevReadyState, setPrevReadyState] = useState(ReadyState.CONNECTING);
     const [connected, setConnected] = useState(false);
     const [accepted, setAccepted] = useState(false);
+    
+    const wsSendJsonRef = useRef(null);
     const dispatchRef = useRef({});
 
-    const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
-        WS_BASE, {
-            share: false,
-            shouldReconnect: () => true,
-        },
-    );
-    
     const sendMessage = useCallback((type, event, data) => {
-        if (!connected) return;
+        if (!connected || !wsSendJsonRef.current) return;
 
         const message = {
             type,
@@ -51,64 +32,14 @@ const ApiProvider = ({ children }) => {
             data: data ? data : {},
         };
         console.log("Sending message", message);
-        sendJsonMessage(message);
+        wsSendJsonRef.current(message);
 
-    }, [session?.sessionId, connected, sendJsonMessage]);
+    }, [connected, session?.sessionId]);
 
     const registerCallback = useCallback((type, event, handler) => {
         const key = `${type}:${event ? event : ''}`;
-        if (!dispatchRef.current[key]) {
-            dispatchRef.current[key] = [];
-        }
-
-        dispatchRef.current[key].push(handler);
+        dispatchRef.current[key] = handler;
     }, []);
-
-    useEffect(() => {
-        if (!session?.sessionId) return;
-
-        if (prevReadyState !== readyState) {
-            console.log("Connection state changed", readyState)
-            setPrevReadyState(readyState);
-        }
-
-        if (readyState === ReadyState.OPEN && !session.connected) {
-            setConnected(true);
-            sendMessage("connection", "connected")
-        }
-        if ((readyState === ReadyState.CONNECTING || readyState === ReadyState.CLOSED)
-             && session.connected) {
-            setConnected(false);
-            setAccepted(false);
-        }
-    }, [
-        readyState,
-        prevReadyState, setPrevReadyState,
-        sendMessage,
-        session, session.sessionId,
-        connected, setConnected
-    ])
-    
-    useEffect(() => {
-        if (!lastJsonMessage) return;
-
-        //console.log("Received message", lastJsonMessage);
-
-        const { type, event, data } = lastJsonMessage;
-
-        // For handlers that are specific to a type and event
-        const type_event_key = `${type}:${event}`;
-        if (dispatchRef.current[type_event_key]) {
-            dispatchRef.current[type_event_key]?.forEach(handler => handler(data, type, event));
-        }
-
-        // For handlers that are for all event of a type
-        const type_key = `${type}:`;
-        if (dispatchRef.current[type_key]) {
-            dispatchRef.current[type_key]?.forEach(handler => handler(data, type, event));
-        }
-
-    }, [lastJsonMessage])
 
     const sessionAccepted = useCallback(() => {
         console.log("SESSION ACCEPTED");
@@ -119,17 +50,110 @@ const ApiProvider = ({ children }) => {
         }
     }, []);
 
+    const onConnected = useCallback((sendJson) => {
+        // Immediately upon connection, send the connection request,
+        // which should prompt a connection/accepted response
+        setConnected(true);
+        wsSendJsonRef.current = sendJson;
+        sendMessage("connection", "connected");
+    }, [setConnected, sendMessage])
+
+    const onDisconnected = useCallback(() => {
+        setConnected(false);
+        wsSendJsonRef.current = null;
+    }, [setConnected])
+
     useEffect(() => {
         registerCallback("connection", "accepted", sessionAccepted);
     }, [registerCallback, sessionAccepted]);
+
+    const dispatch = useCallback((message) => {
+        if (!message) return;
+
+        console.log("Received message", message);
+
+        const { type, event, data } = message;
+        let handled = false;
+
+        // For handlers that are specific to a type and event
+        const type_event_key = `${type}:${event}`;
+        if (dispatchRef.current[type_event_key]) {
+            dispatchRef.current[type_event_key](data, type, event);
+            handled = true;
+        }
+
+        // For handlers that are for all event of a type
+        if (!handled) {
+            const type_key = `${type}:`;
+            if (dispatchRef.current[type_key]) {
+                dispatchRef.current[type_key](data, type, event);
+                handled = handled + 1;
+            }
+        }
+
+        if (!handled) {
+            console.warn("No handler for incoming message", message);
+        }
+
+        return () => {
+            dispatchRef.current = {};
+        }
+    }, []);
 
     return (
         <ApiContext.Provider value={
             accepted ? { sendMessage, registerCallback } : null
         }>
+            {session?.sessionId ? <ApiWs 
+                onConnected={onConnected}
+                onDisconnected={onDisconnected}
+                dispatch={dispatch}
+            /> : <></>}
             {children}
         </ApiContext.Provider>
     );
+};
+
+const ApiWs = ({onConnected, onDisconnected, dispatch }) => {
+    const [prevReadyState, setPrevReadyState] = useState(ReadyState.CONNECTING);
+
+    const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
+        WS_BASE, {
+            share: false,
+            shouldReconnect: () => true,
+        },
+    );
+
+    useEffect(() => {
+        if (prevReadyState !== readyState) {
+            console.log("Connection state changed", readyState)
+            setPrevReadyState(readyState);
+        }
+
+        if (readyState === ReadyState.OPEN) {
+            onConnected(sendJsonMessage);
+        }
+        if (readyState === ReadyState.CONNECTING || readyState === ReadyState.CLOSED) {
+            onDisconnected();
+        }
+
+        return () => {
+            onDisconnected();
+        }
+    }, [
+        onConnected, onDisconnected,
+        readyState, sendJsonMessage,
+        prevReadyState, setPrevReadyState,
+    ]);
+
+    useEffect(() => {
+        if (!lastJsonMessage) return;
+
+        dispatch(lastJsonMessage);
+    }, [dispatch, lastJsonMessage])
+
+
+    return ( <></> );
 };
 
 export { ApiContext, ApiProvider };

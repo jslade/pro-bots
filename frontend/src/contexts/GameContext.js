@@ -53,24 +53,21 @@ const GameProvider = ({ children }) => {
         session?.isPlayer, session?.sessionId]);
 
     useEffect(() => {
-        if (!session?.connected) {
+        if (!api) {
             setGameStateRequested(false);
+            return;
         };
 
         if (!gameState && !gameStateRequested) {
             requestGameState();
         }
 
-    }, [requestGameState, gameStateRequested, gameState, session?.connected]);
+    }, [api, requestGameState, gameStateRequested, gameState]);
 
 
-    useEffect(() => {
-        if (!api || !gameState) return;
-
-        console.log("Setting new gameState", gameState);
-
+    const locatePlayer = useCallback((gameState) => {
+        let found = false;
         for(const existing_player of gameState.players) {
-            let found = false;
             if (existing_player.sessionId === session.sessionId) {
                 console.log("Got player for me", existing_player);
                 setPlayer(existing_player);
@@ -83,17 +80,27 @@ const GameProvider = ({ children }) => {
                     }
                 }
             }
-            if (!found) {
-                requestAddPlayer();
-            }
-
         }
+        return found;
+    }, [
+        setPlayer,
+        setProbot,
+        session.sessionId
+    ]);
 
+    useEffect(() => {
+        if (!api || !gameState) return;
+
+        console.log("Setting new gameState", gameState);
+
+        if (session.isPlayer) {
+            const foundPlayer = locatePlayer(gameState);
+            if (!foundPlayer) requestAddPlayer();
+        }
     }, [api, gameState,
-        player, setPlayer,
-        probot, setProbot,
+        locatePlayer,
         requestAddPlayer,
-        session?.sessionId])
+        session?.isPlayer])
 
     return (
         <GameContext.Provider value={{

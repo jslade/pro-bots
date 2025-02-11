@@ -135,6 +135,7 @@ class MovementService:
         probot.dy = 0
 
         self.engine.notify_of_probot_change(probot)
+        self.engine.update_score(probot.player, 1)
 
     def turn(self, probot: Probot, dir: str) -> bool:
         """Just rotating in place"""
@@ -206,3 +207,4 @@ class MovementService:
         probot.dorient = 0
 
         self.engine.notify_of_probot_change(probot)
+        self.engine.update_score(probot.player, 1)

@@ -31,6 +31,11 @@ class GameResetData(BaseSchema):
     current: GameCurrentStateData
 
 
+class GameScoreUpdate(BaseSchema):
+    player_name: str
+    score: int
+
+
 class Engine:
     """The game engine runs as a separate thread(s) from the main
     application.
@@ -249,6 +254,13 @@ class Engine:
         self.processor.cancel_work_where(
             lambda item: isinstance(item, GameWork) and item.player == player
         )
+
+    def update_score(self, player: Player, delta: int) -> None:
+        player.score += delta
+
+        update = GameScoreUpdate(player_name=player.name, score=player.score)
+
+        self.send_broadcast("update_score", update.model_dump(by_alias=True))
 
     def add_probot(self, probot: Probot) -> None:
         if probot in self.probots:
