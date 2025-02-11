@@ -16,7 +16,7 @@ const Workspace = () => {
     const session = useContext(SessionContext);
     const api = useContext(ApiContext);
 
-    return ( <>
+return ( <>
         <Grid item xs={12} style={{ height: '1.5em' }}>
             <Box display="flex" flexDirection="column" height="100%">
                 <Box flex={1} border={1}>

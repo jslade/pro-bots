@@ -48,7 +48,7 @@ class Dispatcher:
                 data=data,
             )
             ws.send(message.model_dump_json())
-            LOGGER.info("sent", message=message)
+            # LOGGER.info("sent", message=message)
         except Exception as e:
             LOGGER.warn("Failed to send message", session=session.id, error=e)
             self.remove_connection(session, ws)

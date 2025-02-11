@@ -31,7 +31,9 @@ const ApiProvider = ({ children }) => {
             sessionId: session.sessionId,
             data: data ? data : {},
         };
-        console.log("Sending message", message);
+        
+        //console.log("Sending message", message);
+        
         wsSendJsonRef.current(message);
 
     }, [connected, session?.sessionId]);
@@ -71,7 +73,7 @@ const ApiProvider = ({ children }) => {
     const dispatch = useCallback((message) => {
         if (!message) return;
 
-        console.log("Received message", message);
+        //console.log("Received message", message);
 
         const { type, event, data } = message;
         let handled = false;

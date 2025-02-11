@@ -33,7 +33,7 @@ class GameResetData(BaseSchema):
 
 class GameScoreUpdate(BaseSchema):
     player_name: str
-    score: int
+    new_score: int
 
 
 class Engine:
@@ -264,7 +264,7 @@ class Engine:
     def update_score(self, player: Player, delta: int) -> None:
         player.score += delta
 
-        update = GameScoreUpdate(player_name=player.name, score=player.score)
+        update = GameScoreUpdate(player_name=player.name, new_score=player.score)
 
         self.send_broadcast("update_score", update.model_dump(by_alias=True))
 

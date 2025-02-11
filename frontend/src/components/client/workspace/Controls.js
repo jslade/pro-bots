@@ -1,12 +1,16 @@
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useEffect } from 'react';
 
-import { Grid, Button } from '@mui/material';
+import { Grid, Button, Typography } from '@mui/material';
 
 import { ApiContext } from '../../../contexts/ApiContext';
+import { GameContext } from '../../../contexts/GameContext';
 
 const Controls = () => {
     const api = useContext(ApiContext);
+    const { player, scoresUpdated } = useContext(GameContext);
 
+    useEffect(() => {}, [player, scoresUpdated]);
+    
     const onMove = useCallback((e) => {
         api.sendMessage("manual_control", "movement", {move: "forward"})
     }, [api]);
@@ -29,6 +33,9 @@ const Controls = () => {
             </Grid>
             <Grid item xs={2}>
                 <Button variant="contained" onClick={onTurnRight}>turn&nbsp;R</Button>
+            </Grid>
+            <Grid item xs={2}>
+                <Typography >Score: {player.score}</Typography>
             </Grid>
         </Grid>
     );

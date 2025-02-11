@@ -1,19 +1,13 @@
-import React, { useContext, useCallback } from 'react';
+import React, { useContext, useEffect } from 'react';
 
 import { List, ListItem } from '@mui/material';
 
 import {GameContext} from '../../contexts/GameContext';
 
 const Scoreboard = () => {
-    const { gameState } = useContext(GameContext);
+    const { players, scoresUpdated } = useContext(GameContext);
 
-    const sortedPlayersList = useCallback(() => {
-        if (!gameState?.players) return [];
-
-        const players = gameState?.players.map(player => player);
-        return players.sort((a, b) => a.score - b.score);
-
-    }, [gameState])
+    useEffect(() => {}, [players, scoresUpdated])
 
     const playerItem = (player) => {
         return (
@@ -25,7 +19,7 @@ const Scoreboard = () => {
 
     return (
         <List>
-            {sortedPlayersList().map((player) => playerItem(player))}
+            {players.map((player) => playerItem(player))}
         </List>
     );
 };
