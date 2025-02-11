@@ -9,8 +9,9 @@ from .websocket import WebSocket
 
 
 class SessionType(str, Enum):
-    USER = "user"
     SERVER = "srv"
+    USER = "user"
+    WATCHER = "watch"
 
 
 @dataclass
@@ -29,9 +30,11 @@ class Session:
     @classmethod
     def type_from_id(cls, session_id: str) -> SessionType:
         match session_id[0]:
-            case "u":
-                return SessionType.USER
             case "s":
                 return SessionType.SERVER
+            case "u":
+                return SessionType.USER
+            case "w":
+                return SessionType.WATCHER
             case _:
                 raise ValueError(f"Invalid session ID format: {session_id}")

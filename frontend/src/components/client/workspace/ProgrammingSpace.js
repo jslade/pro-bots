@@ -1,4 +1,3 @@
-// ProgrammingSpace.js
 
 const ProgrammingSpace = () => {
     return (

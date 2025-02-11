@@ -33,7 +33,7 @@ const Login = () => {
     const handleResult = (data) => {
         if (data?.sessionId) {
             session.setSessionId(data.sessionId);
-            session.setName(username);
+            session.setIsPlayer(true);
         }
 
         return data;

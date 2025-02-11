@@ -44,12 +44,13 @@ const GameProvider = ({ children }) => {
     }, [api, gameStateRequested, setGameStateRequested])
 
     const requestAddPlayer = useCallback(() => {
-        if (!api || addPlayerRequested) return;
+        if (!api || !session?.isPlayer || addPlayerRequested) return;
 
         console.log("Requesting a new Player for me");
         setAddPlayerRequested(true);
-        api.sendMessage("game", "add_player", { sessionId: session.id })
-    }, [api, addPlayerRequested, setAddPlayerRequested, session?.id]);
+        api.sendMessage("game", "add_player", { sessionId: session.sessionId })
+    }, [api, addPlayerRequested, setAddPlayerRequested,
+        session?.isPlayer, session?.sessionId]);
 
     useEffect(() => {
         if (!session?.connected) {
