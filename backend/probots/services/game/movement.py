@@ -112,6 +112,16 @@ class MovementService:
         probot.state = ProbotState.moving
         probot.energy -= required_energy
 
+        match probot.orientation:
+            case ProbotOrientation.N:
+                probot.dy = -1.0
+            case ProbotOrientation.S:
+                probot.dy = 1.0
+            case ProbotOrientation.E:
+                probot.dx = -1.0
+            case ProbotOrientation.W:
+                probot.dx = 1.0
+
         self.engine.notify_of_probot_change(probot)
 
     def update_move(self, probot: Probot, transit: Transition) -> None:

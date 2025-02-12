@@ -1,17 +1,41 @@
 import React from 'react';
+import { useFrame } from '@react-three/fiber';
+
+const orientationAngle = (orientation) => {
+    return {
+        'E': 0,
+        'N': Math.PI / 2,
+        'W': Math.PI,
+        'S': -Math.PI / 2,
+    }[orientation] || 0;
+}
 
 const ProbotModel = ({ probot, ...props }) => {
     const meshRef = React.useRef()
 
-    const position = [probot.x + probot.dx, 0.1, -(probot.y + probot.dy)];
+    useFrame(() => {
+        if (!meshRef.current) return;
 
+        const angle = orientationAngle(probot.orientation)
+
+        const proX = probot.x + probot.dx;
+        const proY = 0.2;
+        const proZ = -(probot.y + probot.dy);
+
+        const rotX = 0;
+        const rotY = angle;
+        const rotZ = 0;
+
+        meshRef.current.position.set(proX, proY, proZ);
+        meshRef.current.rotation.set(rotX, rotY, rotZ);
+    });
+  
     return (<mesh ref={meshRef}
-            scale={[0.4, 0.4, 0.4]}
-            position={position}
+            scale={[0.5, 0.4, 0.3]}
             {...props}>
         {/* Outer ring (body of the robot) */}
         <cylinderGeometry args={[1, 1, 0.5, 32]} />
-        <meshStandardMaterial color="red" />
+        <meshStandardMaterial color="gray" />
   
         {/* Front part (like a cockpit window) */}
         <mesh position={[0, 0, 0.25]}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import { GameContext } from '../../../contexts/GameContext';
 
@@ -27,7 +27,6 @@ const Display = () => {
     );
 };
 
-// Convert orientation to radians
 const orientationAngle = (orientation) => {
     return {
         'E': 0,
@@ -38,28 +37,12 @@ const orientationAngle = (orientation) => {
 }
 
 const DisplayScene = ({ gameState, grid, probots, probot }) => {
-    /*
-    const cameraRef = React.useRef();
-
-    useFrame((state, delta) => {
-        if (!cameraRef.current) return;
-
-        const angle = orientationAngle(probot.orientation);
-
-
-        // Position the camera behind and above the robot
-
-        cameraRef.current.position.set(cameraX, cameraY, cameraZ);
-        cameraRef.current.lookAt(proX, proY, proZ); // Look at the robot
-    });
-    */
-    
     return ( <>
         <ambientLight intensity={Math.PI / 2} />
         <spotLight position={[grid.width*2, grid.height*2, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[grid.width/2, grid.height*2, 2]} decay={0} intensity={Math.PI} />
         <Ground grid={gameState.grid} width={grid.width} height={grid.height} />
-        <ProbotModel probot={probot} />
+        {gameState.probots.map((probot) => <ProbotModel probot={probot} />)}
         <FollowingCamera probot={probot} />
     </>);
 };
@@ -68,9 +51,10 @@ function FollowingCamera({ probot }) {
     const cameraRef = React.useRef();
   
     useFrame(() => {
-      if (cameraRef.current) {
+        if (!cameraRef.current) return;
+
         const angle = orientationAngle(probot.orientation)
-  
+
         const proX = probot.x + probot.dx;
         const proY = 0.2;
         const proZ = -(probot.y + probot.dy);
@@ -79,10 +63,9 @@ function FollowingCamera({ probot }) {
         const cameraX = proX - dist * Math.cos(angle); 
         const cameraY = proY + 0.5;
         const cameraZ = proZ + dist * Math.sin(angle); 
-  
+
         cameraRef.current.position.set(cameraX, cameraY, cameraZ);
         cameraRef.current.lookAt(proX, proY, proZ); // Look at the robot
-      }
     });
   
     return (
