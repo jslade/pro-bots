@@ -1,3 +1,4 @@
+import math
 from typing import TYPE_CHECKING
 
 import structlog
@@ -12,6 +13,9 @@ LOGGER = structlog.get_logger(__name__)
 
 class IllegalMove(Exception):
     pass
+
+
+RADS_90 = math.pi / 2.0
 
 
 class MovementService:
@@ -201,7 +205,7 @@ class MovementService:
         self.engine.notify_of_probot_change(probot)
 
     def update_turn(self, probot: Probot, transit: Transition, dir: str) -> None:
-        dtick = 90.0 / transit.total_steps
+        dtick = RADS_90 / transit.total_steps
         if dir == "left":
             probot.dorient += dtick
         else:

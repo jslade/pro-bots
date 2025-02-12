@@ -42,7 +42,7 @@ const DisplayScene = ({ gameState, grid, probots, probot }) => {
         <spotLight position={[grid.width*2, grid.height*2, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[grid.width/2, grid.height*2, 2]} decay={0} intensity={Math.PI} />
         <Ground grid={gameState.grid} width={grid.width} height={grid.height} />
-        {gameState.probots.map((probot) => <ProbotModel probot={probot} />)}
+        {gameState.probots.map((probot) => <ProbotModel key={probot.name} probot={probot} />)}
         <FollowingCamera probot={probot} />
     </>);
 };
@@ -53,15 +53,15 @@ function FollowingCamera({ probot }) {
     useFrame(() => {
         if (!cameraRef.current) return;
 
-        const angle = orientationAngle(probot.orientation)
+        const angle = orientationAngle(probot.orientation) + probot.dorient;
 
         const proX = probot.x + probot.dx;
         const proY = 0.2;
         const proZ = -(probot.y + probot.dy);
 
-        const dist = 0.8;
+        const dist = 1.0;
         const cameraX = proX - dist * Math.cos(angle); 
-        const cameraY = proY + 0.5;
+        const cameraY = proY + 0.7;
         const cameraZ = proZ + dist * Math.sin(angle); 
 
         cameraRef.current.position.set(cameraX, cameraY, cameraZ);

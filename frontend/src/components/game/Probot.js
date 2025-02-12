@@ -23,7 +23,7 @@ const ProbotModel = ({ probot, ...props }) => {
         const proZ = -(probot.y + probot.dy);
 
         const rotX = 0;
-        const rotY = angle;
+        const rotY = angle + probot.dorient;
         const rotZ = 0;
 
         meshRef.current.position.set(proX, proY, proZ);
