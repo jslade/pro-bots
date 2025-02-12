@@ -141,7 +141,13 @@ class Engine:
 
         # Just now for testing purposes:
         if not self.players:
-            self.processor.add_work(self.spawn_test_player)
+            for i in range(10):
+                name = f"bot-{i}"
+
+                def spawn_bot(name: str = name):
+                    self.spawn_bot_player(name)
+
+                self.processor.add_work(spawn_bot)
 
     def reset_player(self, player: Player) -> None:
         LOGGER.info("Resetting player", player=player.name)
@@ -162,10 +168,10 @@ class Engine:
         self.incoming = self.processor.incoming
 
         # Some standard tasks
-        # self.processor.add_work(self.report_ticks)
-        self.add_game_work(
-            self.report_game_state, repeat_interval_seconds=10
-        )  # TODO: For testing
+        self.processor.add_work(self.report_ticks)
+        # self.add_game_work(
+        #    self.report_game_state, repeat_interval_seconds=10
+        # )  # TODO: For testing
 
     def construct_current_state(self) -> GameCurrentStateData:
         return GameCurrentStateData(
@@ -304,10 +310,10 @@ class Engine:
             lambda item: isinstance(item, GameWork) and item.probot == probot
         )
 
-    def spawn_test_player(self) -> None:
-        """Create a new player just for testing purposes"""
+    def spawn_bot_player(self, name: str) -> None:
+        """Create a new player that runs as a bot (primarily for testing)"""
         player = Player(
-            name="TEST",
+            name=name,
             score=0,
         )
         self.add_player(player)
@@ -315,7 +321,10 @@ class Engine:
         probot = self.spawn_probot(player)
 
         self.add_probot_work(
-            probot, self.randomly_move, delay=10, repeat_interval_seconds=2
+            probot,
+            self.randomly_move,
+            delay=random.randint(10, 20),
+            repeat_interval_seconds=1.5 + random.random() * 2.0,
         )
 
     def spawn_probot(

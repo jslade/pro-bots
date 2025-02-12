@@ -43,7 +43,7 @@ class MovementService:
         except IllegalMove:
             return False
 
-        speed_factor = 1.5 if backward else 1
+        speed_factor = 2.5 if backward else 1
         required_energy = int(100 * speed_factor)
         if probot.energy < required_energy:
             return False
@@ -59,10 +59,10 @@ class MovementService:
 
         # Create a transition to animate the moving state
         def start_move(transit):
-            self.start_move(probot, transit, required_energy)
+            self.start_move(probot, transit, backward, required_energy)
 
         def update_move(transit):
-            self.update_move(probot, transit)
+            self.update_move(probot, transit, backward)
 
         def complete_move(transit):
             self.complete_move(probot, transit)
@@ -111,25 +111,25 @@ class MovementService:
     }
 
     def start_move(
-        self, probot: Probot, transit: Transition, required_energy: int
+        self, probot: Probot, transit: Transition, backward: bool, required_energy: int
     ) -> None:
         probot.state = ProbotState.moving
         probot.energy -= required_energy
 
         match probot.orientation:
             case ProbotOrientation.N:
-                probot.dy = -1.0
+                probot.dy = 1.0 if backward else -1.0
             case ProbotOrientation.S:
-                probot.dy = 1.0
+                probot.dy = -1 if backward else 1.0
             case ProbotOrientation.E:
-                probot.dx = -1.0
+                probot.dx = 1.0 if backward else -1.0
             case ProbotOrientation.W:
-                probot.dx = 1.0
+                probot.dx = -1 if backward else 1.0
 
         self.engine.notify_of_probot_change(probot)
 
-    def update_move(self, probot: Probot, transit: Transition) -> None:
-        dtick = 1.0 / transit.total_steps
+    def update_move(self, probot: Probot, transit: Transition, backward: bool) -> None:
+        dtick = (-1.0 if backward else 1.0) / transit.total_steps
 
         match probot.orientation:
             case ProbotOrientation.N:

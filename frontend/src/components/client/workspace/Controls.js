@@ -12,7 +12,8 @@ const Controls = () => {
     useEffect(() => {}, [player, scoresUpdated]);
     
     const onMove = useCallback((e) => {
-        api.sendMessage("manual_control", "movement", {move: "forward"})
+        const dir = e.shiftKey ? "backward" : "forward";
+        api.sendMessage("manual_control", "movement", {move: dir})
     }, [api]);
 
     const onTurnLeft = useCallback((e) => {

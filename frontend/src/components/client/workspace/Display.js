@@ -42,7 +42,7 @@ const DisplayScene = ({ gameState, grid, probots, probot }) => {
         <spotLight position={[grid.width*2, grid.height*2, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[grid.width/2, grid.height*2, 2]} decay={0} intensity={Math.PI} />
         <Ground grid={gameState.grid} width={grid.width} height={grid.height} />
-        {gameState.probots.map((probot) => <ProbotModel key={probot.name} probot={probot} />)}
+        {gameState.probots.map((p) => <ProbotModel key={p.name} probot={p} />)}
         <FollowingCamera probot={probot} />
     </>);
 };

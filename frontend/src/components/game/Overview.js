@@ -42,7 +42,7 @@ const OverviewScene = ({ gameState, width, height }) => {
         <spotLight position={[width*2, height*2, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[width/2, height*2, 2]} decay={0} intensity={Math.PI} />
         <Ground grid={gameState.grid} width={width} height={height} />
-        {gameState.probots.map((probot) => <ProbotModel key={probot.name} probot={probot} />)}
+        {gameState.probots.map((p) => <ProbotModel key={p.name} probot={p} />)}
     </>);
 };
 
