@@ -3,6 +3,7 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import { ApiContext } from './ApiContext';
 import { SessionContext } from './SessionContext';
 import { ScoreUpdater } from './game/ScoreUpdater';
+import { ProbotUpdater } from './game/ProbotUpdater';
 
 const GameContext = createContext();
 
@@ -18,6 +19,7 @@ const GameProvider = ({ children }) => {
     const [ probot, setProbot ] = useState(null)
 
     const [ scoresUpdated, setScoresUpdated ] = useState(null);
+    const [ probotsUpdated, setProbotsUpdated ] = useState(null);
 
     const handleGameStateReset = useCallback((data) => {
         setGameState(data.current);
@@ -37,10 +39,6 @@ const GameProvider = ({ children }) => {
             handleGameStateCurrent(data);
         });
 
-        // TODO:
-        api.registerCallback('game', 'probot_update', (data) => {
-            ;
-        });
     }, [api, api?.registerCallback, handleGameStateCurrent, handleGameStateReset]);
 
     const requestGameState = useCallback(() => {
@@ -123,6 +121,9 @@ const GameProvider = ({ children }) => {
             <ScoreUpdater
                 players={gameState?.players || []}
                 setScoresUpdated={setScoresUpdated} />
+            <ProbotUpdater
+                probots={gameState?.probots || []}
+                setProbotsUpdated={setProbotsUpdated} />
             {children}
         </GameContext.Provider>
     );

@@ -7,6 +7,7 @@ import { ApiContext } from '../../../contexts/ApiContext';
 
 import ProgrammingSpace from './ProgrammingSpace';
 import CommandSpace from './commands/CommandSpace';
+import Overview from '../../game/Overview';
 import Display from './Display';
 import Controls from './Controls';
 
@@ -24,7 +25,7 @@ return ( <>
                 </Box>
             </Box>
         </Grid>
-        <Grid container spacing={2} style={{ height: 'calc(100vh - 1.5em)' }}>
+        <Grid container spacing={0} style={{ height: 'calc(100vh - 1.5em)' }}>
             <Grid item xs={6}>
                 <Box display="flex" flexDirection="column" height="100%">
                     <Box flex={3} border={1}>
@@ -37,7 +38,10 @@ return ( <>
             </Grid>
             <Grid item xs={6}>
                 <Box display="flex" flexDirection="column" height="100%">
-                    <Box flex={15} border={0}>
+                    <Box flex={6} border={1}>
+                        <Overview />
+                    </Box>
+                    <Box flex={8} border={0}>
                         <Display />
                     </Box>
                     <Box flex={1} border={0}>

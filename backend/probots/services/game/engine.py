@@ -124,7 +124,7 @@ class Engine:
         LOGGER.info("Setting up fresh game state")
 
         mm = MapMaker()
-        self.grid = mm.generate(10, 10)
+        self.grid = mm.generate(20, 15)
 
         game = GameResetData(current=self.construct_current_state())
 
@@ -315,16 +315,22 @@ class Engine:
         probot = self.spawn_probot(player)
 
         self.add_probot_work(
-            probot, self.randomly_move, delay=10, repeat_interval_seconds=3
+            probot, self.randomly_move, delay=10, repeat_interval_seconds=2
         )
 
-    def spawn_probot(self, player: Player) -> Probot:
+    def spawn_probot(
+        self, player: Player, pos: Optional[tuple[int, int, ProbotOrientation]] = None
+    ) -> Probot:
         """Create a new probot controlled by the given player.
         Spawn location is random"""
 
-        x, y = self.random_spawn_location()
-
-        orientation = random.choice(list(ProbotOrientation))
+        if pos:
+            x, y, orientation = pos
+            if not self.is_empty_cell(x, y):
+                raise ValueError("illegal spawn location")
+        else:
+            x, y = self.random_spawn_location()
+            orientation = random.choice(list(ProbotOrientation))
 
         probot = Probot(
             player=player,
@@ -487,7 +493,7 @@ class Engine:
         Ideally would send a delta of some sort, but simple/dumb implementation
         is to just send the full probot state"""
         self.send_broadcast(
-            event="probot_update",
+            event="update_probot",
             data=probot.model_dump(by_alias=True),
         )
 

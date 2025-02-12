@@ -24,7 +24,11 @@ const Controls = () => {
     }, [api]);
 
     return (
-        <Grid container spacing={3}>
+        <Grid container sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+        }} spacing={3} >
             <Grid item xs={2}>
                 <Button variant="contained" onClick={onTurnLeft}>turn&nbsp;L</Button>
             </Grid>

@@ -1,7 +1,7 @@
 import structlog
 
-from ...models.all import Message, Session, BaseSchema
-from ...models.game.all import Player
+from ...models.all import BaseSchema, Message, Session
+from ...models.game.all import Player, ProbotOrientation
 from ..dispatcher import Dispatcher
 from ..game.engine import ENGINE
 from .base import MessageHandler
@@ -38,7 +38,7 @@ class GameHandler(MessageHandler):
                 session_id=session.id,
             )
             ENGINE.add_player(player, session=session)
-            ENGINE.spawn_probot(player)
+            ENGINE.spawn_probot(player, pos=(0, 0, ProbotOrientation.E))
         else:
             player.session_id = session.id
 

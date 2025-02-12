@@ -28,7 +28,7 @@ class Grid(BaseSchema):
         x_vals = [" {:2d} ".format(x) for x in range(self.width)]
         row_sep = "   +" + "+".join(["----" for x in range(self.width)]) + "+"
 
-        s = ["    " + " ".join(x_vals)]
+        s = []
         s.append(row_sep)
 
         def c_str(x: int, y: int) -> str:
@@ -38,11 +38,12 @@ class Grid(BaseSchema):
                 s = decorator(cell, s)
             return s
 
-        for y in range(self.height):
+        for y in range(self.height - 1, -1, -1):
             c_vals = [c_str(x, y) for x in range(self.width)]
             s.append("{:2d}".format(y) + " |" + "|".join(c_vals) + "|")
             s.append(row_sep)
 
+        s.append("    " + " ".join(x_vals))
         return "\n".join(s)
 
     @classmethod

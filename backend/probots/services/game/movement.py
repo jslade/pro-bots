@@ -79,9 +79,9 @@ class MovementService:
     ) -> tuple[int, int]:
         match orient:
             case ProbotOrientation.N:
-                y -= delta
-            case ProbotOrientation.S:
                 y += delta
+            case ProbotOrientation.S:
+                y -= delta
             case ProbotOrientation.E:
                 x += delta
             case ProbotOrientation.W:

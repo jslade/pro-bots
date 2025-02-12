@@ -1,52 +1,100 @@
-import React, { useEffect, useContext, useRef, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { PerspectiveCamera } from '@react-three/drei';
 import { GameContext } from '../../../contexts/GameContext';
 
+
+import Ground from '../../game/Ground';
+import ProbotModel from '../../game/Probot';
+
 const Display = () => {
-    const { probot } = useContext(GameContext);
-
-    const renderProbot = () => {
-        return (                <>
-            <Box position={[-1.2, 0, 0]} />
-            <Box position={[1.2, 0, 0]} rotation={[1, 2, 3]} />
-            </>
-        )
-    };
-
-    return ( < >
-        <Canvas>
-            <ambientLight intensity={Math.PI / 2} />
-            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
-            <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-            {probot ? renderProbot(): <></>}
-        </Canvas>
-    </> );
-};
-
-function Box(props) {
-    const meshRef = useRef()
-
-    const [hovered, setHover] = useState(false)
-    const [active, setActive] = useState(false)
-
-    useFrame((state, delta) => {
-        meshRef.current.rotation.x += delta;
-        meshRef.current.rotation.y += delta * (active ? 1.5 : 0);
-    })
+    const { gameState, probots, probot } = React.useContext(GameContext);
 
     return (
-      <mesh
-        {...props}
-        ref={meshRef}
-        scale={active ? 1.5 : 1}
-        onClick={(event) => setActive(!active)}
-        onPointerOver={(event) => setHover(true)}
-        onPointerOut={(event) => setHover(false)}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
-      </mesh>
-    )
-}
-  
+        <Canvas
+            gl={{ alpha: false, antialias: true }}
+            onCreated={({ gl }) => {
+                gl.setClearColor('lightblue'); // Replace 'lightblue' with your desired color
+            }}
+         >
+            {(gameState && probot) ? <DisplayScene
+                gameState={gameState}
+                grid={gameState.grid}
+                probots={probots}
+                probot={probot}
+            /> : <></>}
+        </Canvas>
+    );
+};
 
+// Convert orientation to radians
+const orientationAngle = (orientation) => {
+    return {
+        'E': 0,
+        'N': Math.PI / 2,
+        'W': Math.PI,
+        'S': -Math.PI / 2,
+    }[orientation] || 0;
+}
+
+const DisplayScene = ({ gameState, grid, probots, probot }) => {
+    /*
+    const cameraRef = React.useRef();
+
+    useFrame((state, delta) => {
+        if (!cameraRef.current) return;
+
+        const angle = orientationAngle(probot.orientation);
+
+
+        // Position the camera behind and above the robot
+
+        cameraRef.current.position.set(cameraX, cameraY, cameraZ);
+        cameraRef.current.lookAt(proX, proY, proZ); // Look at the robot
+    });
+    */
+    
+    return ( <>
+        <ambientLight intensity={Math.PI / 2} />
+        <spotLight position={[grid.width*2, grid.height*2, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
+        <pointLight position={[grid.width/2, grid.height*2, 2]} decay={0} intensity={Math.PI} />
+        <Ground grid={gameState.grid} width={grid.width} height={grid.height} />
+        <ProbotModel probot={probot} />
+        <FollowingCamera probot={probot} />
+    </>);
+};
+
+function FollowingCamera({ probot }) {
+    const cameraRef = React.useRef();
+  
+    useFrame(() => {
+      if (cameraRef.current) {
+        const angle = orientationAngle(probot.orientation)
+  
+        const proX = probot.x + probot.dx;
+        const proY = 0.2;
+        const proZ = -(probot.y + probot.dy);
+
+        const dist = 0.8;
+        const cameraX = proX - dist * Math.cos(angle); 
+        const cameraY = proY + 0.5;
+        const cameraZ = proZ + dist * Math.sin(angle); 
+  
+        cameraRef.current.position.set(cameraX, cameraY, cameraZ);
+        cameraRef.current.lookAt(proX, proY, proZ); // Look at the robot
+      }
+    });
+  
+    return (
+      <PerspectiveCamera
+        ref={cameraRef}
+        makeDefault
+        position={[probot.x, probot.y, 0]}
+        near={0.1}
+        far={1000}
+        fov={75}
+      />
+    );
+  }
+  
 export default Display;
