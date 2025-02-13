@@ -19,13 +19,18 @@ class Dispatcher:
         self.websockets = {}
         self.handlers: dict[HandlerKey, HandlerType] = {}
 
+        self.broadcast_list: Optional[list[Session]] = None
+
     def add_connection(self, session: Session, ws: WebSocket) -> None:
         self.sessions[session.id] = session
         self.websockets[session.id] = ws
 
+        self.broadcast_list = None
+
     def remove_connection(self, session: Session, ws: WebSocket) -> None:
         try:
             del self.sessions[session.id]
+            self.broadcast_list = None
         except KeyError:
             pass
         try:
@@ -55,7 +60,17 @@ class Dispatcher:
 
     def broadcast(self, mtype: str, event: str, data: dict) -> None:
         """Immediately send a message out to each of the connection sessions"""
-        for session in self.sessions.values():
+
+        # The broadcast list is a copy of the session list, but kept as a sort
+        # of cache -- we don't want to have to iterate the sessions.values() each
+        # time (broadcast is done a lot), and we also don't want to get an error
+        # if the session list changes while we're iterating over the list
+        #
+        # So make a copy of the reference to the existing list if there is one,
+        # or create a new fresh copy if there isn't one.
+        sessions = self.broadcast_list or [s for s in self.sessions.values()]
+
+        for session in sessions:
             # TODO: this redoes the seralization for each call to [send]()
             self.send(session, mtype, event, data)
 

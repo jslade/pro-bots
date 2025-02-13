@@ -26,7 +26,7 @@ class MovementService:
     def __init__(self, engine: "Engine") -> None:
         self.engine = engine
 
-    def move(self, probot: Probot, backward: bool = False) -> bool:
+    def move(self, probot: Probot, backward: bool = False, bonus: int = 0) -> bool:
         """Initiate the move either forward or backward, one space"""
         # LOGGER.info("MOVE", probot=probot, backward=backward)
 
@@ -65,7 +65,7 @@ class MovementService:
             self.update_move(probot, transit, backward)
 
         def complete_move(transit):
-            self.complete_move(probot, transit)
+            self.complete_move(probot, transit, bonus)
 
         transit = Transition(
             name="moving",
@@ -143,20 +143,20 @@ class MovementService:
 
         self.engine.notify_of_probot_change(probot)
 
-    def complete_move(self, probot: Probot, transit: Transition) -> None:
+    def complete_move(self, probot: Probot, transit: Transition, bonus: int = 0) -> None:
         probot.state = ProbotState.idle
         probot.dx = 0
         probot.dy = 0
 
         self.engine.notify_of_probot_change(probot)
-        self.engine.update_score(probot.player, 1)
+        self.engine.update_score(probot.player, 1 + bonus)
 
-    def turn(self, probot: Probot, dir: str) -> bool:
+    def turn(self, probot: Probot, dir: str, bonus: int = 0) -> bool:
         """Just rotating in place"""
         # LOGGER.info("TURN", probot=probot, dir=dir)
 
         #
-        # Validate move
+        # Validate turn
         #
         if probot.state != ProbotState.idle:
             return False
@@ -172,7 +172,7 @@ class MovementService:
             return False
 
         #
-        # Execute move move
+        # Execute turn
         #
 
         # Create a transition to animate the moving state
@@ -183,7 +183,7 @@ class MovementService:
             self.update_turn(probot, transit, dir)
 
         def complete_turn(transit):
-            self.complete_turn(probot, transit, new_orient)
+            self.complete_turn(probot, transit, new_orient, bonus=bonus)
 
         transit = Transition(
             name="turning",
@@ -214,11 +214,15 @@ class MovementService:
         self.engine.notify_of_probot_change(probot)
 
     def complete_turn(
-        self, probot: Probot, transit: Transition, new_orient: ProbotOrientation
+        self,
+        probot: Probot,
+        transit: Transition,
+        new_orient: ProbotOrientation,
+        bonus: int = 0,
     ) -> None:
         probot.state = ProbotState.idle
         probot.orientation = new_orient
         probot.dorient = 0
 
         self.engine.notify_of_probot_change(probot)
-        self.engine.update_score(probot.player, 1)
+        self.engine.update_score(probot.player, 1 + bonus)

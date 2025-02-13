@@ -37,23 +37,37 @@ class TerminalHandler(MessageHandler):
             dispatcher.send(session, "terminal", "output", output.model_dump())
             return
 
-        # TODO: Just for testing
-        if input.input == "move":
+        # TODO: Just for testing. Eventually this will be handled via probotics
+        if input.input.startswith("move"):
             from ..game.engine import ENGINE
 
-            probot = ENGINE.probots[0]
-            ENGINE.mover.move(probot)
+            backward = False
+            bonus = 5
+
+            words = input.input.split()
+            if len(words) > 1:
+                if words[1].startswith("back"):
+                    backward = True
+                    bonus = 10
+
+            probot = ENGINE.probot_for_session(session)
+            if probot:
+                ENGINE.mover.move(probot, backward=backward, bonus=bonus)
             return
 
-        # TODO: Just for testing
+        # TODO: Just for testing. Eventually this will be handled via probotics
         if input.input.startswith("turn"):
             from ..game.engine import ENGINE
 
-            dir = input.input.split()[1]
-            probot = ENGINE.probots[0]
-            ENGINE.mover.turn(probot, dir)
+            words = input.input.split()
+            if len(words) > 1:
+                dir = words[1]
+
+                probot = ENGINE.probot_for_session(session)
+                if probot:
+                    ENGINE.mover.turn(probot, dir=dir, bonus=3)
             return
 
         # For now, just echo the input
-        output = TerminalOutput(output=input.input)
+        output = TerminalOutput(output=f"??? {input.input}")
         dispatcher.send(session, "terminal", "output", output.model_dump())

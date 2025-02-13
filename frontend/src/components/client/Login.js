@@ -27,7 +27,8 @@ const Login = () => {
     });
 
     const handleSubmit = () => {
-        loginQuery.refetch();
+        if (username.length !== 0)
+            loginQuery.refetch();
     }
 
     const handleResult = (data) => {
@@ -86,7 +87,7 @@ const Login = () => {
                         e.key === 'Enter' ? inputRefs.current[1].focus() : null
                         )}
                 />
-                <TextField label="Access Code" variant="outlined" fullWidth
+                <TextField label="Access Code" variant="outlined" fullWidth type="password"
                     inputRef={(ref) => (inputRefs.current[1] = ref)}
                     onChange={e => setAccessCode(e.target.value)}
                     onKeyDown={(e) => (
