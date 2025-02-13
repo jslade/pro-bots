@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef, useMemo } from 'react';
+import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 
 const orientationAngle = (orientation) => {
@@ -29,30 +30,90 @@ const ProbotModel = ({ probot, ...props }) => {
         meshRef.current.position.set(proX, proY, proZ);
         meshRef.current.rotation.set(rotX, rotY, rotZ);
     });
+
+
   
     return (<mesh ref={meshRef}
-            scale={[0.5, 0.4, 0.3]}
             {...props}>
-        {/* Outer ring (body of the robot) */}
-        <cylinderGeometry args={[1, 1, 0.5, 32]} />
-        <meshStandardMaterial color="gray" />
-  
-        {/* Front part (like a cockpit window) */}
-        <mesh position={[0, 0, 0.25]}>
-          <sphereGeometry args={[0.7, 32, 16, 0, Math.PI * 2, 0, Math.PI / 3]} />
-          <meshStandardMaterial color="blue" />
-        </mesh>
-  
-        {/* Rear parts (like a pickup bed) */}
-        <mesh position={[0, 0, -0.25]}>
-          <cylinderGeometry args={[0.7, 0.7, 0.2, 32, 1, true, 0, Math.PI]} />
-          <meshStandardMaterial color="green" />
-        </mesh>
-        <mesh position={[0, 0, -0.25]} rotation={[0, Math.PI, 0]}>
-          <cylinderGeometry args={[0.7, 0.7, 0.2, 32, 1, true, 0, Math.PI]} />
-          <meshStandardMaterial color="green" />
-        </mesh>
+      <ExtrudedRing color={probot?.colors?.body} />
+      <Canopy color={probot?.colors?.head}
+        position={[0.15, 0.05, -0.05]} />
     </mesh>)
 };
+
+function ExtrudedRing({
+  pathRadius = 0.30,
+  tubeRadius = 0.1,
+  segments = 32,
+  tubularSegments = 4,
+  ...props
+}) {
+  const mesh = useRef();
+
+  const geometry = useMemo(() => {
+    // 1. Create the circular path using CatmullRomCurve3:
+    const points = [];
+    for (let i = 0; i <= segments; i++) {  // Include the last point to close the circle
+      const angle = (i / segments) * 2 * Math.PI;
+      const x = pathRadius * Math.cos(angle);
+      const z = pathRadius * Math.sin(angle);
+      points.push(new THREE.Vector3(x, 0, z)); // y = 0 for x/z plane
+    }
+    const path = new THREE.CatmullRomCurve3(points);
+
+
+    // 2. Create the tube geometry:
+    const geometry = new THREE.TubeGeometry(
+      path,
+      segments * 2, // More segments for smoother extrusion
+      tubeRadius,
+      tubularSegments,
+      true // Closed path! Important!
+    );
+
+    return geometry;
+  }, [pathRadius, tubeRadius, segments, tubularSegments]);
+
+  return (
+    <mesh ref={mesh} geometry={geometry} {...props}>
+      <meshStandardMaterial color={props?.color || "black"} />
+    </mesh>
+  );
+}
+
+function Canopy({ width = .2, height = .1, depth = .1, segments = 32, ...props }) {
+  const mesh = useRef();
+
+  const geometry = useMemo(() => {
+    const shape = new THREE.Shape();
+
+    // Define the canopy profile (adjust these points to change the shape)
+    shape.moveTo(0, 0);
+    shape.lineTo(-width, 0);
+    shape.lineTo(-width, height);
+    //shape.lineTo(width * 0.9, height * 0.8); // Slightly curved top
+    //shape.lineTo(width * 0.1, height * 0.8); // Slightly curved top
+    shape.lineTo(0, 0);
+
+    const extrudeSettings = {
+      steps: segments,
+      depth: depth,
+      bevelEnabled: true,
+    };
+
+    return new THREE.ExtrudeGeometry(shape, extrudeSettings);
+  }, [width, height, depth, segments]);
+
+  useFrame(({ clock }) => {
+    // Optional: Add some subtle animation
+    mesh.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.1) * 0.05;
+  });
+
+  return (
+    <mesh ref={mesh} geometry={geometry} {...props}>
+      <meshStandardMaterial color={props.color || "black"} />
+    </mesh>
+  );
+}
 
 export default ProbotModel;

@@ -1,6 +1,7 @@
 from typing import Optional
 
 from ..mixins.pydantic_base import BaseSchema
+from .color_scheme import ColorScheme
 from .program import Program
 
 
@@ -15,6 +16,8 @@ class Player(BaseSchema):
 
     name: str
     score: int = 0
+
+    colors: ColorScheme = None
 
     session_id: Optional[str] = None
 

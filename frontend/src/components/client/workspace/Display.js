@@ -1,6 +1,6 @@
 import React from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { GameContext } from '../../../contexts/GameContext';
 
 
@@ -44,6 +44,10 @@ const DisplayScene = ({ gameState, grid, probots, probot }) => {
         <Ground grid={gameState.grid} width={grid.width} height={grid.height} />
         {gameState.probots.map((p) => <ProbotModel key={p.name} probot={p} />)}
         <FollowingCamera probot={probot} />
+{/*
+        <OrbitControls />
+*/}
+
     </>);
 };
 

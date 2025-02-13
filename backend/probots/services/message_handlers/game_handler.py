@@ -35,10 +35,11 @@ class GameHandler(MessageHandler):
 
             player = Player(
                 name=session.user.name,
+                colors=ENGINE.coloring.generate_random(theme="light"),
                 session_id=session.id,
             )
             ENGINE.add_player(player, session=session)
-            ENGINE.spawn_probot(player, pos=(0, 0, ProbotOrientation.E))
+            ENGINE.spawn_probot(player)
         else:
             player.session_id = session.id
 

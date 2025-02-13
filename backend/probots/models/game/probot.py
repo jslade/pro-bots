@@ -1,12 +1,12 @@
-from pydantic import Field, field_serializer
 from enum import Enum
-from typing import ClassVar, Optional, Self
+from typing import ClassVar, Optional
 
+from pydantic import Field, field_serializer
 
 from ..mixins.pydantic_base import BaseSchema
+from .color_scheme import ColorScheme
 from .player import Player
 from .program import ProgramState
-from .transition import Transition
 
 
 class ProbotOrientation(str, Enum):
@@ -28,6 +28,7 @@ class Probot(BaseSchema):
     MAX_ENERGY: ClassVar[int] = 1000
 
     player: Player
+    colors: ColorScheme
 
     id: int
     name: Optional[str]

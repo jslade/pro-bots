@@ -8,6 +8,7 @@ import structlog
 from ...models.all import BaseSchema, Message, Session, User
 from ...models.game.all import (
     Cell,
+    ColorScheme,
     Grid,
     Player,
     Probot,
@@ -16,6 +17,7 @@ from ...models.game.all import (
 )
 from ..dispatcher import DISPATCHER
 from ..session_service import SESSIONS
+from .coloring import ColoringService
 from .map_maker import MapMaker
 from .movement import MovementService
 from .processor import Processor, Work
@@ -61,6 +63,7 @@ class Engine:
         self.probots: list[Probot] = []
 
         # Helper services
+        self.coloring = ColoringService()
         self.transitioner = TransitionService(self)
         self.mover = MovementService(self)
 
@@ -320,6 +323,7 @@ class Engine:
         """Create a new player that runs as a bot (primarily for testing)"""
         player = Player(
             name=name,
+            colors=self.coloring.generate_random(theme="dark"),
             score=0,
         )
         self.add_player(player)
@@ -349,6 +353,7 @@ class Engine:
 
         probot = Probot(
             player=player,
+            colors=player.colors,
             id=len(self.probots),
             name=player.name,
             x=x,
