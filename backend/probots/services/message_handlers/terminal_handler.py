@@ -34,7 +34,7 @@ class TerminalHandler(MessageHandler):
                 output = TerminalOutput(output=grid.to_str())
             else:
                 output = TerminalOutput(output="n/a")
-            dispatcher.send(session, "terminal", "output", output.model_dump())
+            dispatcher.send(session, "terminal", "output", output.as_msg())
             return
 
         # TODO: Just for testing. Eventually this will be handled via probotics
@@ -70,4 +70,4 @@ class TerminalHandler(MessageHandler):
 
         # For now, just echo the input
         output = TerminalOutput(output=f"??? {input.input}")
-        dispatcher.send(session, "terminal", "output", output.model_dump())
+        dispatcher.send(session, "terminal", "output", output.as_msg())

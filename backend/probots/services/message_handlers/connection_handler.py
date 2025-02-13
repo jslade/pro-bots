@@ -43,6 +43,6 @@ class ConnectionHandler(MessageHandler):
 
         response = ConnectionResponse(username=user.name if user else None)
 
-        dispatcher.send(session, "connection", "accepted", response.model_dump())
+        dispatcher.send(session, "connection", "accepted", response.as_msg())
 
         ENGINE.notify_of_current_state(session)

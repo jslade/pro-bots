@@ -6,7 +6,14 @@ from typing import Callable, Optional, TypeAlias
 import structlog
 
 from ...models.all import BaseSchema, Message, Session, User
-from ...models.game.all import Cell, Grid, Player, Probot, ProbotOrientation, ProbotState
+from ...models.game.all import (
+    Cell,
+    Grid,
+    Player,
+    Probot,
+    ProbotOrientation,
+    ProbotState,
+)
 from ..dispatcher import DISPATCHER
 from ..session_service import SESSIONS
 from .map_maker import MapMaker
@@ -52,7 +59,6 @@ class Engine:
         self.grid: Grid = Grid.blank(1, 1)
         self.players: list[Player] = []
         self.probots: list[Probot] = []
-        self.player_sessions: {}
 
         # Helper services
         self.transitioner = TransitionService(self)
@@ -137,7 +143,7 @@ class Engine:
             self.reset_probot(probot)
 
         # Tell everyone about the new game state
-        self.send_broadcast(event="reset", data=game.model_dump(by_alias=True))
+        self.send_broadcast(event="reset", data=game.as_msg())
 
         # Just now for testing purposes:
         if not self.players:
@@ -272,7 +278,7 @@ class Engine:
 
         update = GameScoreUpdate(player_name=player.name, new_score=player.score)
 
-        self.send_broadcast("update_score", update.model_dump(by_alias=True))
+        self.send_broadcast("update_score", update.as_msg())
 
     def add_probot(self, probot: Probot) -> None:
         if probot in self.probots:
@@ -503,20 +509,20 @@ class Engine:
         is to just send the full probot state"""
         self.send_broadcast(
             event="update_probot",
-            data=probot.model_dump(by_alias=True),
+            data=probot.as_msg(),
         )
 
     def notify_of_current_state(self, session: Session) -> None:
         self.send_to_session(
             session=session,
             event="current_state",
-            data=self.construct_current_state().model_dump(by_alias=True),
+            data=self.construct_current_state().as_msg(),
         )
 
     def broadcast_current_state(self) -> None:
         self.send_broadcast(
             event="current_state",
-            data=self.construct_current_state().model_dump(by_alias=True),
+            data=self.construct_current_state().as_msg(),
         )
 
     def send_to_player(self, player: Player, event: str, data: dict) -> None:

@@ -7,4 +7,9 @@ class BaseSchema(pydantic.BaseModel):
         alias_generator=pydantic.alias_generators.to_camel,
         populate_by_name=True,
         from_attributes=True,
+        use_enum_values=True,
     )
+
+    def as_msg(self):
+        """Just a helper alias to standardize serialization for sending as a message payload"""
+        return self.model_dump(by_alias=True)
