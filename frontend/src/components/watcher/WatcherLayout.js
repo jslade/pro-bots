@@ -11,7 +11,7 @@ import WatcherDisplay from './WatcherDisplay';
 
 import './WatcherLayout.css';
 
-const Workspace = () => {
+const WatcherLayout = () => {
     const session = useContext(SessionContext);
     const api = useContext(ApiContext);
 
@@ -42,4 +42,4 @@ const Workspace = () => {
     </>);
 };
 
-export default Workspace;
+export default WatcherLayout;

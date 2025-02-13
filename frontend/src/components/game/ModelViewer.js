@@ -1,0 +1,68 @@
+import React from 'react';
+import { Grid, Box } from '@mui/material';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+
+import ProbotModel from './Probot';
+
+const viewProbot = {
+    "player": "bot-0",
+    "colors": {
+        "body": "#4a120b",
+        "head": "#2d2d47",
+        "tail": "#d5caa3"
+    },
+    "id": 0,
+    "name": "bot-0",
+    "x": 0,
+    "y": 0,
+    "orientation": "W",
+    "state": "idle",
+    "energy": 973,
+    "crystals": 0,
+    "dx": 0,
+    "dy": 0,
+    "dorient": 0
+};
+
+const ModelViewer = () => {
+    return (
+        <Grid container spacing={0} style={{ height: '100vh', width: '100vw' }}>
+            <Grid item xs={12}>
+                <Box display="flex" flexDirection="width" height="100%">
+                    <ViewerCanvas />
+                </Box>
+            </Grid>
+        </Grid>
+   );
+};
+
+const ViewerCanvas = () => {
+    return (
+        <Canvas
+            gl={{ alpha: false, antialias: true }}
+            onCreated={({ gl }) => {
+                gl.setClearColor('lightblue');
+            }}
+        >
+            <ViewerCanvasContent probot={viewProbot}/>
+            <OrbitControls />
+        </Canvas>
+    )
+};
+
+const ViewerCanvasContent = ({ probot }) => {
+    useThree(({ camera }) => {
+        camera.position.set(-1.5, 1.5, 0);
+        camera.lookAt([0, 0, 0]);
+    })
+
+    return ( <>
+        <ambientLight intensity={Math.PI / 2} />
+        <spotLight position={[40, 40, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
+        <pointLight position={[10, 20, 2]} decay={0} intensity={Math.PI} />
+        <ProbotModel probot={probot} />
+    </>);
+};
+
+export default ModelViewer;
