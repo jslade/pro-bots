@@ -25,3 +25,47 @@ class TestCompiler:
         assert len(ops) == 1
         assert type(ops[0]) is Immediate
         assert ops[0].value.value == expected
+
+    @pytest.mark.parametrize(
+        "input,expected",
+        [("''", ""), ("'abc'", "abc"), ('""', ""), ('"abc"', "abc")],
+    )
+    def test_string_is_immediate(
+        self, compiler: ProboticsCompiler, input: str, expected: str
+    ):
+        ops = compiler.compile(input)
+        assert len(ops) == 1
+        assert type(ops[0]) is Immediate
+        assert ops[0].value.value == expected
+
+    @pytest.mark.parametrize(
+        "input,expected",
+        [("true", True), ("false", False)],
+    )
+    def test_bool(self, compiler: ProboticsCompiler, input: str, expected: bool):
+        ops = compiler.compile(input)
+        assert len(ops) == 1
+        assert type(ops[0]) is Immediate
+        assert ops[0].value.value == expected
+
+    @pytest.mark.parametrize(
+        "input",
+        ["null", "none"],
+    )
+    def test_null(self, compiler: ProboticsCompiler, input: str):
+        ops = compiler.compile(input)
+        assert len(ops) == 1
+        assert type(ops[0]) is Immediate
+        assert ops[0].value.value is None
+
+    @pytest.mark.parametrize(
+        "input,expected",
+        [("1 # whatever", 1)],
+    )
+    def test_eol_comments(
+        self, compiler: ProboticsCompiler, input: str, expected: int | float
+    ):
+        ops = compiler.compile(input)
+        assert len(ops) == 1
+        assert type(ops[0]) is Immediate
+        assert ops[0].value.value == expected

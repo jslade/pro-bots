@@ -6,6 +6,8 @@
 
 @@keyword::if
 @@keyword::else
+@@keyword::null
+@@keyword::none
 
 
 start = {expression}* $ ;
@@ -31,11 +33,20 @@ division::Division = left:term op:'/' ~ right:factor ;
 factor::Factor =
        | subexpression
        | number
+       | string
+       | bool
+       | null
        ;
 
 subexpression::Subexpression = '(' ~ @:expression ')' ;
 
 number::Number = /(0|[1-9][0-9]*)(\.[0-9]+)?/ ;
+
+string::String = /("[^\"]*"|'[^\']*')/ ;
+
+bool::Bool = "true" | "false" ;
+
+null::Null = "null" | "none" ;
 
 
 # Skip rule for EOL comments, block comments, and whitespace
@@ -86,9 +97,6 @@ atom = symbol
      | null
      ;
 
-bool = "true" | "false" ;
-
-null = "null" ;
 
 property_access = target:symbol "." ~ property:SYMBOL ;
 
@@ -103,9 +111,6 @@ symbol_list = symbol {"," symbol}* ;
 @name
 symbol = /[a-zA-Z_][a-zA-Z0-9_]*/ ;
 
-string = /"[^\"]*"/ ;
-
-number = /[1-9][0-9]*(\.[0-9]+)?/ ;
 
 
 *)

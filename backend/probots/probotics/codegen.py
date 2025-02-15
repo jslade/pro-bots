@@ -36,3 +36,18 @@ class ProboticsCodeGenerator(NodeWalker):
             num = int(i_val)
             value = Primitive(type=PrimitiveType.INT, value=num)
         self.operations.append(Immediate(value))
+
+    def walk_String(self, node: Node):
+        str_val = node.ast[1:-1]
+        value = Primitive(type=PrimitiveType.STRING, value=str_val)
+        self.operations.append(Immediate(value))
+
+    def walk_Bool(self, node: Node):
+        str_val = node.ast
+        bool_val = str_val == "true"
+        value = Primitive(type=PrimitiveType.BOOL, value=bool_val)
+        self.operations.append(Immediate(value))
+
+    def walk_Null(self, node: Node):
+        value = Primitive(type=PrimitiveType.NULL, value=None)
+        self.operations.append(Immediate(value))

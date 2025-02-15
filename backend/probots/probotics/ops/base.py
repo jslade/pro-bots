@@ -8,6 +8,7 @@ class PrimitiveType(str, Enum):
     INT = "int"
     FLOAT = "float"
     STRING = "string"
+    BOOL = "bool"
     LIST = "list"
     OBJECT = "object"
 
