@@ -1,8 +1,8 @@
 import pytest
 
-from probots.probotics.interpreter import ExecutionContext, ProboticsInterpreter
 from probots.probotics.compiler import ProboticsCompiler
-from probots.probotics.ops.base import Immediate, Operation, Primitive
+from probots.probotics.interpreter import ExecutionContext, ProboticsInterpreter
+from probots.probotics.ops.all import Operation, Primitive
 
 
 def make_context(ops: list[Operation], results: list[Primitive]) -> ExecutionContext:
@@ -32,3 +32,27 @@ class TestInterpreter:
 
         assert len(results) == 1
         assert results[0] == Primitive.of(1)
+
+    def test_addition(
+        self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter
+    ):
+        ops = compiler.compile("1 + 2")
+        results = []
+        context = make_context(ops, results)
+        interpreter.add(context)
+        interpreter.execute_next()
+
+        assert len(results) == 1
+        assert results[0] == Primitive.of(3)
+
+    def test_arithmetic(
+        self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter
+    ):
+        ops = compiler.compile("1 + (2 - 3) / 4 * 5")
+        results = []
+        context = make_context(ops, results)
+        interpreter.add(context)
+        interpreter.execute_next()
+
+        assert len(results) == 1
+        assert results[0] == Primitive.of(-0.25)

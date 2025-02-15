@@ -2,20 +2,9 @@ from typing import Callable, Optional, TypeAlias
 
 import structlog
 
-from .ops.all import Operation, Primitive, StackFrame
+from .ops.all import Operation, Primitive, StackFrame, Breakpoint, EnterScope, ExitScope
 
 LOGGER = structlog.get_logger(__name__)
-
-
-class Breakpoint(Exception):
-    """Exception to be raised when a breakpoint is hit during execution.
-    This allows the context to stop and let other contexts run.
-    """
-
-    def __init__(self, message: str, frame: StackFrame) -> None:
-        super().__init__(message)
-        self.message = message
-        self.frame = frame
 
 
 ResultCallback: TypeAlias = Callable[[Primitive], None]
@@ -23,6 +12,7 @@ ResultCallback: TypeAlias = Callable[[Primitive], None]
 
 class ExecutionContext:
     def __init__(self, *, operations: list[Operation], on_result: ResultCallback) -> None:
+        self.builtins: dict[str, Primitive] = {}
         self.operations = operations
         self.on_result = on_result
 
@@ -33,7 +23,10 @@ class ExecutionContext:
         operations, it may stop when an appropriate break point is hit, for the
         purpose of other interpreters to run"""
         if self.current is None:
-            self.current = self.make_outer_frame(self.operations.pop(0))
+            self.current = StackFrame.make_outer(
+                self.operations,
+                self.builtins,
+            )
 
         self.current = self.execute_until_break(self.current)
 
@@ -54,34 +47,34 @@ class ExecutionContext:
             # Return the operation that was executed when the breakpoint was hit,
             # that's where it will continue on the next iteration
             return bp.frame
+        except EnterScope as enter_scope:
+            LOGGER.debug("Entering scope", frame=enter_scope.frame.name)
+            frame = enter_scope.frame
+        except ExitScope as exit_scope:
+            LOGGER.debug("Exiting scope", frame=exit_scope.frame.name)
+            frame = exit_scope.frame.parent
+            if frame:
+                # Current frame gets the return value of the scope that just exited
+                frame.push(exit_scope.return_value)
+            else:
+                # We just executed the outermost frame,
+                self.on_result(exit_scope.return_value)
         except Exception as ex:
             LOGGER.exception("Execution error", exception=ex)
             raise ex
 
-    def make_outer_frame(self, op: Operation) -> StackFrame:
-        """Create a stack frame for the operation. This will always be an outer
-        frame with no parent, so the only scope vars are the global ones"""
-        frame = StackFrame(
-            # TODO: populate global vars
-            scope_vars={},
-            args={},
-            operation=op,
-        )
-        return frame
-
     def execute_frame(self, frame: StackFrame) -> None:
-        """Execute the operation in the frame. This will either return a
-        Primitive value or raise an exception"""
-        op = frame.operation
-        if op is None:
-            raise ValueError("No operation to execute")
+        """Execute the next operations in the frame, until something
+        causes a break (breakpoint, enter scope, exit scope)"""
+        while True:
+            op = frame.next_op()
 
-        result = op.execute(frame)
-        self.on_result(result)
+            LOGGER.debug("Executing operation", operation=op)
+            op.execute(frame)
 
     @property
     def is_finished(self) -> bool:
-        return self.current is None and len(self.operations) == 0
+        return self.current is None
 
 
 class ProboticsInterpreter:
@@ -89,11 +82,10 @@ class ProboticsInterpreter:
         self.contexts: list[ExecutionContext] = []
 
     def add(self, context: ExecutionContext) -> None:
-        if not context.is_finished:
-            self.contexts.append(context)
+        self.contexts.append(context)
 
     def execute_next(self) -> None:
-        """Execute one operation. If the operation contains nested
+        """Execute the next sequence of operations. If the operation contains nested
         operations, it may stop when an appropriate break point is hit, for the
         purpose of other interpreters to run"""
         context = self.contexts.pop(0)

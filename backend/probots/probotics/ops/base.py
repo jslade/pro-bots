@@ -1,87 +1,65 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
+
+if TYPE_CHECKING:
+    from .primitive import Primitive, PrimitiveType
+    from .stack_frame import StackFrame
 
 
-class PrimitiveType(str, Enum):
-    NULL = "null"
-    INT = "int"
-    FLOAT = "float"
-    STRING = "string"
-    BOOL = "bool"
-    LIST = "list"
-    OBJECT = "object"
+class Breakpoint(Exception):
+    """Exception to be raised when a breakpoint is hit during execution.
+    This allows the context to stop and let other contexts run.
+    """
 
-
-@dataclass
-class Primitive:
-    """The result of some execution"""
-
-    type: PrimitiveType
-    value: int | float | str | list | dict | None
-
-    @classmethod
-    def of(cls, value: Any) -> "Primitive":
-        if value is None:
-            return Primitive(PrimitiveType.NULL, val=None)
-
-        t = type(value)
-        if t is int:
-            return Primitive(PrimitiveType.INT, value)
-        if t is float:
-            return Primitive(PrimitiveType.FLOAT, value)
-        if t is str:
-            return Primitive(PrimitiveType.STRING, value)
-        if t is list:
-            return Primitive(PrimitiveType.LIST, value)
-        if t is dict:
-            return Primitive(PrimitiveType.OBJECT, value)
-
-
-class UndefinedSymbol(Exception):
-    pass
-
-
-@dataclass
-class StackFrame:
-    scope_vars: dict[str, Primitive]
-    args: dict[str, Primitive]
-    parent: Optional["StackFrame"] = None
-
-    operation: Optional["Operation"] = None
-
-    def get(self, name: str) -> Primitive:
-        try:
-            return self.args.get(
-                name,  # Get from args first
-                self.scope_vars.get(
-                    name,  # Get from local scope next
-                    self.parent.get(
-                        name  # Get from parent scope (if any) last
-                    )
-                    if self.parent
-                    else None,
-                ),
-            )
-        except KeyError:
-            raise UndefinedSymbol(f"No value for {name}")
+    def __init__(self, message: str, frame: "StackFrame") -> None:
+        super().__init__(message)
+        self.message = message
+        self.frame = frame
 
 
 class Operation:
     """Base class for an operation that can be executed"""
 
-    def expected_args(self) -> list[tuple[str, list[PrimitiveType]]]:
+    def expected_args(self) -> list[tuple[str, list["PrimitiveType"]]]:
         return []
 
-    def execute(self, frame: StackFrame) -> Primitive:
+    def execute(self, frame: "StackFrame") -> "Primitive":
         raise NotImplementedError
 
 
 class Immediate(Operation):
     """A terminal value in the parse tree that has an immediate value"""
 
-    def __init__(self, value: Primitive) -> None:
+    def __init__(self, value: "Primitive") -> None:
         self.value = value
 
-    def execute(self, frame: StackFrame) -> Primitive:
-        return self.value
+    def execute(self, frame: "StackFrame") -> None:
+        frame.push(self.value)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Immediate):
+            return False
+        return self.value == other.value
+
+    def __repr__(self):
+        return "Immediate(" + repr(self.value) + ")"
+
+
+class BinaryOperator(Operation):
+    """Base class for binary operators"""
+
+    def execute(self, frame) -> None:
+        right = frame.pop()
+        left = frame.pop()
+        result = self._execute(left, right)
+        frame.push(result)
+
+    def _execute(self, left: "Primitive", right: "Primitive") -> "Primitive":
+        raise NotImplementedError
+
+    def __eq__(self, other: object) -> bool:
+        return type(self) is type(other)
+
+    def __repr__(self):
+        return f"BinOp:{type(self).__name__}"

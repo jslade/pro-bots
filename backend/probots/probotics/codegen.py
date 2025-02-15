@@ -1,7 +1,19 @@
+import structlog
 from tatsu.model import Node
 from tatsu.walkers import NodeWalker
 
-from ..probotics.ops.all import Operation, Immediate, Primitive, PrimitiveType
+from .ops.all import (
+    Addition,
+    Division,
+    Immediate,
+    Multiplication,
+    Operation,
+    Primitive,
+    PrimitiveType,
+    Subtraction,
+)
+
+LOGGER = structlog.get_logger(__name__)
 
 
 class ProboticsCodeGenerator(NodeWalker):
@@ -12,12 +24,18 @@ class ProboticsCodeGenerator(NodeWalker):
     def __init__(self) -> None:
         self.operations: list[Operation] = []
 
+    #
+    # Catch-all
+    #
     def walk_object(self, node: Node):
-        import ipdb
+        # import ipdb
 
-        ipdb.set_trace()
-        print(f"object:: {node}")
+        # ipdb.set_trace()
+        LOGGER.warning("walker not defined", node=node.__repr__())
 
+    #
+    # Primitives
+    #
     def walk_Comment(self, node: Node):
         pass
 
@@ -54,3 +72,31 @@ class ProboticsCodeGenerator(NodeWalker):
     def walk_Null(self, node: Node):
         value = Primitive(type=PrimitiveType.NULL, value=None)
         self.operations.append(Immediate(value))
+
+    def walk_Symbol(self, node: Node):
+        value = Primitive(type=PrimitiveType.SYMBOL, value=node.ast)
+        self.operations.append(Immediate(value))
+
+    #
+    # Arithmetic
+    #
+
+    def walk_Addition(self, node: Node):
+        self.walk(node.left)
+        self.walk(node.right)
+        self.operations.append(Addition())
+
+    def walk_Subtraction(self, node: Node):
+        self.walk(node.left)
+        self.walk(node.right)
+        self.operations.append(Subtraction())
+
+    def walk_Multiplication(self, node: Node):
+        self.walk(node.left)
+        self.walk(node.right)
+        self.operations.append(Multiplication())
+
+    def walk_Division(self, node: Node):
+        self.walk(node.left)
+        self.walk(node.right)
+        self.operations.append(Division())
