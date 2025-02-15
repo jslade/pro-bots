@@ -1,0 +1,111 @@
+@@grammar::Probotics
+@@parseinfo::True
+
+@@comments::/\(\*.*?\*\)/
+@@eol_comments::/#.*?$/
+
+@@keyword::if
+@@keyword::else
+
+
+start = {expression}* $ ;
+
+expression::Expression =
+           | addition
+           | subtraction
+           | term
+           ;
+
+addition::Addition = left:expression op:'+' ~ right:term ;
+subtraction::Subtraction = left:expression op:'-' ~ right:term ;
+
+term::Term =
+     | multiplication
+     | division
+     | factor
+     ;
+
+multiplication::Multiplication = left:term op:'*' ~ right:factor ;
+division::Division = left:term op:'/' ~ right:factor ;
+
+factor::Factor =
+       | subexpression
+       | number
+       ;
+
+subexpression::Subexpression = '(' ~ @:expression ')' ;
+
+number::Number = /(0|[1-9][0-9]*)(\.[0-9]+)?/ ;
+
+
+# Skip rule for EOL comments, block comments, and whitespace
+_ = /#.*?$|\(\*.*?\*\) | \s+/ ;  # Skip EOL comments, block comments, and whitespace
+
+(*
+command_list = {command}+ ;
+
+command = assignment
+        | if_statement
+        | while_loop
+        | simple_command
+        | expression
+        ;
+
+assignment = (symbol | property_access) ":=" ( expression | block | block_with_arguments ) ;
+
+if_statement = "if" condition block {"else" if_statement | "else" block}* ;
+
+while_loop = "while" condition block ;
+
+block = "{" command_list "}" ;
+
+block_with_arguments = "{" symbol_list newline command_list "}" ;
+
+condition = expression [comparison_op expression] ;
+
+comparison_op = "==" | "!=" | "<" | ">" | "<=" | ">=" ;
+
+expression = left:term add_op:"+" ~ right:term
+           | left:term sub_op:"-" ~ right:term
+           | term ;
+
+term = 
+     | left:term mul_op:"*" ~ right:factor
+     | left:term div_op:"/" ~ right:factor
+     | factor
+     ;
+
+factor = property_access | atom ;
+
+atom = symbol
+     | string
+     | number
+     | "(" ~ @:expression ")"
+     | call
+     | bool
+     | null
+     ;
+
+bool = "true" | "false" ;
+
+null = "null" ;
+
+property_access = target:symbol "." ~ property:SYMBOL ;
+
+SYMBOL = symbol ;
+
+call = symbol "(" ~ {expression {"," expression}*}* ")" ;
+
+simple_command = symbol {expression}* ;
+
+symbol_list = symbol {"," symbol}* ;
+
+@name
+symbol = /[a-zA-Z_][a-zA-Z0-9_]*/ ;
+
+string = /"[^\"]*"/ ;
+
+number = /[1-9][0-9]*(\.[0-9]+)?/ ;
+
+
+*)

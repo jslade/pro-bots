@@ -1,11 +1,14 @@
 eventlet==0.39.0
+flake8
 flask==3.0.2
 Flask-APScheduler
 flask-alembic
 flask-migrate
 flask-sock==0.7.0
 flask-sqlalchemy==3.1.1
+ipdb
 ipython
+mypy
 psycopg2==2.9.9
 pydantic==2.9.2
 pytest
