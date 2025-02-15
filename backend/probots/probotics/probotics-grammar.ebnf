@@ -1,8 +1,8 @@
 @@grammar::Probotics
 @@parseinfo::True
 
-@@comments::/\(\*.*?\*\)/
-@@eol_comments::/#.*?$/
+@@comments::/\/\*.*?\*\//
+@@eol_comments::/(#|\/\/).*?$/
 
 @@keyword::if
 @@keyword::else
@@ -10,7 +10,7 @@
 @@keyword::none
 
 
-start = {expression}* $ ;
+start = {expression | comment}* $ ;
 
 expression::Expression =
            | addition
@@ -48,9 +48,17 @@ bool::Bool = "true" | "false" ;
 
 null::Null = "null" | "none" ;
 
+# It's not clear to me why comments must be explictly defined. The docs
+# say the the skip rule (_) below will skip comments, but it doesn't seem to
+comment::Comment =
+       | eol_comment
+       | block_comment
+       ;
+eol_comment = "#" ~ /[^\n]*/ | "//" ~ /[^\n]*/ ;
+block_comment = /\/\*.*?\*\// ;
 
 # Skip rule for EOL comments, block comments, and whitespace
-_ = /#.*?$|\(\*.*?\*\) | \s+/ ;  # Skip EOL comments, block comments, and whitespace
+_ = /#.*?$|\/\/.*?|\/\*.*?\*\/|\s+/ ;  # Skip EOL comments, block comments, and whitespace
 
 (*
 command_list = {command}+ ;

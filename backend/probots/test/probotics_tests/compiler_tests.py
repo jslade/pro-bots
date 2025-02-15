@@ -60,9 +60,40 @@ class TestCompiler:
 
     @pytest.mark.parametrize(
         "input,expected",
-        [("1 # whatever", 1)],
+        [
+            ("1 # whatever", 1),
+            ("2 //huh?", 2),
+            ("# Ignore this line\ntrue", True),
+            ("// Ignore this line\nfalse", False),
+            ("null\n# skipped", None),
+            ("null\n// skipped", None),
+            (
+                "# A comment before\n"
+                "'Hi' # EOL comment\n"
+                "// followed by another comment\n"
+                "\n"
+                "# And another",
+                "Hi",
+            ),
+        ],
     )
     def test_eol_comments(
+        self, compiler: ProboticsCompiler, input: str, expected: int | float
+    ):
+        ops = compiler.compile(input)
+        assert len(ops) == 1
+        assert type(ops[0]) is Immediate
+        assert ops[0].value.value == expected
+
+    @pytest.mark.skip("Block comments are not working yet")
+    @pytest.mark.parametrize(
+        "input,expected",
+        [
+            ("1 /* whatever */", 1),
+            ("/* multi-line\n" " continued */ true", True),
+        ],
+    )
+    def test_block_comments(
         self, compiler: ProboticsCompiler, input: str, expected: int | float
     ):
         ops = compiler.compile(input)

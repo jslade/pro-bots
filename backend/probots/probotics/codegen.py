@@ -18,6 +18,9 @@ class ProboticsCodeGenerator(NodeWalker):
         ipdb.set_trace()
         print(f"object:: {node}")
 
+    def walk_Comment(self, node: Node):
+        pass
+
     def walk_Expression(self, node: Node):
         self.walk(node.children())
 
