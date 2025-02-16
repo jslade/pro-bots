@@ -35,7 +35,7 @@ class GameHandler(MessageHandler):
 
             player = Player(
                 name=session.user.name,
-                colors=ENGINE.coloring.generate_random(theme="light"),
+                colors=ENGINE.coloring.generate_random(theme="dark"),
                 session_id=session.id,
             )
             ENGINE.add_player(player, session=session)

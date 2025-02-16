@@ -325,7 +325,7 @@ class Engine:
         """Create a new player that runs as a bot (primarily for testing)"""
         player = Player(
             name=name,
-            colors=self.coloring.generate_random(theme="dark"),
+            colors=self.coloring.generate_random(theme="light"),
             score=0,
         )
         self.add_player(player)

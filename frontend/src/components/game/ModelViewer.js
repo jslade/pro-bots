@@ -8,9 +8,9 @@ import ProbotModel from './Probot';
 const viewProbot = {
     "player": "bot-0",
     "colors": {
-        "body": "#4a120b",
-        "head": "#2d2d47",
-        "tail": "#d5caa3"
+        "body": "#404040",
+        "head": "darkred",
+        "tail": "midnightblue"
     },
     "id": 0,
     "name": "bot-0",

@@ -15,19 +15,19 @@ class ColoringService:
 
     def _generate_body_color(self, theme: str) -> str:
         if theme == "light":
-            base_color = 150
+            base_color = 100
         else:
-            base_color = 50
+            base_color = 30
 
         return self.color_from_base(base_color)
 
     def _generate_complementary_colors(self, theme: str) -> tuple:
         if theme == "light":
-            head_base = random.randint(150, 200)
+            head_base = random.randint(120, 150)
             tail_base = 255 - int(head_base / 2)
         else:
-            head_base = random.randint(50, 100)
-            tail_base = 255 - head_base
+            head_base = random.randint(60, 100)
+            tail_base = 60 - head_base
 
         head_color = self.color_from_base(head_base)
         tail_color = self.color_from_base(tail_base)
