@@ -237,6 +237,13 @@ class Processor:
         # LOGGER.info("pushed", work=func, id=work.id)
         return work
 
+    def has_work_where(self, predicate: Callable[[Work], bool]) -> bool:
+        """Check if there is any work that matches the given predicate"""
+        for item in self.work_queue.heap:
+            if predicate(item):
+                return True
+        return False
+
     def cancel_work(self, item: Work) -> None:
         self.work_queue.remove(item)
 

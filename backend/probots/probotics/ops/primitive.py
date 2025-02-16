@@ -13,7 +13,8 @@ class PrimitiveType(str, Enum):
     PROPERTY = "property"
     LIST = "list"
     OBJECT = "object"
-    SYMBOL = "SYMBOL"
+    SYMBOL = "symbol"
+    BLOCK = "block"
 
 
 @dataclass

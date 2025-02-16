@@ -155,6 +155,12 @@ class MovementService:
         """Just rotating in place"""
         # LOGGER.info("TURN", probot=probot, dir=dir)
 
+        match dir.lower():
+            case "l":
+                dir = "left"
+            case "r":
+                dir = "right"
+
         #
         # Validate turn
         #

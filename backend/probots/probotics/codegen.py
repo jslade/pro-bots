@@ -90,7 +90,7 @@ class ProboticsCodeGenerator(NodeWalker):
 
     def walk_Bool(self, node: Node):
         str_val = node.ast
-        bool_val = str_val == "true"
+        bool_val = str_val == "true" or str_val == "True"
         value = Primitive(type=PrimitiveType.BOOL, value=bool_val)
         self.operations.append(Immediate(value))
 

@@ -13,6 +13,8 @@ class ValueOf(Operation):
         try:
             value = frame.get(self.name)
         except UndefinedSymbol:
+            pass
+        if value is None:
             value = Primitive.of(None)
         frame.push(value)
 

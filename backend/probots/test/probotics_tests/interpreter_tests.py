@@ -8,7 +8,7 @@ from probots.probotics.ops.all import Operation, Primitive
 def make_context(ops: list[Operation], results: list[Primitive]) -> ExecutionContext:
     return ExecutionContext(
         operations=ops,
-        on_result=lambda result: results.append(result),
+        on_result=lambda result, context: results.append(result),
     )
 
 
@@ -68,3 +68,5 @@ class TestInterpreter:
 
         assert len(results) == 1
         assert results[0] == Primitive.of(3)
+        assert context.get("a") == Primitive.of(1)
+        assert context.get("b") == Primitive.of(3)

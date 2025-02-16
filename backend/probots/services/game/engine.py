@@ -21,6 +21,7 @@ from .coloring import ColoringService
 from .map_maker import MapMaker
 from .movement import MovementService
 from .processor import Processor, Work
+from .programming import Programming
 from .transitioner import TransitionService
 
 LOGGER = structlog.get_logger(__name__)
@@ -64,8 +65,9 @@ class Engine:
 
         # Helper services
         self.coloring = ColoringService()
-        self.transitioner = TransitionService(self)
         self.mover = MovementService(self)
+        self.programming = Programming(self)
+        self.transitioner = TransitionService(self)
 
     def run(self) -> None:
         """This is the entrypoint for the main game thread. It should never exit
@@ -253,12 +255,12 @@ class Engine:
     def player_session(self, player: Player) -> Optional[Session]:
         return SESSIONS.get_session(player.session_id)
 
-    def player_for_user(self, user: User) -> Optional[Session]:
+    def player_for_user(self, user: User) -> Optional[Player]:
         for player in self.players:
             if player.name == user.name:
                 return player
 
-    def player_for_session(self, session: Session) -> Optional[Session]:
+    def player_for_session(self, session: Session) -> Optional[Player]:
         for player in self.players:
             if player.session_id == session.id:
                 return player
@@ -389,7 +391,7 @@ class Engine:
     def add_player_work(
         self,
         player: Player,
-        func: ProbotWorkFunc,
+        func: PlayerWorkFunc,
         delay: int = 0,
         delay_seconds: float = 0,
         repeat_interval: Optional[int] = None,

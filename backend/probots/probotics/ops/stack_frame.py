@@ -1,8 +1,10 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, TypeAlias
 
 from .base import Operation
 from .primitive import Primitive
+
+ScopeVars: TypeAlias = dict[str, Primitive]
 
 
 class UndefinedSymbol(Exception):
@@ -41,9 +43,9 @@ class StackFrame:
     """
 
     name: str
-    builtins: dict[str, Primitive]
-    scope_vars: dict[str, Primitive]
-    args: dict[str, Primitive]
+    builtins: ScopeVars
+    scope_vars: ScopeVars
+    args: ScopeVars
     parent: Optional["StackFrame"] = None
 
     operations: list["Operation"] = None
@@ -110,14 +112,17 @@ class StackFrame:
 
     @classmethod
     def make_outer(
-        cls, operations: list[Operation], builtins: dict[str, Primitive]
+        cls,
+        operations: list[Operation],
+        builtins: ScopeVars,
+        globals: ScopeVars,
     ) -> "StackFrame":
         """Create a stack frame for the operations. This will always be an outer
         frame with no parent, so the only scope vars are the global ones"""
         frame = StackFrame(
-            name="",
+            name="<outer>",
             builtins=builtins,
-            scope_vars={},
+            scope_vars=globals,
             args={},
             operations=operations,
             op_index=0,

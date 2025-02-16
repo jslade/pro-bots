@@ -2,33 +2,75 @@ from typing import Callable, Optional, TypeAlias
 
 import structlog
 
-from .ops.all import Operation, Primitive, StackFrame, Breakpoint, EnterScope, ExitScope
+from .ops.all import (
+    Operation,
+    Primitive,
+    StackFrame,
+    Breakpoint,
+    EnterScope,
+    ExitScope,
+    ScopeVars,
+)
 
 LOGGER = structlog.get_logger(__name__)
 
 
-ResultCallback: TypeAlias = Callable[[Primitive], None]
+ResultCallback: TypeAlias = Callable[[Primitive, "ExecutionContext"], None]
 
 
 class ExecutionContext:
-    def __init__(self, *, operations: list[Operation], on_result: ResultCallback) -> None:
-        self.builtins: dict[str, Primitive] = {}
+    builtins: ScopeVars
+    operations: list[Operation]
+    globals: ScopeVars
+    on_result: ResultCallback
+
+    total_frames: int
+    total_operations: int
+
+    latest_frames: int
+    latest_operations: int
+
+    def __init__(
+        self,
+        *,
+        operations: list[Operation],
+        builtins: ScopeVars = None,
+        globals: Optional[ScopeVars] = None,
+        on_result: ResultCallback = None,
+    ) -> None:
+        # Builtins are symbols that cannot be changed (assigned to or overridden
+        # by another global of the same name
+        self.builtins = builtins or ScopeVars()
+
+        # This is the program (list of operations that will be executed in the
+        # outer scope
         self.operations = operations
+
+        # Callback to be called when there is a result available in the
+        # outer scope, used to pass results back to the caller
         self.on_result = on_result
 
-        self.current: Optional[StackFrame] = None
+        # Globals are symbols can be assigned to in the outer scope only,
+        # and will stay around as long as this execution context exists
+        self.globals = globals or ScopeVars()
+
+        self.current_frame: Optional[StackFrame] = None
+
+        self.total_frames = 0
+        self.total_operations = 0
+        self.latest_frames = 0
+        self.latest_operations = 0
 
     def execute_next(self) -> bool:
         """Execute one operation. If the operation contains nested
         operations, it may stop when an appropriate break point is hit, for the
         purpose of other interpreters to run"""
-        if self.current is None:
-            self.current = StackFrame.make_outer(
-                self.operations,
-                self.builtins,
+        if self.current_frame is None:
+            self.current_frame = StackFrame.make_outer(
+                self.operations, self.builtins, self.globals
             )
 
-        self.current = self.execute_until_break(self.current)
+        self.current_frame = self.execute_until_break(self.current_frame)
 
         return self.is_finished
 
@@ -36,6 +78,9 @@ class ExecutionContext:
         """Execute the frame, either until completion or to the next breakpoint.
         If stopped at a breakpoint, return the operation to be executed on the
         next iteration"""
+
+        self.latest_frames = 0
+        self.latest_operations = 0
 
         try:
             while frame is not None:
@@ -58,7 +103,7 @@ class ExecutionContext:
                 frame.push(exit_scope.return_value)
             else:
                 # We just executed the outermost frame,
-                self.on_result(exit_scope.return_value)
+                self.on_result(exit_scope.return_value, self)
         except Exception as ex:
             LOGGER.exception("Execution error", exception=ex)
             raise ex
@@ -66,15 +111,26 @@ class ExecutionContext:
     def execute_frame(self, frame: StackFrame) -> None:
         """Execute the next operations in the frame, until something
         causes a break (breakpoint, enter scope, exit scope)"""
+
+        self.latest_frames += 1
+        self.total_frames += 1
+
         while True:
             op = frame.next_op()
 
             LOGGER.debug("Executing operation", operation=op)
             op.execute(frame)
 
+            self.latest_operations += 1
+            self.total_operations += 1
+
     @property
     def is_finished(self) -> bool:
-        return self.current is None
+        return self.current_frame is None
+
+    def get(self, name: str) -> Primitive:
+        """Get the value of a symbol in the outer scope (globals)"""
+        return self.globals.get(name, Primitive.of(None))
 
 
 class ProboticsInterpreter:
@@ -100,3 +156,7 @@ class ProboticsInterpreter:
         except Exception as ex:
             LOGGER.exception("Execution error", exception=ex)
             raise ex
+
+    @property
+    def is_finished(self) -> bool:
+        return len(self.contexts) == 0
