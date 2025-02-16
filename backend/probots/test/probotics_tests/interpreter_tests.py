@@ -56,3 +56,15 @@ class TestInterpreter:
 
         assert len(results) == 1
         assert results[0] == Primitive.of(-0.25)
+
+    def test_assignment(
+        self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter
+    ):
+        ops = compiler.compile("a := 1\n" "b := a + 2\n" "b")
+        results = []
+        context = make_context(ops, results)
+        interpreter.add(context)
+        interpreter.execute_next()
+
+        assert len(results) == 1
+        assert results[0] == Primitive.of(3)

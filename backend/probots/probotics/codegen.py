@@ -1,9 +1,11 @@
+from contextlib import contextmanager
 import structlog
 from tatsu.model import Node
 from tatsu.walkers import NodeWalker
 
 from .ops.all import (
     Addition,
+    Assignment,
     Division,
     Immediate,
     Multiplication,
@@ -11,6 +13,7 @@ from .ops.all import (
     Primitive,
     PrimitiveType,
     Subtraction,
+    ValueOf,
 )
 
 LOGGER = structlog.get_logger(__name__)
@@ -23,6 +26,16 @@ class ProboticsCodeGenerator(NodeWalker):
 
     def __init__(self) -> None:
         self.operations: list[Operation] = []
+        self.context = []
+
+    @contextmanager
+    def in_context(self, name: str):
+        self.context.append(name)
+        yield
+        self.context.pop()
+
+    def is_parent_context(self, name: str) -> bool:
+        return name in self.context
 
     #
     # Catch-all
@@ -34,19 +47,31 @@ class ProboticsCodeGenerator(NodeWalker):
         LOGGER.warning("walker not defined", node=node.__repr__())
 
     #
-    # Primitives
+    # High-level constructs
     #
+
     def walk_Comment(self, node: Node):
         pass
 
+    def walk_Command(self, node: Node):
+        with self.in_context("Command"):
+            self.walk(node.children())
+
     def walk_Expression(self, node: Node):
-        self.walk(node.children())
+        with self.in_context("Expression"):
+            self.walk(node.children())
 
     def walk_Term(self, node: Node):
-        self.walk(node.children())
+        with self.in_context("Term"):
+            self.walk(node.children())
 
     def walk_Factor(self, node: Node):
-        self.walk(node.children())
+        with self.in_context("Factor"):
+            self.walk(node.children())
+
+    #
+    # Primitives
+    #
 
     def walk_Number(self, node: Node):
         i_val, d_val = node.ast
@@ -74,8 +99,14 @@ class ProboticsCodeGenerator(NodeWalker):
         self.operations.append(Immediate(value))
 
     def walk_Symbol(self, node: Node):
-        value = Primitive(type=PrimitiveType.SYMBOL, value=node.ast)
-        self.operations.append(Immediate(value))
+        symbol_name = node.ast
+        if self.is_parent_context("Assignable"):
+            # When a bare symbol is on the target side of an assignment,
+            # the result should be the symbol itself
+            self.operations.append(Immediate(Primitive.symbol(symbol_name)))
+        else:
+            # Otherwise, we want the value of the symbol in the current scope
+            self.operations.append(ValueOf(symbol_name))
 
     #
     # Arithmetic
@@ -100,3 +131,17 @@ class ProboticsCodeGenerator(NodeWalker):
         self.walk(node.left)
         self.walk(node.right)
         self.operations.append(Division())
+
+    #
+    # Assignment
+    #
+
+    def walk_Assignment(self, node: Node):
+        with self.in_context("Assignment"):
+            self.walk(node.target)
+            self.walk(node.value)
+        self.operations.append(Assignment())
+
+    def walk_Assignable(self, node: Node):
+        with self.in_context("Assignable"):
+            self.walk(node.children())

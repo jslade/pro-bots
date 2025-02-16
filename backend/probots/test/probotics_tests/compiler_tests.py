@@ -3,11 +3,13 @@ import pytest
 from probots.probotics.compiler import ProboticsCompiler
 from probots.probotics.ops.all import (
     Addition,
+    Assignment,
     Division,
     Immediate,
     Multiplication,
     Primitive,
     Subtraction,
+    ValueOf,
 )
 
 
@@ -60,8 +62,8 @@ class TestCompilerPrimitives:
     def test_symbol(self, compiler: ProboticsCompiler, input: str, expected: bool):
         ops = compiler.compile(input)
         assert len(ops) == 1
-        assert type(ops[0]) is Immediate
-        assert ops[0].value.value == expected
+        assert type(ops[0]) is ValueOf
+        assert ops[0].name == expected
 
     @pytest.mark.parametrize(
         "input,expected",
@@ -146,8 +148,8 @@ class TestCompilerArithmetic:
             (
                 "a * b",
                 [
-                    Immediate(Primitive.symbol("a")),
-                    Immediate(Primitive.symbol("b")),
+                    ValueOf("a"),
+                    ValueOf("b"),
                     Multiplication(),
                 ],
             ),
@@ -180,3 +182,13 @@ class TestCompilerArithmetic:
     ):
         ops = compiler.compile(input)
         assert ops == expected
+
+    def test_assignment(self, compiler: ProboticsCompiler):
+        ops = compiler.compile("a := 1 + 2")
+        assert ops == [
+            Immediate(Primitive.symbol("a")),
+            Immediate(Primitive.of(1)),
+            Immediate(Primitive.of(2)),
+            Addition(),
+            Assignment(),
+        ]

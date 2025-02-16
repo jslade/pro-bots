@@ -69,15 +69,32 @@ class StackFrame:
                 name,  # Get from args first
                 self.scope_vars.get(
                     name,  # Get from local scope next
-                    self.parent.get(
-                        name  # Get from parent scope (if any) last
-                    )
-                    if self.parent
-                    else None,
+                    self.builtins.get(
+                        name,  # Get from the builtins (globals) last
+                    ),
                 ),
             )
         except KeyError:
             raise UndefinedSymbol(f"No value for {name}")
+
+    def set(self, name: str, value: Primitive):
+        """Set the value of a symbol in the current scope."""
+        if name in self.args:
+            # Arguments can be updated
+            self.args[name] = value
+            return
+
+        if name in self.scope_vars:
+            # Already a defined local -- update it
+            self.scope_vars[name] = value
+            return
+
+        if name in self.builtins:
+            # Builtins are not updatable
+            raise ValueError(f"Cannot update builtin {name}")
+
+        # Otherwise, add it to the local scope
+        self.scope_vars[name] = value
 
     def push(self, value: Primitive) -> None:
         """Add a value to the result stack"""

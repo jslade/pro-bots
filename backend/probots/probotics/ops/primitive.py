@@ -10,6 +10,7 @@ class PrimitiveType(str, Enum):
     FLOAT = "float"
     STRING = "string"
     BOOL = "bool"
+    PROPERTY = "property"
     LIST = "list"
     OBJECT = "object"
     SYMBOL = "SYMBOL"
@@ -22,10 +23,22 @@ class Primitive:
     type: PrimitiveType
     value: int | float | str | list | dict | None
 
+    @property
+    def is_null(self) -> bool:
+        return self.type == PrimitiveType.NULL
+
+    @property
+    def is_symbol(self) -> bool:
+        return self.type == PrimitiveType.SYMBOL
+
+    @property
+    def is_property(self) -> bool:
+        return self.type == PrimitiveType.PROPERTY
+
     @classmethod
     def of(cls, value: Any) -> "Primitive":
         if value is None:
-            return Primitive(PrimitiveType.NULL, val=None)
+            return Primitive(PrimitiveType.NULL, None)
 
         t = type(value)
         if t is NoneType:
@@ -46,3 +59,7 @@ class Primitive:
     @classmethod
     def symbol(cls, name: str) -> "Primitive":
         return Primitive(PrimitiveType.SYMBOL, value=name)
+
+    @classmethod
+    def property(cls, target: dict, name: str) -> "Primitive":
+        return Primitive(PrimitiveType.PROPERTY, value=(target, name))

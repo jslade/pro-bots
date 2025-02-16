@@ -12,13 +12,21 @@
 @@keyword::true
 
 
-start = {expression | comment}* $ ;
+start = {command | comment}* $ ;
+
+command::Command = expression
+                 ;
 
 expression::Expression =
+           | assignment
            | addition
            | subtraction
            | term
            ;
+
+assignment::Assignment = target:assignable ":=" ~ value:expression ;
+
+assignable::Assignable = symbol ;
 
 addition::Addition = left:expression op:'+' ~ right:term ;
 subtraction::Subtraction = left:expression op:'-' ~ right:term ;
@@ -53,6 +61,7 @@ null::Null = "null" | "none" ;
 
 @name
 symbol::Symbol = /[a-zA-Z_][a-zA-Z0-9_]*/ ;
+
 
 
 # It's not clear to me why comments must be explictly defined. The docs

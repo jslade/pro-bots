@@ -47,9 +47,9 @@ class Immediate(Operation):
 
 
 class BinaryOperator(Operation):
-    """Base class for binary operators"""
+    """Base class for binary operators (primarily arithmetic and logical)"""
 
-    def execute(self, frame) -> None:
+    def execute(self, frame: "StackFrame") -> None:
         right = frame.pop()
         left = frame.pop()
         result = self._execute(left, right)
