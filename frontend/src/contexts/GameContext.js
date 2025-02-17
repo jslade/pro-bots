@@ -87,6 +87,11 @@ const GameProvider = ({ children }) => {
                 }
             }
         }
+        if (!found) {
+            console.log("No player for me");
+            setPlayer(null);
+            setProbot(null);
+        }
         return found;
     }, [
         setPlayer,
@@ -101,7 +106,10 @@ const GameProvider = ({ children }) => {
 
         if (session.isPlayer) {
             const foundPlayer = locatePlayer(gameState);
-            if (!foundPlayer) requestAddPlayer();
+            if (!foundPlayer) {
+                setAddPlayerRequested(false);
+                requestAddPlayer();
+            }
         }
     }, [api, gameState,
         locatePlayer,
