@@ -5,11 +5,13 @@ import structlog
 from ...models.game.all import Player
 from ...probotics.compiler import ProboticsCompiler
 from ...probotics.interpreter import (
+    ExceptionCallback,
     ExecutionContext,
     ProboticsInterpreter,
     ResultCallback,
 )
 from ...probotics.ops.all import Operation, Primitive, ScopeVars
+from ...probotics.ops.stack_frame import StackFrame
 from .processor import Work
 
 if TYPE_CHECKING:
@@ -35,7 +37,10 @@ class Programming:
 
         # These built-ins get added to every context automatically
         # TODO: Define builtins
-        self.builtins: ScopeVars = {}
+        self.builtins: ScopeVars = {
+            "left": Primitive.of("left"),
+            "right": Primitive.of("right"),
+        }
 
     def compile(self, code: str) -> list[Operation]:
         """Compile the code into operations -- determine whether it is syntactically
@@ -49,10 +54,15 @@ class Programming:
         player: Player,
         globals: ScopeVars,
         on_result: Optional[ResultCallback] = None,
+        on_exception: Optional[ExceptionCallback] = None,
     ) -> ExecutionContext:
         """Evaluate the code for the given player"""
         context = self.create_context(
-            player=player, globals=globals, operations=operations, on_result=on_result
+            player=player,
+            globals=globals,
+            operations=operations,
+            on_result=on_result,
+            on_exception=on_exception,
         )
 
         self.interpreter.add(context)
@@ -67,31 +77,18 @@ class Programming:
         globals: ScopeVars,
         operations: list[Operation],
         on_result: Optional[ResultCallback],
+        on_exception: Optional[ExceptionCallback] = None,
     ) -> ExecutionContext:
         """Create a new execution context for the given player, using the given globals
         as the starting point"""
-
-        def on_result_wrapper(result: Primitive, context: ExecutionContext):
-            self.on_player_result(player, result, context, on_result)
 
         return ExecutionContext(
             operations=operations,
             builtins=self.builtins,
             globals=globals,
             on_result=on_result,
+            on_exception=on_exception,
         )
-
-    def on_player_result(
-        self,
-        player: Player,
-        result: Primitive,
-        context: ExecutionContext,
-        on_result: Optional[ResultCallback],
-    ) -> None:
-        """Called when there is a result from the interpreter"""
-        LOGGER.info("on_player_result", player=player, result=result)
-        if on_result:
-            on_result(result, context)
 
     def ensure_running(self) -> None:
         """Make sure the interpreter is running (has work scheduled)"""

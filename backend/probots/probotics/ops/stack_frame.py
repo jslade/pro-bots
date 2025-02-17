@@ -93,7 +93,7 @@ class StackFrame:
 
         if name in self.builtins:
             # Builtins are not updatable
-            raise ValueError(f"Cannot update builtin {name}")
+            raise ValueError(f"Cannot assign to builtin: {name}")
 
         # Otherwise, add it to the local scope
         self.scope_vars[name] = value

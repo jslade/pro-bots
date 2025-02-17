@@ -4,7 +4,7 @@ from ...models.all import Message, Session
 from ...models.mixins.pydantic_base import BaseSchema
 from ...probotics.interpreter import ExecutionContext
 from ...probotics.ops.primitive import Primitive
-from ...probotics.ops.stack_frame import ScopeVars
+from ...probotics.ops.stack_frame import ScopeVars, StackFrame
 from ..dispatcher import Dispatcher
 from .base import MessageHandler
 
@@ -133,8 +133,24 @@ class TerminalHandler(MessageHandler):
             output = TerminalOutput(output=str(result.value))
             dispatcher.send(session, "terminal", "output", output.as_msg())
 
+        def on_exception(
+            ex: Exception, context: ExecutionContext, frame: StackFrame
+        ) -> None:
+            """Called when there is an exception during execution in the interpreter"""
+            LOGGER.info(
+                "on_player_exception",
+                player=player.name,
+                ex=ex,
+            )
+            output = TerminalOutput(output=str(ex))
+            dispatcher.send(session, "terminal", "output", output.as_msg())
+
         ENGINE.programming.execute(
-            operations=operations, player=player, globals=globals, on_result=on_result
+            operations=operations,
+            player=player,
+            globals=globals,
+            on_result=on_result,
+            on_exception=on_exception,
         )
 
         return True

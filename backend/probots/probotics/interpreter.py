@@ -16,13 +16,17 @@ LOGGER = structlog.get_logger(__name__)
 
 
 ResultCallback: TypeAlias = Callable[[Primitive, "ExecutionContext"], None]
+ExceptionCallback: TypeAlias = Callable[
+    [Exception, "ExecutionContext", "StackFrame"], None
+]
 
 
 class ExecutionContext:
     builtins: ScopeVars
     operations: list[Operation]
     globals: ScopeVars
-    on_result: ResultCallback
+    on_result: Optional[ResultCallback]
+    on_exception: Optional[ExceptionCallback]
 
     total_frames: int
     total_operations: int
@@ -36,7 +40,8 @@ class ExecutionContext:
         operations: list[Operation],
         builtins: ScopeVars = None,
         globals: Optional[ScopeVars] = None,
-        on_result: ResultCallback = None,
+        on_result: Optional[ResultCallback] = None,
+        on_exception: Optional[ExceptionCallback] = None,
     ) -> None:
         # Builtins are symbols that cannot be changed (assigned to or overridden
         # by another global of the same name
@@ -49,6 +54,10 @@ class ExecutionContext:
         # Callback to be called when there is a result available in the
         # outer scope, used to pass results back to the caller
         self.on_result = on_result
+
+        # Callback to be called when there is an exception when executing operations,
+        # potentially in a nested scope
+        self.on_exception = on_exception
 
         # Globals are symbols can be assigned to in the outer scope only,
         # and will stay around as long as this execution context exists
@@ -106,7 +115,11 @@ class ExecutionContext:
                 self.on_result(exit_scope.return_value, self)
         except Exception as ex:
             LOGGER.exception("Execution error", exception=ex)
-            raise ex
+            if self.on_exception:
+                try:
+                    self.on_exception(ex, self, frame)
+                except Exception as ex2:
+                    LOGGER.exception("Exception in exception handler", exception=ex2)
 
     def execute_frame(self, frame: StackFrame) -> None:
         """Execute the next operations in the frame, until something
