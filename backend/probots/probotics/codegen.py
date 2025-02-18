@@ -16,6 +16,8 @@ from .ops.all import (
     CompareNotEqual,
     Division,
     Immediate,
+    Jump,
+    JumpIf,
     MaybeCall,
     Multiplication,
     Operation,
@@ -36,6 +38,10 @@ class ProboticsCodeGenerator(NodeWalker):
     def __init__(self) -> None:
         self.operations: list[Operation] = []
         self.context = []
+
+    def mark(self):
+        """Mark the current position in the operations list."""
+        return len(self.operations)
 
     @contextmanager
     def in_context(self, name: str):
@@ -68,19 +74,8 @@ class ProboticsCodeGenerator(NodeWalker):
             self.walk(node.children())
 
     def walk_Expression(self, node: Node):
-        len_before = len(self.operations)
-
         with self.in_context("Expression"):
             self.walk(node.children())
-
-        len_after = len(self.operations)
-        num_ops = len_after - len_before
-
-        # if num_ops == 1:
-        #    # Special case for a symbol as the only thing in the expression:
-        #    # This would ideally parse as a bare_command
-        #    if isinstance(self.operations[len_before], ValueOf):
-        #        self.operations.append(MaybeCall())
 
     def walk_Term(self, node: Node):
         with self.in_context("Term"):
@@ -195,15 +190,45 @@ class ProboticsCodeGenerator(NodeWalker):
     #
 
     def walk_Block(self, node: Node):
-        len_before = len(self.operations)
+        before = self.mark()
         with self.in_context("Block"):
             self.walk(node.statements)
 
-        operations = self.operations[len_before:]
-        self.operations[len_before:] = []
+        operations = self.operations[before:]
+        self.operations[before:] = []
 
         block = Primitive.block(operations)
         self.operations.append(Immediate(block))
+
+    def walk_IfStatement(self, node: Node):
+        # This JumpIf is used to skip to the else block, if the condition is false.
+        jump_if_op = JumpIf(jump=0, sense=False)
+
+        # This jump is used to skip the else block, if the if condition is true
+        jump_op = Jump(jump=0)
+
+        with self.in_context("IfStatement"):
+            self.walk(node.condition)
+            self.operations.append(jump_if_op)
+            after_if = self.mark()
+
+            self.walk(node.block)
+            self.operations.append(Call(0))  # TODO: maybe inline block instead of call
+            self.operations.append(jump_op)
+            after_block = self.mark()
+
+            self.walk(node.else_chain)
+            if node.else_block is not None:
+                self.operations.append(Call(0))
+            after_else = self.mark()
+
+        # Set the jump targets for the if statement
+        jump_if_op.jump = after_block - after_if
+
+        jump_op.jump = after_else - after_block
+        if jump_op.jump == 0:
+            # If there is no else block, skip the jump
+            self.operations.pop()
 
     #
     # Function calls

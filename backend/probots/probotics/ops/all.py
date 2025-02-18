@@ -10,6 +10,7 @@ from .comparison import (
     CompareLessThanOrEqual,
     CompareNotEqual,
 )
+from .flow_control import Jump, JumpIf
 from .native import Native
 from .primitive import Primitive, PrimitiveType
 from .stack_frame import EnterScope, ExitScope, ScopeVars, StackFrame, UndefinedSymbol

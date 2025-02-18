@@ -28,6 +28,10 @@ class Primitive:
     value: int | float | str | list | dict | None
 
     @property
+    def is_true(self) -> bool:
+        return bool(self.value)
+
+    @property
     def is_null(self) -> bool:
         return self.type == PrimitiveType.NULL
 

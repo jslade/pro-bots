@@ -13,6 +13,8 @@ from probots.probotics.ops.all import (
     CompareNotEqual,
     Division,
     Immediate,
+    Jump,
+    JumpIf,
     MaybeCall,
     Multiplication,
     Operation,
@@ -278,6 +280,53 @@ class TestBlocks:
     def test_block(
         self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
     ):
+        ops = compiler.compile(input)
+        assert ops == expected
+
+    @pytest.mark.parametrize(
+        "input,expected",
+        [
+            (
+                "if a { b }",
+                [
+                    ValueOf("a"),
+                    JumpIf(jump=3),
+                    Immediate(Primitive.block([ValueOf("b")])),
+                    Call(0),
+                ],
+            ),
+            (
+                "if a { b } else { c }",
+                [
+                    ValueOf("a"),
+                    JumpIf(jump=3),
+                    Immediate(Primitive.block([ValueOf("b")])),
+                    Call(0),
+                    Jump(jump=2),
+                    Immediate(Primitive.block([ValueOf("c")])),
+                    Call(0),
+                ],
+            ),
+            (
+                "if a { b } else if (c) { d } else { e }",
+                [
+                    ValueOf("a"),
+                    JumpIf(jump=3),
+                    Immediate(Primitive.block([ValueOf("b")])),
+                    Call(0),
+                    Jump(jump=7),
+                    ValueOf("c"),
+                    JumpIf(jump=3),
+                    Immediate(Primitive.block([ValueOf("d")])),
+                    Call(0),
+                    Jump(jump=2),
+                    Immediate(Primitive.block([ValueOf("e")])),
+                    Call(0),
+                ],
+            ),
+        ],
+    )
+    def test_if(self, compiler: ProboticsCompiler, input: str, expected: list[Operation]):
         ops = compiler.compile(input)
         assert ops == expected
 

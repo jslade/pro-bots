@@ -79,7 +79,7 @@ rparen = ')' ;
 
 #bare_command::BareCommand = command:symbol ~ argument:{expression}+ ;
 
-if_statement::IfStatement = "if" ~ condition:expression block:block {"else" else:if_statement | "else" final:block}* ;
+if_statement::IfStatement = "if" ~ condition:expression block:block else_chain:["else" ~ (else_block:block|if_statement)] ;
 
 block::Block = "{" ~ statements:{statement | comment}* "}" ;
 

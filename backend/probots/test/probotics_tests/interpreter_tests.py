@@ -132,3 +132,17 @@ class TestInterpreter:
 
         assert len(results) == 1
         assert results[0] == Primitive.of(2)
+
+    def test_if_else(
+        self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter
+    ):
+        ops = compiler.compile("if 1 > 2 { 3 } else { 4 }")
+        results = []
+        context = make_context(ops, results)
+        interpreter.add(context)
+
+        while not interpreter.is_finished:
+            interpreter.execute_next()
+
+        assert len(results) == 1
+        assert results[0] == Primitive.of(4)
