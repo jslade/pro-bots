@@ -169,6 +169,18 @@ class ProboticsCodeGenerator(NodeWalker):
     # Function calls
     #
 
+    def walk_Call(self, node: Node):
+        len_before = len(self.operations)
+
+        with self.in_context("Call"):
+            self.walk(node.command)
+            self.walk(node.args)
+
+        len_after = len(self.operations)
+        num_args = len_after - len_before - 1
+
+        self.operations.append(Call(num_args))
+
     def walk_BareCommand(self, node: Node):  # NOT IMPLEMENTED
         len_before = len(self.operations)
 

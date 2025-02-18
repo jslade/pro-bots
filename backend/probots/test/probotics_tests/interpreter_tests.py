@@ -76,22 +76,19 @@ class TestInterpreter:
         assert context.get("a") == Primitive.of(1)
         assert context.get("b") == Primitive.of(3)
 
-    @pytest.mark.skip(reason="Not implemented")
     def test_native(self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter):
-        did_native = False
+        def do_native(frame) -> Primitive:
+            return Primitive.of(1 + frame.get("arg1").value)
 
-        def do_native(frame):
-            did_native = True
-            return Primitive.of(1 + frame.pop().value)
+        builtins = {"native": Primitive.block([Native(do_native)], name="native_test")}
 
-        builtins = {"native": Primitive.block([Native(do_native)])}
-
-        ops = compiler.compile("native 1")
+        ops = compiler.compile("native(1)")
         results = []
         context = make_context(ops, results, builtins)
         interpreter.add(context)
-        interpreter.execute_next()
 
-        assert did_native is True
+        while not interpreter.is_finished:
+            interpreter.execute_next()
+
         assert len(results) == 1
         assert results[0] == Primitive.of(2)

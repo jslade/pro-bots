@@ -52,17 +52,9 @@ class TerminalHandler(MessageHandler):
 
         """Handle manual input from the terminal -- special commands that are not
         implemented in the probotics language."""
-        # TODO: Just for testing
-        if input.input == "map":
-            if grid := ENGINE.grid:
-                output = TerminalOutput(output=grid.to_str())
-            else:
-                output = TerminalOutput(output="n/a")
-            dispatcher.send(session, "terminal", "output", output.as_msg())
-            return True
 
         # TODO: Just for testing. Eventually this will be handled via probotics
-        if input.input.startswith("move"):
+        if input.input.startswith("__move"):
             backward = False
             bonus = 5
 
@@ -78,7 +70,7 @@ class TerminalHandler(MessageHandler):
             return True
 
         # TODO: Just for testing. Eventually this will be handled via probotics
-        if input.input.startswith("turn"):
+        if input.input.startswith("__turn"):
             words = input.input.split()
             if len(words) > 1:
                 dir = words[1]
@@ -129,9 +121,10 @@ class TerminalHandler(MessageHandler):
                 player=player.name,
                 result=result,
             )
-            self.session_globals[session.id] = context.globals
-            output = TerminalOutput(output=str(result.value))
-            dispatcher.send(session, "terminal", "output", output.as_msg())
+            if result:
+                self.session_globals[session.id] = context.globals
+                output = TerminalOutput(output=str(result.value))
+                dispatcher.send(session, "terminal", "output", output.as_msg())
 
         def on_exception(
             ex: Exception, context: ExecutionContext, frame: StackFrame

@@ -224,6 +224,13 @@ class TestCompilerCalls:
     def compiler(self) -> ProboticsCompiler:
         return ProboticsCompiler()
 
+    def test_call_no_args(self, compiler: ProboticsCompiler):
+        ops = compiler.compile("move()")
+        assert ops == [
+            ValueOf("move"),
+            Call(0),
+        ]
+
     @pytest.mark.skip("Not implemented yet")
     def test_bare_command_1(self, compiler: ProboticsCompiler):
         ops = compiler.compile("move")

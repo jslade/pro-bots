@@ -10,8 +10,8 @@ from ...probotics.interpreter import (
     ProboticsInterpreter,
     ResultCallback,
 )
-from ...probotics.ops.all import Operation, Primitive, ScopeVars
-from ...probotics.ops.stack_frame import StackFrame
+from ...probotics.ops.all import Operation, ScopeVars
+from .builtins import BuiltinsService
 from .processor import Work
 
 if TYPE_CHECKING:
@@ -35,12 +35,7 @@ class Programming:
         self.compiler = ProboticsCompiler()
         self.interpreter = ProboticsInterpreter()
 
-        # These built-ins get added to every context automatically
-        # TODO: Define builtins
-        self.builtins: ScopeVars = {
-            "left": Primitive.of("left"),
-            "right": Primitive.of("right"),
-        }
+        self.builtins = BuiltinsService(self.engine)
 
     def compile(self, code: str) -> list[Operation]:
         """Compile the code into operations -- determine whether it is syntactically
@@ -84,7 +79,7 @@ class Programming:
 
         return ExecutionContext(
             operations=operations,
-            builtins=self.builtins,
+            builtins=self.builtins.get_builtins(player),
             globals=globals,
             on_result=on_result,
             on_exception=on_exception,

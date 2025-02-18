@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from .base import Operation
 from .primitive import Primitive
@@ -6,10 +7,10 @@ from .stack_frame import EnterScope, ScopeVars, StackFrame
 
 
 @dataclass
-class Callable(Primitive):
-    name: str
-    arg_names: list[str]
+class Block:
     operations: list[Operation]
+    name: Optional[str]
+    arg_names: list[str]
 
 
 class Call(Operation):
@@ -30,52 +31,56 @@ class Call(Operation):
 
     def execute(self, frame: StackFrame) -> None:
         # First pop the actual call arguments from the stack
-        call_args = [frame.pop() for _ in range(self.num_args)].reverse()
+        call_args = [frame.pop() for _ in range(self.num_args)]
+        call_args.reverse()
 
         # Then pop the callable from the stack
-        func = frame.pop()
-        if not isinstance(func, Callable):
-            raise ValueError(f"Value is not callable: {func.value} ({func.type.value})")
+        func_prim = frame.pop()
+        if not func_prim.is_block:
+            raise ValueError(
+                f"Value is not callable: {func_prim.value} ({func_prim.type.value})"
+            )
+        block = func_prim.value
 
         # Compare call arguments with the expected arguments
         # the function is defined to take in
-        args = self.validate_args(call_args, func, frame)
+        args = self.validate_args(call_args, block, frame)
 
         # Looks like we have a valid function call, so we can create a new frame
-        new_frame = self.create_frame(func.name, args, frame)
+        new_frame = self.create_frame(block.name, args, block, frame)
         raise EnterScope(new_frame)
 
     def validate_args(
-        self, args: list[Primitive], func: Callable, frame: StackFrame
+        self, args: list[Primitive], block: Block, frame: StackFrame
     ) -> ScopeVars:
         """Validate the arguments passed to the function and create a new scope."""
-        if len(func.arg_names) > 0 and len(args) < len(func.arg_names):
-            raise ValueError(
-                f"Function {func.name} expected {len(func.arg_names)} arguments, "
-                f"but got {len(args)}"
-            )
+        # if len(block.arg_names) > 0 and len(args) < len(block.arg_names):
+        #    raise ValueError(
+        #        f"Block {block.name} expected {len(block.arg_names)} arguments, "
+        #        f"but got {len(args)}"
+        #    )
 
         # Any arguments that are not named will be given a default name: arg1, arg2, etc.
-        arg_names = [n for n in func.arg_names]
+        arg_names = [n for n in block.arg_names]
         while len(arg_names) < len(args):
-            arg_n = len(arg_names) - len(func.arg_names)
+            arg_n = 1 + len(arg_names) - len(block.arg_names)
             arg_names.append(f"arg{arg_n}")
 
         # Create a new scope with the arguments
         scope_vars = ScopeVars()
-        for name, value in zip(arg_names, args, strict=True):
-            scope_vars.set(name, value)
+        for name, value in zip(arg_names, args, strict=False):
+            scope_vars[name] = value
 
         return scope_vars
 
     def create_frame(
-        self, name: str, args: ScopeVars, func: Primitive, parent_frame: StackFrame
+        self, name: str, args: ScopeVars, block: Block, parent_frame: StackFrame
     ) -> StackFrame:
         """Create a new stack frame for the function call."""
         frame = StackFrame(
             name=f"{parent_frame.name}.{name}",
             builtins=parent_frame.builtins,
-            operations=func.block,
+            operations=block.operations,
             scope_vars=ScopeVars(),
             args=args,
             parent=parent_frame,

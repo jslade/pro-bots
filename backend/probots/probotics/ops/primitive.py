@@ -39,6 +39,10 @@ class Primitive:
     def is_property(self) -> bool:
         return self.type == PrimitiveType.PROPERTY
 
+    @property
+    def is_block(self) -> bool:
+        return self.type == PrimitiveType.BLOCK
+
     @classmethod
     def of(cls, value: Any) -> "Primitive":
         if value is None:
@@ -69,5 +73,13 @@ class Primitive:
         return Primitive(PrimitiveType.PROPERTY, value=(target, name))
 
     @classmethod
-    def block(cls, operations: list["Operation"]) -> "Primitive":
-        return Primitive(PrimitiveType.BLOCK, value=operations)
+    def block(
+        cls,
+        operations: list["Operation"],
+        name: Optional[str] = None,
+        arg_names: Optional[list[str]] = None,
+    ) -> "Primitive":
+        from .call import Block
+
+        block = Block(operations=operations, name=name, arg_names=arg_names or [])
+        return Primitive(PrimitiveType.BLOCK, value=block)

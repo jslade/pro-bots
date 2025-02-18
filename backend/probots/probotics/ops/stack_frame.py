@@ -1,10 +1,15 @@
 from dataclasses import dataclass
 from typing import Optional, TypeAlias
 
+import structlog
+
 from .base import Operation
 from .primitive import Primitive
 
 ScopeVars: TypeAlias = dict[str, Primitive]
+
+
+LOGGER = structlog.get_logger(__name__)
 
 
 class UndefinedSymbol(Exception):

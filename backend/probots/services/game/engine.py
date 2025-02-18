@@ -311,6 +311,11 @@ class Engine:
             if probot.player.session_id == session.id:
                 return probot
 
+    def probot_for_player(self, player: Player) -> Optional[Probot]:
+        for probot in self.probots:
+            if probot.player == player:
+                return probot
+
     def remove_probot(self, probot: Probot) -> None:
         if probot not in self.probots:
             return

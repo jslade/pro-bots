@@ -106,3 +106,22 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 - Server: Raspberry Pi 4
 - Clients: Any modern browser, ideally every participant on an individual laptop (keyboards needed, mouse optional)
 - Large-screen TV: "watcher" view for everyone to follow (connected from my personal laptop, or could be chromecast or something from the rpi)
+
+
+# TODO
+
+[ ] if, while
+[ ] executing scripts
+[ ] scoring of code executed via probotics
+[ ] properties
+[ ] score, energy in UI
+[ ] crystals in UI
+[ ] builtins: `jump`, `collect`, `inspect`,  `say`,
+[ ] event-driven programs
+[ ] scripts for bots
+[ ] documentation / reference materials
+[ ] admin stuff: game reset, password reset
+[ ] visual improvements in 3d view
+[ ] code syntax highlighting
+[ ] audio effects
+[ ] game end conditions - high score

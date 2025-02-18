@@ -14,4 +14,6 @@ class Native(Operation):
         self.func = func
 
     def execute(self, frame: StackFrame) -> None:
-        frame.push(Primitive.of(self.func(frame)))
+        """The result of the function is passed as the return value for the frame"""
+        result = self.func(frame)
+        frame.push(result)

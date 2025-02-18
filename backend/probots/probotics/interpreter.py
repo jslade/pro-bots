@@ -3,13 +3,13 @@ from typing import Callable, Optional, TypeAlias
 import structlog
 
 from .ops.all import (
-    Operation,
-    Primitive,
-    StackFrame,
     Breakpoint,
     EnterScope,
     ExitScope,
+    Operation,
+    Primitive,
     ScopeVars,
+    StackFrame,
 )
 
 LOGGER = structlog.get_logger(__name__)
@@ -38,7 +38,7 @@ class ExecutionContext:
         self,
         *,
         operations: list[Operation],
-        builtins: Optional[ScopeVars] = None,
+        builtins: ScopeVars = None,
         globals: Optional[ScopeVars] = None,
         on_result: Optional[ResultCallback] = None,
         on_exception: Optional[ExceptionCallback] = None,
@@ -103,13 +103,14 @@ class ExecutionContext:
             return bp.frame
         except EnterScope as enter_scope:
             LOGGER.debug("Entering scope", frame=enter_scope.frame.name)
-            frame = enter_scope.frame
+            return enter_scope.frame
         except ExitScope as exit_scope:
             LOGGER.debug("Exiting scope", frame=exit_scope.frame.name)
             frame = exit_scope.frame.parent
             if frame:
                 # Current frame gets the return value of the scope that just exited
                 frame.push(exit_scope.return_value)
+                return frame
             else:
                 # We just executed the outermost frame,
                 self.on_result(exit_scope.return_value, self)
