@@ -1,8 +1,8 @@
 @@grammar::Probotics
 @@parseinfo::True
 
-@@comments::/\/\*.*?\*\//
-@@eol_comments::/(#|\/\/).*?$/
+@@comments::/\/\*(?s:.*?)\*\//
+@@eol_comments::/(#|\/\/)[^\n]*$/
 
 @@keyword::else
 @@keyword::False
@@ -15,17 +15,18 @@
 @@keyword::true
 
 
-start = {command | comment}* $ ;
+start = {statement | comment}* $;
 
-command::Command = expression
-                 ;
+statement::Statement = 
+     expression
+     ;
 
-expression::Expression =
-           | assignment
-           | addition
-           | subtraction
-           | term
-           ;
+expression::Expression = 
+     assignment |
+     addition |
+     subtraction |
+     term
+     ;
 
 assignment::Assignment = target:assignable ":=" ~ value:expression ;
 
@@ -35,24 +36,28 @@ addition::Addition = left:expression op:'+' ~ right:term ;
 subtraction::Subtraction = left:expression op:'-' ~ right:term ;
 
 term::Term =
-     | multiplication
-     | division
-     | factor
+     multiplication |
+     division |
+     factor
      ;
 
 multiplication::Multiplication = left:term op:'*' ~ right:factor ;
 division::Division = left:term op:'/' ~ right:factor ;
 
 factor::Factor =
-       | subexpression
-       | number
-       | string
-       | bool
-       | null
-       | symbol
-       ;
+     subexpression |
+     atom |
+     symbol
+     ;
 
 subexpression = '(' ~ @:expression ')' ;
+
+atom::Atom =
+     bool |
+     null |
+     number |
+     string
+     ;
 
 number::Number = /(0|[1-9][0-9]*)(\.[0-9]+)?/ ;
 
@@ -63,33 +68,25 @@ bool::Bool = "true" | "True" | "False" | "false" ;
 null::Null = "null" | "none" | "None";
 
 @name
-symbol::Symbol = /[a-zA-Z_][a-zA-Z0-9_]*/ ;
+symbol::Symbol = !bool !null /[a-zA-Z_][a-zA-Z0-9_]*/ ;
 
+bare_command::BareCommand = command:symbol ~ argument:expression ;
 
-
-# It's not clear to me why comments must be explictly defined. The docs
+# It's not clear to me why comments must be explicitly defined. The docs
 # say the the skip rule (_) below will skip comments, but it doesn't seem to
 comment::Comment =
-       | eol_comment
-       | block_comment
-       ;
-eol_comment = "#" ~ /[^\n]*/ | "//" ~ /[^\n]*/ ;
-block_comment = /\/\*.*?\*\// ;
+     eol_comment |
+     block_comment
+     ;
+eol_comment = /(#|\/\/)[^\n]*/ ;
+block_comment = /\/\*(?s:.*?)\*\// ;
+
+NEWLINE::NEWLINE = /[\r\n]+/ ;
 
 # Skip rule for EOL comments, block comments, and whitespace
-_ = /#.*?$|\/\/.*?|\/\*.*?\*\/|\s+/ ;  # Skip EOL comments, block comments, and whitespace
+_ = /#.*|\/\/.*|\/\*(?s:.*?)\*\/|\s+/ ;  # Skip EOL comments, block comments, and whitespace
 
 (*
-command_list = {command}+ ;
-
-command = assignment
-        | if_statement
-        | while_loop
-        | simple_command
-        | expression
-        ;
-
-assignment = (symbol | property_access) ":=" ( expression | block | block_with_arguments ) ;
 
 if_statement = "if" condition block {"else" if_statement | "else" block}* ;
 
@@ -108,7 +105,6 @@ property_access = target:symbol "." ~ property:SYMBOL ;
 
 call = symbol "(" ~ {expression {"," expression}*}* ")" ;
 
-simple_command = symbol {expression}* ;
 
 symbol_list = symbol {"," symbol}* ;
 

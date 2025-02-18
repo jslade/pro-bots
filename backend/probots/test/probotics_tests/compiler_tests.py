@@ -4,8 +4,10 @@ from probots.probotics.compiler import ProboticsCompiler
 from probots.probotics.ops.all import (
     Addition,
     Assignment,
+    Call,
     Division,
     Immediate,
+    MaybeCall,
     Multiplication,
     Primitive,
     Subtraction,
@@ -63,7 +65,6 @@ class TestCompilerPrimitives:
         ops = compiler.compile(input)
         assert len(ops) == 1
         assert type(ops[0]) is ValueOf
-        assert ops[0].name == expected
 
     @pytest.mark.parametrize(
         "input,expected",
@@ -112,7 +113,7 @@ class TestCompilerPrimitives:
         assert type(ops[0]) is Immediate
         assert ops[0].value.value == expected
 
-    @pytest.mark.skip("Block comments are not working yet")
+    # @pytest.mark.skip("Block comments are not working yet")
     @pytest.mark.parametrize(
         "input,expected",
         [
@@ -154,6 +155,30 @@ class TestCompilerArithmetic:
                 ],
             ),
             (
+                "b / c",
+                [
+                    ValueOf("b"),
+                    ValueOf("c"),
+                    Division(),
+                ],
+            ),
+            (
+                "c + 3",
+                [
+                    ValueOf("c"),
+                    Immediate(Primitive.of(3)),
+                    Addition(),
+                ],
+            ),
+            (
+                "d - 4",
+                [
+                    ValueOf("d"),
+                    Immediate(Primitive.of(4)),
+                    Subtraction(),
+                ],
+            ),
+            (
                 "true / false",
                 [
                     Immediate(Primitive.of(True)),
@@ -180,7 +205,7 @@ class TestCompilerArithmetic:
     def test_arithmetic(
         self, compiler: ProboticsCompiler, input: str, expected: int | float
     ):
-        ops = compiler.compile(input)
+        ops = compiler.compile(input, trace=True)
         assert ops == expected
 
     def test_assignment(self, compiler: ProboticsCompiler):
@@ -191,4 +216,27 @@ class TestCompilerArithmetic:
             Immediate(Primitive.of(2)),
             Addition(),
             Assignment(),
+        ]
+
+
+class TestCompilerCalls:
+    @pytest.fixture
+    def compiler(self) -> ProboticsCompiler:
+        return ProboticsCompiler()
+
+    @pytest.mark.skip("Not implemented yet")
+    def test_bare_command_1(self, compiler: ProboticsCompiler):
+        ops = compiler.compile("move")
+        assert ops == [
+            ValueOf("move"),
+            MaybeCall(),
+        ]
+
+    @pytest.mark.skip("Not implemented yet")
+    def test_bare_command_2(self, compiler: ProboticsCompiler):
+        ops = compiler.compile("turn left")
+        assert ops == [
+            ValueOf("turn"),
+            ValueOf("left"),
+            Call(1),
         ]

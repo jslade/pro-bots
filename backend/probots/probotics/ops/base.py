@@ -21,10 +21,7 @@ class Breakpoint(Exception):
 class Operation:
     """Base class for an operation that can be executed"""
 
-    def expected_args(self) -> list[tuple[str, list["PrimitiveType"]]]:
-        return []
-
-    def execute(self, frame: "StackFrame") -> "Primitive":
+    def execute(self, frame: "StackFrame") -> None:
         raise NotImplementedError
 
 

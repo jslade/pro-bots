@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 from enum import Enum
 from types import NoneType
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .base import Operation
 
 
 class PrimitiveType(str, Enum):
@@ -64,3 +67,7 @@ class Primitive:
     @classmethod
     def property(cls, target: dict, name: str) -> "Primitive":
         return Primitive(PrimitiveType.PROPERTY, value=(target, name))
+
+    @classmethod
+    def block(cls, operations: list["Operation"]) -> "Primitive":
+        return Primitive(PrimitiveType.BLOCK, value=operations)

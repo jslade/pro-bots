@@ -110,6 +110,12 @@ class StackFrame:
             raise ValueError("Stack is empty")
         return self.results.pop()
 
+    def peek(self) -> Optional[Primitive]:
+        """Look at the top value on the stack, if it exists, without removing it."""
+        if self.results is None or len(self.results) == 0:
+            return None
+        return self.results[-1]
+
     @classmethod
     def make_outer(
         cls,

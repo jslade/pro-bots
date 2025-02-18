@@ -11,12 +11,12 @@ class ProboticsCompiler:
         self.grammar = Path(__file__).with_name("probotics-grammar.ebnf").read_text()
         self.parser = tatsu.compile(self.grammar, asmodel=True)
 
-    def compile(self, input: str) -> list[Operation]:
-        model = self.parse(input)
+    def compile(self, input: str, trace: bool = False) -> list[Operation]:
+        model = self.parse(input, trace=trace)
         operations = self.codegen(model)
         return operations
 
-    def parse(self, input: str):
+    def parse(self, input: str, trace: bool = False):
         """Parse an input string into a tatsu model -- which is essentially a list of
         instances of objects. Each object is going to be something in the tatsu.synth
         module, which are a bunch of dynamically-defined dataclasses.
@@ -29,7 +29,7 @@ class ProboticsCompiler:
 
         This object model is intended to be used by codegen()
         """
-        model = self.parser.parse(input)
+        model = self.parser.parse(input, trace=trace)
         return model
 
     def codegen(self, model) -> list[Operation]:

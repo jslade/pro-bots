@@ -38,7 +38,7 @@ class ExecutionContext:
         self,
         *,
         operations: list[Operation],
-        builtins: ScopeVars = None,
+        builtins: Optional[ScopeVars] = None,
         globals: Optional[ScopeVars] = None,
         on_result: Optional[ResultCallback] = None,
         on_exception: Optional[ExceptionCallback] = None,

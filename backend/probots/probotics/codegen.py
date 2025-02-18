@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+
 import structlog
 from tatsu.model import Node
 from tatsu.walkers import NodeWalker
@@ -6,8 +7,10 @@ from tatsu.walkers import NodeWalker
 from .ops.all import (
     Addition,
     Assignment,
+    Call,
     Division,
     Immediate,
+    MaybeCall,
     Multiplication,
     Operation,
     Primitive,
@@ -31,10 +34,11 @@ class ProboticsCodeGenerator(NodeWalker):
     @contextmanager
     def in_context(self, name: str):
         self.context.append(name)
+        # LOGGER.debug("entering context", name=".".join(self.context))
         yield
         self.context.pop()
 
-    def is_parent_context(self, name: str) -> bool:
+    def is_in_context(self, name: str) -> bool:
         return name in self.context
 
     #
@@ -53,8 +57,8 @@ class ProboticsCodeGenerator(NodeWalker):
     def walk_Comment(self, node: Node):
         pass
 
-    def walk_Command(self, node: Node):
-        with self.in_context("Command"):
+    def walk_Statement(self, node: Node):
+        with self.in_context("Statement"):
             self.walk(node.children())
 
     def walk_Expression(self, node: Node):
@@ -72,6 +76,10 @@ class ProboticsCodeGenerator(NodeWalker):
     #
     # Primitives
     #
+
+    def walk_Atom(self, node: Node):
+        with self.in_context("Atom"):
+            self.walk(node.children())
 
     def walk_Number(self, node: Node):
         i_val, d_val = node.ast
@@ -100,7 +108,7 @@ class ProboticsCodeGenerator(NodeWalker):
 
     def walk_Symbol(self, node: Node):
         symbol_name = node.ast
-        if self.is_parent_context("Assignable"):
+        if self.is_in_context("Assignable"):
             # When a bare symbol is on the target side of an assignment,
             # the result should be the symbol itself
             self.operations.append(Immediate(Primitive.symbol(symbol_name)))
@@ -145,3 +153,34 @@ class ProboticsCodeGenerator(NodeWalker):
     def walk_Assignable(self, node: Node):
         with self.in_context("Assignable"):
             self.walk(node.children())
+
+    #
+    # Function calls
+    #
+
+    def walk_BareCommand(self, node: Node):  # NOT IMPLEMENTED
+        len_before = len(self.operations)
+
+        with self.in_context("BareCommand"):
+            self.walk(node.command)
+            self.walk(node.args)
+
+        len_after = len(self.operations)
+        num_args = len_after - len_before - 1
+
+        # Is the first child op added a symbol? Then it may be a symbol that
+        # resolves to a function call, but can't determine until runtime.
+        first = self.operations[len_before]
+        LOGGER.debug(
+            "bare command",
+            len_before=len_before,
+            len_after=len_after,
+            num_args=num_args,
+            first=first,
+        )
+        if isinstance(first, ValueOf):
+            if num_args > 0:
+                # If there are arguments, definitely treat as a function call
+                self.operations.append(Call(num_args))
+            else:
+                self.operations.append(MaybeCall())
