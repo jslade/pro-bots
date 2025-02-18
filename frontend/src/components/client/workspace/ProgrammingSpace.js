@@ -40,7 +40,7 @@ const ProgrammingSpace = ({}) => {
     return ( <>
     <Grid container spacing={0} style={{ height: '100%' }}>
 
-        <Box flex={30} border={1} borderColor="hotpink">
+        <Box flex={30} border={0} borderColor="hotpink">
             <ReactCodeMirror
                 className="editor"
                 value={program}
@@ -50,7 +50,7 @@ const ProgrammingSpace = ({}) => {
                 onChange={handleCodeChange}
             />
         </Box>
-        <Box flex={1} className="controls" border={1} borderColor="green">
+        <Box flex={1} className="controls" border={0} borderColor="green">
             <Button onClick={handleSave}>Save</Button>
             <Button onClick={handleSaveAndRun}>Run</Button>
         </Box>
