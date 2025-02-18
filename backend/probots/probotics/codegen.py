@@ -62,8 +62,19 @@ class ProboticsCodeGenerator(NodeWalker):
             self.walk(node.children())
 
     def walk_Expression(self, node: Node):
+        len_before = len(self.operations)
+
         with self.in_context("Expression"):
             self.walk(node.children())
+
+        len_after = len(self.operations)
+        num_ops = len_after - len_before
+
+        # if num_ops == 1:
+        #    # Special case for a symbol as the only thing in the expression:
+        #    # This would ideally parse as a bare_command
+        #    if isinstance(self.operations[len_before], ValueOf):
+        #        self.operations.append(MaybeCall())
 
     def walk_Term(self, node: Node):
         with self.in_context("Term"):

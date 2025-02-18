@@ -70,7 +70,7 @@ null::Null = "null" | "none" | "None";
 @name
 symbol::Symbol = !bool !null /[a-zA-Z_][a-zA-Z0-9_]*/ ;
 
-bare_command::BareCommand = command:symbol ~ argument:expression ;
+#bare_command::BareCommand = command:symbol ~ argument:{expression}+ ;
 
 # It's not clear to me why comments must be explicitly defined. The docs
 # say the the skip rule (_) below will skip comments, but it doesn't seem to
