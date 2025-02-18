@@ -19,6 +19,7 @@ start = {statement | comment}* $;
 
 statement::Statement = 
      call |
+     if_statement |
      expression
      ;
 
@@ -39,6 +40,7 @@ subtraction::Subtraction = left:expression op:'-' ~ right:term ;
 term::Term =
      multiplication |
      division |
+     condition |
      factor
      ;
 
@@ -77,6 +79,14 @@ rparen = ')' ;
 
 #bare_command::BareCommand = command:symbol ~ argument:{expression}+ ;
 
+if_statement::IfStatement = "if" ~ condition:expression block:block {"else" else:if_statement | "else" final:block}* ;
+
+block::Block = "{" {statement | comment}* "}" ;
+
+condition::Condition = left:term op:comparison_op ~ right:factor ;
+
+comparison_op = "==" | "!=" | "<=" | ">=" | "<" | ">" ;
+
 # It's not clear to me why comments must be explicitly defined. The docs
 # say the the skip rule (_) below will skip comments, but it doesn't seem to
 comment::Comment =
@@ -93,17 +103,12 @@ _ = /#.*|\/\/.*|\/\*(?s:.*?)\*\/|\s+/ ;  # Skip EOL comments, block comments, an
 
 (*
 
-if_statement = "if" condition block {"else" if_statement | "else" block}* ;
 
 while_loop = "while" condition block ;
 
-block = "{" command_list "}" ;
 
 block_with_arguments = "{" symbol_list newline command_list "}" ;
 
-condition = expression [comparison_op expression] ;
-
-comparison_op = "==" | "!=" | "<" | ">" | "<=" | ">=" ;
 
 property_access = target:symbol "." ~ property:SYMBOL ;
 

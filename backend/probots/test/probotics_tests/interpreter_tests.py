@@ -62,6 +62,34 @@ class TestInterpreter:
         assert len(results) == 1
         assert results[0] == Primitive.of(-0.25)
 
+    @pytest.mark.parametrize(
+        "input,expected",
+        [
+            ("1 == 1", Primitive.of(True)),
+            ("1 != 1", Primitive.of(False)),
+            ("1 < 2", Primitive.of(True)),
+            ("1 >= 2", Primitive.of(False)),
+            ("1 > 2", Primitive.of(False)),
+            ("1 <= 2", Primitive.of(True)),
+            ("a:=3\nb:=4\na<b", Primitive.of(True)),
+        ],
+    )
+    def test_comparison(
+        self,
+        compiler: ProboticsCompiler,
+        interpreter: ProboticsInterpreter,
+        input: str,
+        expected: Primitive,
+    ):
+        ops = compiler.compile(input)
+        results = []
+        context = make_context(ops, results)
+        interpreter.add(context)
+        interpreter.execute_next()
+
+        assert len(results) == 1
+        assert results[0] == expected
+
     def test_assignment(
         self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter
     ):

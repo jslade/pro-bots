@@ -8,6 +8,12 @@ from .ops.all import (
     Addition,
     Assignment,
     Call,
+    CompareEqual,
+    CompareGreaterThan,
+    CompareGreaterThanOrEqual,
+    CompareLessThan,
+    CompareLessThanOrEqual,
+    CompareNotEqual,
     Division,
     Immediate,
     MaybeCall,
@@ -150,6 +156,25 @@ class ProboticsCodeGenerator(NodeWalker):
         self.walk(node.left)
         self.walk(node.right)
         self.operations.append(Division())
+
+    #
+    # Conditionals
+    #
+
+    MAP_CONDITION = {
+        "==": CompareEqual,
+        "!=": CompareNotEqual,
+        "<": CompareLessThan,
+        "<=": CompareLessThanOrEqual,
+        ">": CompareGreaterThan,
+        ">=": CompareGreaterThanOrEqual,
+    }
+
+    def walk_Condition(self, node: Node):
+        with self.in_context("Condition"):
+            self.walk(node.left)
+            self.walk(node.right)
+            self.operations.append(self.MAP_CONDITION[node.op]())
 
     #
     # Assignment

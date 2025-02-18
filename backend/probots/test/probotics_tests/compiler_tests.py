@@ -5,10 +5,17 @@ from probots.probotics.ops.all import (
     Addition,
     Assignment,
     Call,
+    CompareEqual,
+    CompareGreaterThan,
+    CompareGreaterThanOrEqual,
+    CompareLessThan,
+    CompareLessThanOrEqual,
+    CompareNotEqual,
     Division,
     Immediate,
     MaybeCall,
     Multiplication,
+    Operation,
     Primitive,
     Subtraction,
     ValueOf,
@@ -203,7 +210,7 @@ class TestCompilerArithmetic:
         ],
     )
     def test_arithmetic(
-        self, compiler: ProboticsCompiler, input: str, expected: int | float
+        self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
     ):
         ops = compiler.compile(input, trace=True)
         assert ops == expected
@@ -217,6 +224,29 @@ class TestCompilerArithmetic:
             Addition(),
             Assignment(),
         ]
+
+
+class TestConditionals:
+    @pytest.fixture
+    def compiler(self) -> ProboticsCompiler:
+        return ProboticsCompiler()
+
+    @pytest.mark.parametrize(
+        "input,expected",
+        [
+            ("a == b", [ValueOf("a"), ValueOf("b"), CompareEqual()]),
+            ("a != b", [ValueOf("a"), ValueOf("b"), CompareNotEqual()]),
+            ("a < b", [ValueOf("a"), ValueOf("b"), CompareLessThan()]),
+            ("a <= b", [ValueOf("a"), ValueOf("b"), CompareLessThanOrEqual()]),
+            ("a > b", [ValueOf("a"), ValueOf("b"), CompareGreaterThan()]),
+            ("a >= b", [ValueOf("a"), ValueOf("b"), CompareGreaterThanOrEqual()]),
+        ],
+    )
+    def test_comparison(
+        self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
+    ):
+        ops = compiler.compile(input)
+        assert ops == expected
 
 
 class TestCompilerCalls:
