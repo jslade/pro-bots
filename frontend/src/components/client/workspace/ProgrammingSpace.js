@@ -26,16 +26,16 @@ const ProgrammingSpace = ({}) => {
         }
     }, [api, program, setProgram]);
 
-    const handleCodeChange = (value, viewUpdate) => {
+    const handleCodeChange = React.useCallback((value, viewUpdate) => {
         setProgram(value);
-    };
+    }, [setProgram]);
 
-    const handleSave = (event) => {
+    const handleSave = React.useCallback((event) => {
         api.sendMessage('user', 'update_program', { program: program });
-    };
-    const handleSaveAndRun = (event) => {
+    }, [api, program]);
+    const handleSaveAndRun = React.useCallback((event) => {
         api.sendMessage('user', 'update_program', { program: program, run: true });
-    };
+    }, [api, program]);
 
     return ( <>
     <Grid container spacing={0} style={{ height: '100%' }}>
