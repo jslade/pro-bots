@@ -158,7 +158,11 @@ class ProboticsInterpreter:
         """Execute the next sequence of operations. If the operation contains nested
         operations, it may stop when an appropriate break point is hit, for the
         purpose of other interpreters to run"""
-        context = self.contexts.pop(0)
+        try:
+            context = self.contexts.pop(0)
+        except IndexError:
+            context = None
+
         if context is None:
             LOGGER.info("No more contexts to execute")
             return
