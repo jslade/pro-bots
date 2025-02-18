@@ -30,7 +30,7 @@ expression::Expression =
      term
      ;
 
-assignment::Assignment = target:assignable ":=" ~ value:expression ;
+assignment::Assignment = target:assignable ":=" ~ value:(block |expression) ;
 
 assignable::Assignable = symbol ;
 
@@ -81,7 +81,7 @@ rparen = ')' ;
 
 if_statement::IfStatement = "if" ~ condition:expression block:block {"else" else:if_statement | "else" final:block}* ;
 
-block::Block = "{" {statement | comment}* "}" ;
+block::Block = "{" ~ statements:{statement | comment}* "}" ;
 
 condition::Condition = left:term op:comparison_op ~ right:factor ;
 

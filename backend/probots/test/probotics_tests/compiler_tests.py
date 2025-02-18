@@ -249,6 +249,39 @@ class TestConditionals:
         assert ops == expected
 
 
+class TestBlocks:
+    @pytest.fixture
+    def compiler(self) -> ProboticsCompiler:
+        return ProboticsCompiler()
+
+    @pytest.mark.parametrize(
+        "input,expected",
+        [
+            (
+                "a := { 1 + 2 }",
+                [
+                    Immediate(Primitive.symbol("a")),
+                    Immediate(
+                        Primitive.block(
+                            [
+                                Immediate(Primitive.of(1)),
+                                Immediate(Primitive.of(2)),
+                                Addition(),
+                            ]
+                        )
+                    ),
+                    Assignment(),
+                ],
+            ),
+        ],
+    )
+    def test_block(
+        self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
+    ):
+        ops = compiler.compile(input)
+        assert ops == expected
+
+
 class TestCompilerCalls:
     @pytest.fixture
     def compiler(self) -> ProboticsCompiler:

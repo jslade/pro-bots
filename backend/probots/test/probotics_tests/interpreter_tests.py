@@ -104,6 +104,18 @@ class TestInterpreter:
         assert context.get("a") == Primitive.of(1)
         assert context.get("b") == Primitive.of(3)
 
+    def test_call(self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter):
+        ops = compiler.compile("foo := { 2 * 3 }\n" "foo()")
+        results = []
+        context = make_context(ops, results)
+        interpreter.add(context)
+
+        while not interpreter.is_finished:
+            interpreter.execute_next()
+
+        assert len(results) == 1
+        assert results[0] == Primitive.of(6)
+
     def test_native(self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter):
         def do_native(frame) -> Primitive:
             return Primitive.of(1 + frame.get("arg1").value)

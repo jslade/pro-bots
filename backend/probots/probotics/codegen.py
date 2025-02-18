@@ -191,6 +191,21 @@ class ProboticsCodeGenerator(NodeWalker):
             self.walk(node.children())
 
     #
+    # Blocks
+    #
+
+    def walk_Block(self, node: Node):
+        len_before = len(self.operations)
+        with self.in_context("Block"):
+            self.walk(node.statements)
+
+        operations = self.operations[len_before:]
+        self.operations[len_before:] = []
+
+        block = Primitive.block(operations)
+        self.operations.append(Immediate(block))
+
+    #
     # Function calls
     #
 
