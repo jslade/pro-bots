@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-
 import { Grid, Box } from '@mui/material';
 
 import { SessionContext } from '../../../contexts/SessionContext';
@@ -28,20 +27,20 @@ return ( <>
         <Grid container spacing={0} style={{ height: 'calc(100vh - 1.5em)' }}>
             <Grid item xs={6}>
                 <Box display="flex" flexDirection="column" height="100%">
-                    <Box flex={3} border={1}>
+                    <Box flex={3} border={1} borderColor="blue">
                         <ProgrammingSpace />
                     </Box>
-                    <Box flex={1} border={0}>
+                    <Box flex={1} border={1} borderColor="white">
                         <CommandSpace />
                     </Box>
                 </Box>
             </Grid>
             <Grid item xs={6}>
                 <Box display="flex" flexDirection="column" height="100%">
-                    <Box flex={6} border={1}>
+                    <Box flex={4} border={1}>
                         <Overview />
                     </Box>
-                    <Box flex={8} border={0}>
+                    <Box flex={12} border={0}>
                         <Display />
                     </Box>
                     <Box flex={1} border={0}>

@@ -1,4 +1,4 @@
-import { lighten, rgbToHex } from '@mui/material';
+import { lighten } from '@mui/material';
 import React from 'react';
 
 function Ground({ grid, width, height}) {
@@ -24,7 +24,7 @@ function Cell(props) {
 
     const handleClick = React.useCallback(() => {
         console.log("clicked cell", props.cell);
-    }, []);
+    }, [props.cell]);
     
     return (
       <mesh

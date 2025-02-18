@@ -13,3 +13,7 @@ class BaseSchema(pydantic.BaseModel):
     def as_msg(self):
         """Just a helper alias to standardize serialization for sending as a message payload"""
         return self.model_dump(by_alias=True)
+
+    def as_response(self):
+        """Just a helper alias to standardize serialization for sending as response payload"""
+        return self.model_dump_json(by_alias=True)

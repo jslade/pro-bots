@@ -1,0 +1,49 @@
+
+1 + 2 * 3 / 4
+
+
+(1 + 2)*3/(40+0)
+
+# Ignore comments?
+
+
+/*
+x := 5
+y := "blah blah"
+
+me
+me.colors
+
+me.colors.head
+me.colors.head := "#aabbcc"
+
+print("this is a test")
+print "this also works"
+
+
+# A simple routine
+
+jazz_square := {
+  move left
+  move back
+  move right
+  move
+}
+
+emote := { message, color
+  # Change colors 
+  if color
+    old_color := me.color.head
+    me.color.head = color
+  end
+
+  say message
+  jazz_square
+
+  # Restore original color
+  if old_color {
+    me.color.head := old_color
+  }
+}
+
+*/

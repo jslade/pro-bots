@@ -1,6 +1,6 @@
 import React from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { PerspectiveCamera } from '@react-three/drei';
 import { GameContext } from '../../../contexts/GameContext';
 
 

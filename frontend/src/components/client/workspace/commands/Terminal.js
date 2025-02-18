@@ -40,33 +40,13 @@ const TerminalComponent = () => {
 
     const addToHistory = useCallback((command) => {
         // Add to the history -- if it's not the same as the last command
-        if (history.length > 0 && command != history[-1]) {
+        if (history.length > 0 && command !== history[-1]) {
             setHistory([...history, command]);
         }
         setHistoryIndex(-1); // Reset to -1 to indicate we're back at the current input
         setInput(''); // Clear the input after command execution
     }, [history, setHistory, setHistoryIndex, setInput])
 
-    const handleKeyDown = (event) => {
-        console.log(event.key);
-        if (event.key === 'ArrowUp') {
-            event.preventDefault();
-            let newIndex = historyIndex + 1;
-            if (newIndex < history.length) {
-                setInput(history[history.length - 1 - newIndex]);
-                setHistoryIndex(newIndex);
-            }
-        }
-        if (event.key === 'ArrowDown') {
-            event.preventDefault();
-            let newIndex = historyIndex - 1;
-            if (newIndex >= 0) {
-                setInput(history[history.length - 1 - newIndex]);
-                setHistoryIndex(newIndex);
-            }
-        }
-    };
-  
     const onOutput = useCallback((output) => {
         setTerminalLineData([
             ...terminalLineData,

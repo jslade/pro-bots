@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import React, { useContext, useEffect, useState } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import { GameContext } from '../../contexts/GameContext';
 
 import Ground from './Ground';
@@ -24,6 +24,7 @@ const Overview = () => {
         <Canvas>
             {gameState ? <OverviewScene
                 gameState={gameState}
+                probots={probots}
                 width={width}
                 height={height}
              /> : <></>}
@@ -31,7 +32,7 @@ const Overview = () => {
    );
 };
 
-const OverviewScene = ({ gameState, width, height }) => {
+const OverviewScene = ({ gameState, probots, width, height }) => {
     useThree(({ camera }) => {
         camera.position.set(width / 2.0 - 0.5, width * 0.58, - height / 3.0 - 2);
         camera.rotation.set(-Math.PI / 2, 0.0, 0);
@@ -42,7 +43,7 @@ const OverviewScene = ({ gameState, width, height }) => {
         <spotLight position={[width*2, height*2, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[width/2, height*2, 2]} decay={0} intensity={Math.PI} />
         <Ground grid={gameState.grid} width={width} height={height} />
-        {gameState.probots.map((p) => <ProbotModel key={p.name} probot={p} />)}
+        {probots.map((p) => <ProbotModel key={p.name} probot={p} />)}
     </>);
 };
 

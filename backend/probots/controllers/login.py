@@ -14,7 +14,7 @@ def login():
     if result.success:
         return LoginResponse(
             status="success", session_id=result.session_id
-        ).model_dump_json(by_alias=True), 200
+        ).as_response(), 200
     elif result.unauthorized:
         return jsonify({"message": "Unauthorized"}), 401
 

@@ -48,7 +48,7 @@ const ProbotModel = ({ probot, ...props }) => {
 };
 
 function ExtrudedRing({
-  radius: radius = 1,
+  radius = 1,
   tubeRadius = 0.05,
   segments = 64,
   tubularSegments = 16,

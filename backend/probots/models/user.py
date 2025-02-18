@@ -28,7 +28,10 @@ class User(DB.Model, PKId, UniquelyNamed):
 
     programs: Mapped[list["Program"]] = relationship("Program", back_populates="user")
 
+    @property
     def current_program(self) -> Optional["Program"]:
+        from .program import Program
+
         return Program.for_user(self, None)
 
     @classmethod
