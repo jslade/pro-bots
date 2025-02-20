@@ -44,6 +44,10 @@ class Primitive:
         return self.type == PrimitiveType.PROPERTY
 
     @property
+    def is_object(self) -> bool:
+        return self.type == PrimitiveType.OBJECT
+
+    @property
     def is_block(self) -> bool:
         return self.type == PrimitiveType.BLOCK
 
@@ -67,6 +71,10 @@ class Primitive:
             return Primitive(PrimitiveType.LIST, value)
         if t is dict:
             return Primitive(PrimitiveType.OBJECT, value)
+        if t is Primitive:
+            return value
+
+        raise TypeError(f"Cannot convert {t} to primitive")
 
     @classmethod
     def symbol(cls, name: str) -> "Primitive":

@@ -17,6 +17,8 @@ from .ops.all import (
     CompareLessThanOrEqual,
     CompareNotEqual,
     Division,
+    GetProperty,
+    GetValue,
     Immediate,
     Jump,
     JumpIf,
@@ -28,8 +30,8 @@ from .ops.all import (
     Operation,
     Primitive,
     PrimitiveType,
+    Property,
     Subtraction,
-    ValueOf,
 )
 
 LOGGER = structlog.get_logger(__name__)
@@ -124,6 +126,14 @@ class ProboticsCodeGenerator(NodeWalker):
         self.operations.append(Immediate(value))
 
     def walk_Symbol(self, node: Node):
+        # Symbol can be simple like x, or a property like x.y
+        if type(node.ast) is tuple:
+            self.walk_Property(node.ast)
+            if not self.is_in_context("Assignable"):
+                self.operations.append(GetProperty())
+            return
+
+        # For the case of a simple symbol:
         symbol_name = node.ast
         if self.is_in_context("Assignable"):
             # When a bare symbol is on the target side of an assignment,
@@ -131,7 +141,19 @@ class ProboticsCodeGenerator(NodeWalker):
             self.operations.append(Immediate(Primitive.symbol(symbol_name)))
         else:
             # Otherwise, we want the value of the symbol in the current scope
-            self.operations.append(ValueOf(symbol_name))
+            self.operations.append(GetValue(symbol_name))
+
+    def walk_Property(self, properties: tuple[str, ...]):
+        # This will be a left-associative list of properties, object properties.
+        # So for example x.y.z, we will result in ('.', ('.', 'x', 'y'), 'z')
+        dot, left, right = properties
+        if type(left) is tuple:
+            self.walk_Property(left)
+            self.operations.append(GetProperty())
+        else:
+            self.operations.append(GetValue(left))
+
+        self.operations.append(Property(right))
 
     #
     # Arithmetic
@@ -329,9 +351,13 @@ class ProboticsCodeGenerator(NodeWalker):
             num_args=num_args,
             first=first,
         )
-        if isinstance(first, ValueOf):
+        if isinstance(first, GetValue):
             if num_args > 0:
                 # If there are arguments, definitely treat as a function call
                 self.operations.append(Call(num_args, local=False))
             else:
                 self.operations.append(MaybeCall())
+
+    #
+    # Objects and lists
+    #

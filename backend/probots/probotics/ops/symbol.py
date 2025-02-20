@@ -3,7 +3,7 @@ from .primitive import Primitive
 from .stack_frame import StackFrame, UndefinedSymbol
 
 
-class ValueOf(Operation):
+class GetValue(Operation):
     """Return the value of a symbol in the current scope."""
 
     def __init__(self, name: str) -> None:
@@ -24,4 +24,4 @@ class ValueOf(Operation):
         return self.name == other.name
 
     def __repr__(self):
-        return f'ValueOf("{self.name}")'
+        return f"GetValue({self.name})"

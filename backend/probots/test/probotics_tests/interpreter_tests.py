@@ -4,7 +4,7 @@ import pytest
 
 from probots.probotics.compiler import ProboticsCompiler
 from probots.probotics.interpreter import ExecutionContext, ProboticsInterpreter
-from probots.probotics.ops.all import Native, Operation, Primitive, ScopeVars
+from probots.probotics.ops.all import Native, Operation, Primitive, ScopeVars, StackFrame
 
 
 def make_context(
@@ -117,7 +117,7 @@ class TestInterpreter:
         assert results[0] == Primitive.of(6)
 
     def test_native(self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter):
-        def do_native(frame) -> Primitive:
+        def do_native(frame: StackFrame) -> Primitive:
             return Primitive.of(1 + frame.get("arg1").value)
 
         builtins = {"native": Primitive.block([Native(do_native)], name="native_test")}
@@ -193,3 +193,32 @@ class TestInterpreter:
 
         assert len(results) == 1
         assert results[0] == Primitive.of(False)
+
+    def test_object_property(
+        self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter
+    ):
+        def new_object(frame: StackFrame) -> Primitive:
+            return Primitive.of({})
+
+        builtins = {"object": Primitive.block([Native(new_object)], name="object")}
+
+        ops = compiler.compile(
+            """
+            x := object()
+            x.y
+            x.z := 1
+            x.z
+            x.q := object()
+            x.q.r := x.z + 1
+            x.q.r
+        """
+        )
+        results = []
+
+        context = make_context(ops, results, builtins)
+        interpreter.add(context)
+        while not interpreter.is_finished:
+            interpreter.execute_next()
+
+        assert len(results) == 1
+        assert results[0] == Primitive.of(2)

@@ -21,11 +21,32 @@ class BuiltinsService:
         """Define a new set of built-ins bound to the player"""
         builtins: ScopeVars = {}
 
+        # Basic language features
+        self._add_list(builtins)
+        self._add_object(builtins)
+
+        # Game-specific built-ins
         self._is_idle(player, builtins)
         self._add_move(player, builtins)
         self._add_turn(player, builtins)
 
         return builtins
+
+    def _add_list(self, builtins: ScopeVars):
+        def new_list(frame: StackFrame) -> Primitive:
+            return Primitive.of([])
+
+        builtins["list"] = Primitive.block(
+            operations=[Native(new_list)], name="list", arg_names=[]
+        )
+
+    def _add_object(self, builtins: ScopeVars):
+        def new_object(frame: StackFrame) -> Primitive:
+            return Primitive.of({})
+
+        builtins["list"] = Primitive.block(
+            operations=[Native(new_object)], name="list", arg_names=[]
+        )
 
     def _add_is_idle(self, player: Player, builtins: ScopeVars):
         def do_is_idle(frame: StackFrame) -> Primitive:

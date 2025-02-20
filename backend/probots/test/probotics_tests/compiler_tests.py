@@ -14,6 +14,7 @@ from probots.probotics.ops.all import (
     CompareLessThanOrEqual,
     CompareNotEqual,
     Division,
+    GetProperty,
     Immediate,
     Jump,
     JumpIf,
@@ -24,8 +25,9 @@ from probots.probotics.ops.all import (
     Multiplication,
     Operation,
     Primitive,
+    Property,
     Subtraction,
-    ValueOf,
+    GetValue,
 )
 
 
@@ -78,7 +80,7 @@ class TestCompilerPrimitives:
     def test_symbol(self, compiler: ProboticsCompiler, input: str, expected: bool):
         ops = compiler.compile(input)
         assert len(ops) == 1
-        assert type(ops[0]) is ValueOf
+        assert type(ops[0]) is GetValue
 
     @pytest.mark.parametrize(
         "input,expected",
@@ -163,23 +165,23 @@ class TestCompilerArithmetic:
             (
                 "a * b",
                 [
-                    ValueOf("a"),
-                    ValueOf("b"),
+                    GetValue("a"),
+                    GetValue("b"),
                     Multiplication(),
                 ],
             ),
             (
                 "b / c",
                 [
-                    ValueOf("b"),
-                    ValueOf("c"),
+                    GetValue("b"),
+                    GetValue("c"),
                     Division(),
                 ],
             ),
             (
                 "c + 3",
                 [
-                    ValueOf("c"),
+                    GetValue("c"),
                     Immediate(Primitive.of(3)),
                     Addition(),
                 ],
@@ -187,7 +189,7 @@ class TestCompilerArithmetic:
             (
                 "d - 4",
                 [
-                    ValueOf("d"),
+                    GetValue("d"),
                     Immediate(Primitive.of(4)),
                     Subtraction(),
                 ],
@@ -219,7 +221,7 @@ class TestCompilerArithmetic:
     def test_arithmetic(
         self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
     ):
-        ops = compiler.compile(input, trace=True)
+        ops = compiler.compile(input)
         assert expected == ops
 
     def test_assignment(self, compiler: ProboticsCompiler):
@@ -241,12 +243,12 @@ class TestConditionals:
     @pytest.mark.parametrize(
         "input,expected",
         [
-            ("a == b", [ValueOf("a"), ValueOf("b"), CompareEqual()]),
-            ("a != b", [ValueOf("a"), ValueOf("b"), CompareNotEqual()]),
-            ("a < b", [ValueOf("a"), ValueOf("b"), CompareLessThan()]),
-            ("a <= b", [ValueOf("a"), ValueOf("b"), CompareLessThanOrEqual()]),
-            ("a > b", [ValueOf("a"), ValueOf("b"), CompareGreaterThan()]),
-            ("a >= b", [ValueOf("a"), ValueOf("b"), CompareGreaterThanOrEqual()]),
+            ("a == b", [GetValue("a"), GetValue("b"), CompareEqual()]),
+            ("a != b", [GetValue("a"), GetValue("b"), CompareNotEqual()]),
+            ("a < b", [GetValue("a"), GetValue("b"), CompareLessThan()]),
+            ("a <= b", [GetValue("a"), GetValue("b"), CompareLessThanOrEqual()]),
+            ("a > b", [GetValue("a"), GetValue("b"), CompareGreaterThan()]),
+            ("a >= b", [GetValue("a"), GetValue("b"), CompareGreaterThanOrEqual()]),
         ],
     )
     def test_comparison(
@@ -264,18 +266,18 @@ class TestLogicals:
     @pytest.mark.parametrize(
         "input,expected",
         [
-            ("a and b", [ValueOf("a"), ValueOf("b"), LogicalAnd()]),
-            ("a or b", [ValueOf("a"), ValueOf("b"), LogicalOr()]),
-            ("not a ", [ValueOf("a"), LogicalNot()]),
-            ("a and not b", [ValueOf("a"), ValueOf("b"), LogicalNot(), LogicalAnd()]),
+            ("a and b", [GetValue("a"), GetValue("b"), LogicalAnd()]),
+            ("a or b", [GetValue("a"), GetValue("b"), LogicalOr()]),
+            ("not a ", [GetValue("a"), LogicalNot()]),
+            ("a and not b", [GetValue("a"), GetValue("b"), LogicalNot(), LogicalAnd()]),
             (
                 "(a or b) and not (c or d)",
                 [
-                    ValueOf("a"),
-                    ValueOf("b"),
+                    GetValue("a"),
+                    GetValue("b"),
                     LogicalOr(),
-                    ValueOf("c"),
-                    ValueOf("d"),
+                    GetValue("c"),
+                    GetValue("d"),
                     LogicalOr(),
                     LogicalNot(),
                     LogicalAnd(),
@@ -329,38 +331,38 @@ class TestBlocks:
             (
                 "if a { b }",
                 [
-                    ValueOf("a"),
+                    GetValue("a"),
                     JumpIf(jump=2, sense=False),
-                    Immediate(Primitive.block([ValueOf("b")], name="IfStatement")),
+                    Immediate(Primitive.block([GetValue("b")], name="IfStatement")),
                     Call(0, local=True),
                 ],
             ),
             (
                 "if a { b } else { c }",
                 [
-                    ValueOf("a"),
+                    GetValue("a"),
                     JumpIf(jump=3, sense=False),
-                    Immediate(Primitive.block([ValueOf("b")], name="IfStatement")),
+                    Immediate(Primitive.block([GetValue("b")], name="IfStatement")),
                     Call(0, local=True),
                     Jump(jump=2),
-                    Immediate(Primitive.block([ValueOf("c")], name="ElseStatement")),
+                    Immediate(Primitive.block([GetValue("c")], name="ElseStatement")),
                     Call(0, local=True),
                 ],
             ),
             (
                 "if a { b } else if (c) { d } else { e }",
                 [
-                    ValueOf("a"),
+                    GetValue("a"),
                     JumpIf(jump=3, sense=False),
-                    Immediate(Primitive.block([ValueOf("b")], name="IfStatement")),
+                    Immediate(Primitive.block([GetValue("b")], name="IfStatement")),
                     Call(0, local=True),
                     Jump(jump=7),
-                    ValueOf("c"),
+                    GetValue("c"),
                     JumpIf(jump=3, sense=False),
-                    Immediate(Primitive.block([ValueOf("d")], name="IfStatement")),
+                    Immediate(Primitive.block([GetValue("d")], name="IfStatement")),
                     Call(0, local=True),
                     Jump(jump=2),
-                    Immediate(Primitive.block([ValueOf("e")], name="ElseStatement")),
+                    Immediate(Primitive.block([GetValue("e")], name="ElseStatement")),
                     Call(0, local=True),
                 ],
             ),
@@ -391,12 +393,12 @@ class TestBlocks:
             (
                 "while a { if b { break } }",
                 [
-                    ValueOf("a"),
+                    GetValue("a"),
                     JumpIf(jump=4, sense=False),
                     Immediate(
                         Primitive.block(
                             [
-                                ValueOf("b"),
+                                GetValue("b"),
                                 JumpIf(jump=2, sense=False),
                                 Immediate(Primitive.block([Break()], name="IfStatement")),
                                 Call(0, local=True),
@@ -429,11 +431,11 @@ class TestBlocks:
                         Primitive.block(
                             [
                                 Immediate(Primitive.symbol("i")),
-                                ValueOf("i"),
+                                GetValue("i"),
                                 Immediate(Primitive.of(1)),
                                 Addition(),
                                 Assignment(),
-                                ValueOf("i"),
+                                GetValue("i"),
                                 Immediate(Primitive.of(5)),
                                 CompareEqual(),
                                 JumpIf(jump=2, sense=False),
@@ -462,18 +464,49 @@ class TestCompilerCalls:
     def compiler(self) -> ProboticsCompiler:
         return ProboticsCompiler()
 
-    def test_call_no_args(self, compiler: ProboticsCompiler):
-        ops = compiler.compile("move()")
-        assert ops == [
-            ValueOf("move"),
-            Call(0, local=False),
-        ]
+    @pytest.mark.parametrize(
+        "input,expected",
+        [
+            (
+                "blah()",
+                [
+                    GetValue("blah"),
+                    Call(0, local=False),
+                ],
+            ),
+            (
+                "a := b()",
+                [
+                    Immediate(Primitive.symbol("a")),
+                    GetValue("b"),
+                    Call(0, local=False),
+                    Assignment(),
+                ],
+            ),
+            (
+                "move(1, 2) == true",
+                [
+                    GetValue("move"),
+                    Immediate(Primitive.of(1)),
+                    Immediate(Primitive.of(2)),
+                    Call(2, local=False),
+                    Immediate(Primitive.of(True)),
+                    CompareEqual(),
+                ],
+            ),
+        ],
+    )
+    def test_calls_with_parens(
+        self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
+    ) -> None:
+        ops = compiler.compile(input)
+        assert expected == ops
 
     @pytest.mark.skip("Not implemented yet")
     def test_bare_command_1(self, compiler: ProboticsCompiler):
         ops = compiler.compile("move")
         assert ops == [
-            ValueOf("move"),
+            GetValue("move"),
             MaybeCall(),
         ]
 
@@ -481,7 +514,60 @@ class TestCompilerCalls:
     def test_bare_command_2(self, compiler: ProboticsCompiler):
         ops = compiler.compile("turn left")
         assert ops == [
-            ValueOf("turn"),
-            ValueOf("left"),
+            GetValue("turn"),
+            GetValue("left"),
             Call(1, local=False),
         ]
+
+
+class TestCompilerObjects:
+    @pytest.fixture
+    def compiler(self) -> ProboticsCompiler:
+        return ProboticsCompiler()
+
+    @pytest.mark.parametrize(
+        "input,expected",
+        [
+            (
+                "a.b",
+                [GetValue("a"), Property("b"), GetProperty()],
+            ),
+            (
+                "a.b.c",
+                [
+                    GetValue("a"),
+                    Property("b"),
+                    GetProperty(),
+                    Property("c"),
+                    GetProperty(),
+                ],
+            ),
+        ],
+    )
+    def test_get_property(
+        self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
+    ):
+        ops = compiler.compile(input)
+        assert expected == ops
+
+    @pytest.mark.parametrize(
+        "input,expected",
+        [
+            (
+                "a.b := c.d",
+                [
+                    GetValue("a"),
+                    Property("b"),
+                    GetValue("c"),
+                    Property("d"),
+                    GetProperty(),
+                    Assignment(),
+                ],
+            ),
+        ],
+    )
+    def test_set_property(
+        self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
+    ):
+        ops = compiler.compile(input)
+        assert expected == ops
