@@ -11,6 +11,7 @@ from .comparison import (
     CompareNotEqual,
 )
 from .flow_control import Break, Breakpoint, Catch, Jump, JumpIf
+from .logical import LogicalAnd, LogicalNot, LogicalOr
 from .native import Native
 from .primitive import Primitive, PrimitiveType
 from .stack_frame import EnterScope, ExitScope, ScopeVars, StackFrame, UndefinedSymbol

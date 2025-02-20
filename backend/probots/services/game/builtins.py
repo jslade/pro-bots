@@ -21,10 +21,20 @@ class BuiltinsService:
         """Define a new set of built-ins bound to the player"""
         builtins: ScopeVars = {}
 
+        self._is_idle(player, builtins)
         self._add_move(player, builtins)
         self._add_turn(player, builtins)
 
         return builtins
+
+    def _add_is_idle(self, player: Player, builtins: ScopeVars):
+        def do_is_idle(frame: StackFrame) -> Primitive:
+            probot = self.engine.probot_for_player(player)
+            return Primitive.of(probot.state == "idle")
+
+        builtins["is_idle"] = Primitive.block(
+            operations=[Native(do_is_idle)], name="is_idle", arg_names=[]
+        )
 
     def _add_move(self, player: Player, builtins: ScopeVars):
         def do_move(frame: StackFrame) -> Primitive:

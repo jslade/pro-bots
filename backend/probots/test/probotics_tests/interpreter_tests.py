@@ -171,3 +171,25 @@ class TestInterpreter:
 
         assert len(results) == 1
         assert results[0] == Primitive.of(5)
+
+    def test_logicals(
+        self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter
+    ):
+        ops = compiler.compile(
+            """
+            a := True
+            b := False
+            c := True
+            d := False
+            (a or b) and not (c or d)
+            """
+        )
+        results = []
+        context = make_context(ops, results)
+        interpreter.add(context)
+
+        while not interpreter.is_finished:
+            interpreter.execute_next()
+
+        assert len(results) == 1
+        assert results[0] == Primitive.of(False)

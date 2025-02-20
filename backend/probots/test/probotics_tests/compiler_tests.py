@@ -17,6 +17,9 @@ from probots.probotics.ops.all import (
     Immediate,
     Jump,
     JumpIf,
+    LogicalAnd,
+    LogicalNot,
+    LogicalOr,
     MaybeCall,
     Multiplication,
     Operation,
@@ -217,7 +220,7 @@ class TestCompilerArithmetic:
         self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
     ):
         ops = compiler.compile(input, trace=True)
-        assert ops == expected
+        assert expected == ops
 
     def test_assignment(self, compiler: ProboticsCompiler):
         ops = compiler.compile("a := 1 + 2")
@@ -250,7 +253,41 @@ class TestConditionals:
         self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
     ):
         ops = compiler.compile(input)
-        assert ops == expected
+        assert expected == ops
+
+
+class TestLogicals:
+    @pytest.fixture
+    def compiler(self) -> ProboticsCompiler:
+        return ProboticsCompiler()
+
+    @pytest.mark.parametrize(
+        "input,expected",
+        [
+            ("a and b", [ValueOf("a"), ValueOf("b"), LogicalAnd()]),
+            ("a or b", [ValueOf("a"), ValueOf("b"), LogicalOr()]),
+            ("not a ", [ValueOf("a"), LogicalNot()]),
+            ("a and not b", [ValueOf("a"), ValueOf("b"), LogicalNot(), LogicalAnd()]),
+            (
+                "(a or b) and not (c or d)",
+                [
+                    ValueOf("a"),
+                    ValueOf("b"),
+                    LogicalOr(),
+                    ValueOf("c"),
+                    ValueOf("d"),
+                    LogicalOr(),
+                    LogicalNot(),
+                    LogicalAnd(),
+                ],
+            ),
+        ],
+    )
+    def test_comparison(
+        self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
+    ):
+        ops = compiler.compile(input)
+        assert expected == ops
 
 
 class TestBlocks:
@@ -284,7 +321,7 @@ class TestBlocks:
         self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
     ):
         ops = compiler.compile(input)
-        assert ops == expected
+        assert expected == ops
 
     @pytest.mark.parametrize(
         "input,expected",
@@ -331,7 +368,7 @@ class TestBlocks:
     )
     def test_if(self, compiler: ProboticsCompiler, input: str, expected: list[Operation]):
         ops = compiler.compile(input)
-        assert ops == expected
+        assert expected == ops
 
     @pytest.mark.parametrize(
         "input,expected",
@@ -417,7 +454,7 @@ class TestBlocks:
         self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
     ):
         ops = compiler.compile(input)
-        assert ops == expected
+        assert expected == ops
 
 
 class TestCompilerCalls:

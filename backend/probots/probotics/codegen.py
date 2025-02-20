@@ -20,6 +20,9 @@ from .ops.all import (
     Immediate,
     Jump,
     JumpIf,
+    LogicalAnd,
+    LogicalNot,
+    LogicalOr,
     MaybeCall,
     Multiplication,
     Operation,
@@ -175,6 +178,26 @@ class ProboticsCodeGenerator(NodeWalker):
             self.walk(node.left)
             self.walk(node.right)
             self.operations.append(self.MAP_CONDITION[node.op]())
+
+    #
+    # Logical
+    #
+
+    MAP_LOGICAL = {
+        "and": LogicalAnd,
+        "or": LogicalOr,
+    }
+
+    def walk_Logical(self, node: Node):
+        with self.in_context("Logical"):
+            self.walk(node.left)
+            self.walk(node.right)
+            self.operations.append(self.MAP_LOGICAL[node.op]())
+
+    def walk_LogicalNot(self, node: Node):
+        with self.in_context("Negative"):
+            self.walk(node.right)
+            self.operations.append(LogicalNot())
 
     #
     # Assignment
