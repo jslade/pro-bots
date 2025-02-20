@@ -152,7 +152,7 @@ class Engine:
 
         # Just now for testing purposes:
         if not self.players:
-            for i in range(10):
+            for i in range(4):
                 name = f"bot-{i}"
 
                 def spawn_bot(name: str = name):
@@ -537,14 +537,18 @@ class Engine:
             data=self.construct_current_state().as_msg(),
         )
 
-    def send_to_player(self, player: Player, event: str, data: dict) -> None:
+    def send_to_player(
+        self, player: Player, event: str, data: dict, type: Optional[str] = None
+    ) -> None:
         session = self.player_session(player)
         if session:
             self.send_to_session(session, event, data)
 
-    def send_to_session(self, session: Session, event: str, data: dict) -> None:
+    def send_to_session(
+        self, session: Session, event: str, data: dict, type: Optional[str] = None
+    ) -> None:
         message = Message(
-            type="game",
+            type=type or "game",
             event=event,
             session_id=session.id,
             data=data,

@@ -99,11 +99,11 @@ class ExecutionContext:
             return None  # completed this frame / operation
 
         except EnterScope as enter_scope:
-            LOGGER.debug("Entering scope", frame=enter_scope.frame.name)
+            # LOGGER.debug("Entering scope", frame=enter_scope.frame.name)
             return enter_scope.frame
 
         except ExitScope as exit_scope:
-            LOGGER.debug("Exiting scope", frame=exit_scope.frame.name)
+            # LOGGER.debug("Exiting scope", frame=exit_scope.frame.name)
             frame = exit_scope.frame.parent
             if frame:
                 # Current frame gets the return value of the scope that just exited
@@ -119,7 +119,7 @@ class ExecutionContext:
                 LOGGER.debug("Breakpoint not handled")
                 raise
 
-            LOGGER.debug("Breakpoint handled", frame=next_frame.name)
+            # LOGGER.debug("Breakpoint handled", frame=next_frame.name)
             return next_frame
 
         except Exception as ex:
@@ -140,7 +140,7 @@ class ExecutionContext:
         while True:
             op = frame.next_op()
 
-            LOGGER.debug("Executing operation", operation=op)
+            # LOGGER.debug("Executing operation", operation=op)
             op.execute(frame)
 
             self.latest_operations += 1
@@ -153,7 +153,7 @@ class ExecutionContext:
         handles this specific breakpoint. If we find one, that is the frame to continue
         execution on.
         """
-        LOGGER.debug("Breakpoint hit", reason=bp.reason)
+        # LOGGER.debug("Breakpoint hit", reason=bp.reason)
 
         next_frame = frame.parent
         while next_frame is not None:
@@ -196,7 +196,7 @@ class ProboticsInterpreter:
             context = None
 
         if context is None:
-            LOGGER.info("No more contexts to execute")
+            # LOGGER.info("No more contexts to execute")
             return
 
         try:

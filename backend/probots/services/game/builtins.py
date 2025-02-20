@@ -1,6 +1,10 @@
+from enum import Enum
 from typing import TYPE_CHECKING
+
 from ...models.game.player import Player
-from ...probotics.ops.all import Primitive, Native, ScopeVars, StackFrame
+from ...models.game.probot import ProbotState
+from ...probotics.ops.all import Native, Primitive, ScopeVars, StackFrame
+from ..message_handlers.terminal_handler import TerminalOutput
 
 if TYPE_CHECKING:
     from .engine import Engine
@@ -26,9 +30,12 @@ class BuiltinsService:
         self._add_object(builtins)
 
         # Game-specific built-ins
-        self._is_idle(player, builtins)
+        self._add_me(player, builtins)
+        self._add_is_idle(player, builtins)
         self._add_move(player, builtins)
+        self._add_print(player, builtins)
         self._add_turn(player, builtins)
+        self._add_wait(player, builtins)
 
         return builtins
 
@@ -44,14 +51,17 @@ class BuiltinsService:
         def new_object(frame: StackFrame) -> Primitive:
             return Primitive.of({})
 
-        builtins["list"] = Primitive.block(
-            operations=[Native(new_object)], name="list", arg_names=[]
+        builtins["object"] = Primitive.block(
+            operations=[Native(new_object)], name="object", arg_names=[]
         )
+
+    def _add_me(self, player: Player, builtins: ScopeVars):
+        builtins["me"] = Primitive.of({})
 
     def _add_is_idle(self, player: Player, builtins: ScopeVars):
         def do_is_idle(frame: StackFrame) -> Primitive:
             probot = self.engine.probot_for_player(player)
-            return Primitive.of(probot.state == "idle")
+            return Primitive.of(probot.state == ProbotState.idle)
 
         builtins["is_idle"] = Primitive.block(
             operations=[Native(do_is_idle)], name="is_idle", arg_names=[]
@@ -81,6 +91,20 @@ class BuiltinsService:
         # For convenience:
         builtins["backward"] = Primitive.of("backward")
 
+    def _add_print(self, player: Player, builtins: ScopeVars):
+        def do_print(frame: StackFrame) -> Primitive:
+            self.engine.send_to_player(
+                player,
+                "output",
+                TerminalOutput(output=str(frame.get("what").value)).as_msg(),
+                type="terminal",
+            )
+            return Primitive.of(None)
+
+        builtins["print"] = Primitive.block(
+            operations=[Native(do_print)], name="print", arg_names=["what"]
+        )
+
     def _add_turn(self, player: Player, builtins: ScopeVars):
         def do_turn(frame: StackFrame) -> Primitive:
             bonus = 3
@@ -96,3 +120,40 @@ class BuiltinsService:
         # For convenience:
         builtins["left"] = Primitive.of("left")
         builtins["right"] = Primitive.of("right")
+
+    def _add_wait(self, player: Player, builtins: ScopeVars):
+        def do_wait(frame: StackFrame) -> Primitive:
+            # This is just a busy wait for now...
+            pass
+
+        builtins["wait"] = Primitive.block(operations=[Native(do_wait)], name="wait")
+
+    def update_builtins(self, player: Player) -> None:
+        builtins = self.get_builtins(player)
+        self.update_me(player)
+
+        return builtins
+
+    def update_me(self, player: Player):
+        builtins = self.get_builtins(player)
+        me = builtins["me"].value
+
+        me["name"] = Primitive.of(player.name)
+        me["score"] = Primitive.of(player.score)
+
+        probot = self.engine.probot_for_player(player)
+
+        me["state"] = Primitive.of(enum_string(probot.state))
+
+        me["x"] = Primitive.of(probot.x)
+        me["y"] = Primitive.of(probot.y)
+        me["orientation"] = Primitive.of(enum_string(probot.orientation))
+        me["energy"] = Primitive.of(probot.energy)
+        me["crystals"] = Primitive.of(probot.crystals)
+
+
+def enum_string(enum_value: Enum) -> str:
+    try:
+        return enum_value.value
+    except AttributeError:
+        return str(enum_value)
