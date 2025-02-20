@@ -25,9 +25,10 @@ class Call(Operation):
       result stack (by the interpreter, not handled here)
     """
 
-    def __init__(self, num_args: int):
+    def __init__(self, num_args: int, local: bool = False):
         super().__init__()
         self.num_args = num_args
+        self.local = local
 
     def execute(self, frame: StackFrame) -> None:
         # First pop the actual call arguments from the stack
@@ -47,7 +48,13 @@ class Call(Operation):
         args = self.validate_args(call_args, block, frame)
 
         # Looks like we have a valid function call, so we can create a new frame
-        new_frame = self.create_frame(block.name, args, block, frame)
+        new_frame = self.create_frame(
+            name=block.name,
+            args=args,
+            scope_vars=frame.scope_vars if self.local else None,
+            block=block,
+            parent_frame=frame,
+        )
         raise EnterScope(new_frame)
 
     def validate_args(
@@ -74,14 +81,20 @@ class Call(Operation):
         return scope_vars
 
     def create_frame(
-        self, name: str, args: ScopeVars, block: Block, parent_frame: StackFrame
+        self,
+        *,
+        name: str,
+        args: ScopeVars,
+        scope_vars: Optional[ScopeVars],
+        block: Block,
+        parent_frame: StackFrame,
     ) -> StackFrame:
         """Create a new stack frame for the function call."""
         frame = StackFrame(
             name=f"{parent_frame.name}.{name}",
             builtins=parent_frame.builtins,
             operations=block.operations,
-            scope_vars=ScopeVars(),
+            scope_vars=scope_vars or ScopeVars(),
             args=args,
             parent=parent_frame,
         )
@@ -89,12 +102,12 @@ class Call(Operation):
         return frame
 
     def __repr__(self) -> str:
-        return f"Call({self.num_args})"
+        return f"Call(num_args={self.num_args}, local={self.local})"
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Call):
+        if not super().__eq__(other):
             return False
-        return self.num_args == other.num_args
+        return self.num_args == other.num_args and self.local == other.local
 
 
 class MaybeCall(Call):

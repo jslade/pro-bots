@@ -69,6 +69,13 @@ class StackFrame:
         self.op_index += 1
         return op
 
+    def peek_op(self) -> Optional[Operation]:
+        """ "Get the next operation to execute but don't advance the index."""
+        if self.operations is None or self.op_index >= len(self.operations):
+            return None
+
+        return self.operations[self.op_index]
+
     def get(self, name: str) -> Primitive:
         """Get the value of a symbol in the current scope."""
         try:

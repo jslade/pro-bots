@@ -4,15 +4,18 @@
 @@comments::/\/\*(?s:.*?)\*\//
 @@eol_comments::/(#|\/\/)[^\n]*$/
 
+@@keyword::break
 @@keyword::else
 @@keyword::False
 @@keyword::false
 @@keyword::if
+@@keyword::next
 @@keyword::None
 @@keyword::none
 @@keyword::null
 @@keyword::True
 @@keyword::true
+@@keyword::while
 
 
 start = {statement | comment}* $;
@@ -20,6 +23,9 @@ start = {statement | comment}* $;
 statement::Statement = 
      call |
      if_statement |
+     while_loop |
+     break |
+     next |
      expression
      ;
 
@@ -81,11 +87,16 @@ rparen = ')' ;
 
 if_statement::IfStatement = "if" ~ condition:expression block:block else_chain:["else" ~ (else_block:block|if_statement)] ;
 
+while_loop::WhileLoop = "while" ~ condition:expression block:block ;
+
 block::Block = "{" ~ statements:{statement | comment}* "}" ;
 
 condition::Condition = left:term op:comparison_op ~ right:factor ;
 
-comparison_op = "==" | "!=" | "<=" | ">=" | "<" | ">" ;
+comparison_op = /={1,3}/ | /!={1,2}/ | "<=" | ">=" | "<" | ">" ;
+
+break::Break = "break" ;
+next::Next = "next" ;
 
 # It's not clear to me why comments must be explicitly defined. The docs
 # say the the skip rule (_) below will skip comments, but it doesn't seem to
@@ -103,8 +114,6 @@ _ = /#.*|\/\/.*|\/\*(?s:.*?)\*\/|\s+/ ;  # Skip EOL comments, block comments, an
 
 (*
 
-
-while_loop = "while" condition block ;
 
 
 block_with_arguments = "{" symbol_list newline command_list "}" ;

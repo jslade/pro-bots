@@ -4,6 +4,7 @@ import structlog
 
 from .ops.all import (
     Breakpoint,
+    Catch,
     EnterScope,
     ExitScope,
     Operation,
@@ -96,14 +97,11 @@ class ExecutionContext:
                 self.execute_frame(frame)
                 frame = frame.parent
             return None  # completed this frame / operation
-        except Breakpoint as bp:
-            LOGGER.debug("Breakpoint hit", message=bp.message, frame=bp.frame)
-            # Return the operation that was executed when the breakpoint was hit,
-            # that's where it will continue on the next iteration
-            return bp.frame
+
         except EnterScope as enter_scope:
             LOGGER.debug("Entering scope", frame=enter_scope.frame.name)
             return enter_scope.frame
+
         except ExitScope as exit_scope:
             LOGGER.debug("Exiting scope", frame=exit_scope.frame.name)
             frame = exit_scope.frame.parent
@@ -112,8 +110,18 @@ class ExecutionContext:
                 frame.push(exit_scope.return_value)
                 return frame
             else:
-                # We just executed the outermost frame,
+                # We just exited the outermost frame,
                 self.on_result(exit_scope.return_value, self)
+
+        except Breakpoint as bp:
+            next_frame = self.handle_breakpoint(frame, bp)
+            if next_frame is None:
+                LOGGER.debug("Breakpoint not handled")
+                raise
+
+            LOGGER.debug("Breakpoint handled", frame=next_frame.name)
+            return next_frame
+
         except Exception as ex:
             LOGGER.exception("Execution error", exception=ex)
             if self.on_exception:
@@ -137,6 +145,30 @@ class ExecutionContext:
 
             self.latest_operations += 1
             self.total_operations += 1
+
+    def handle_breakpoint(
+        self, frame: StackFrame, bp: Breakpoint
+    ) -> Optional[StackFrame]:
+        """Handle a breakpoint. Traverse up the stack until we find a catcher that
+        handles this specific breakpoint. If we find one, that is the frame to continue
+        execution on.
+        """
+        LOGGER.debug("Breakpoint hit", reason=bp.reason)
+
+        next_frame = frame.parent
+        while next_frame is not None:
+            # Is the next op in the frame a catcher?
+            if isinstance(catcher := next_frame.peek_op(), Catch):
+                jump = catcher.jumps.get(bp.reason, None)
+                if jump is not None:
+                    # This catcher handles the breakpoint:
+                    catcher.do_jump(jump, next_frame)
+                    return next_frame
+
+            next_frame = next_frame.parent
+
+        # No catcher found
+        return None
 
     @property
     def is_finished(self) -> bool:

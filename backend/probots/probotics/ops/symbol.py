@@ -19,9 +19,9 @@ class ValueOf(Operation):
         frame.push(value)
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, ValueOf):
+        if not super().__eq__(other):
             return False
         return self.name == other.name
 
     def __repr__(self):
-        return "ValueOf(" + self.name + ")"
+        return f'ValueOf("{self.name}")'

@@ -17,3 +17,11 @@ class Native(Operation):
         """The result of the function is passed as the return value for the frame"""
         result = self.func(frame)
         frame.push(result)
+
+    def __eq__(self, other: object) -> bool:
+        if not super().__eq__(other):
+            return False
+        return self.func == other.func
+
+    def __repr__(self) -> str:
+        return f"Native({self.func.__name__})"

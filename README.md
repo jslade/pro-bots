@@ -110,10 +110,9 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 
 # TODO
 
-[ ] if, while
-[ ] executing scripts
+[ ] built-in -- if idle
 [ ] scoring of code executed via probotics
-[ ] properties
+[ ] properties -- me, me.colors
 [ ] score, energy in UI
 [ ] crystals in UI
 [ ] builtins: `jump`, `collect`, `inspect`,  `say`,

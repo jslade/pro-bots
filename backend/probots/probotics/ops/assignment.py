@@ -26,9 +26,3 @@ class Assignment(Operation):
 
         # Assignment always yields the value of the right side
         return right
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, Assignment)
-
-    def __repr__(self):
-        return "Assignment()"

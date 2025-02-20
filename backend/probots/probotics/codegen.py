@@ -7,7 +7,9 @@ from tatsu.walkers import NodeWalker
 from .ops.all import (
     Addition,
     Assignment,
+    Break,
     Call,
+    Catch,
     CompareEqual,
     CompareGreaterThan,
     CompareGreaterThanOrEqual,
@@ -157,8 +159,11 @@ class ProboticsCodeGenerator(NodeWalker):
     #
 
     MAP_CONDITION = {
+        "=": CompareEqual,
         "==": CompareEqual,
+        "===": CompareEqual,
         "!=": CompareNotEqual,
+        "!==": CompareNotEqual,
         "<": CompareLessThan,
         "<=": CompareLessThanOrEqual,
         ">": CompareGreaterThan,
@@ -197,38 +202,73 @@ class ProboticsCodeGenerator(NodeWalker):
         operations = self.operations[before:]
         self.operations[before:] = []
 
-        block = Primitive.block(operations)
+        block = Primitive.block(operations, name=self.context[-1])
         self.operations.append(Immediate(block))
 
     def walk_IfStatement(self, node: Node):
         # This JumpIf is used to skip to the else block, if the condition is false.
-        jump_if_op = JumpIf(jump=0, sense=False)
+        jump_to_else = JumpIf(jump=0, sense=False)
 
         # This jump is used to skip the else block, if the if condition is true
-        jump_op = Jump(jump=0)
+        jump_past_else = Jump(jump=0)
 
         with self.in_context("IfStatement"):
             self.walk(node.condition)
-            self.operations.append(jump_if_op)
+            self.operations.append(jump_to_else)
             after_if = self.mark()
 
             self.walk(node.block)
-            self.operations.append(Call(0))  # TODO: maybe inline block instead of call
-            self.operations.append(jump_op)
+            self.operations.append(
+                Call(0, local=True)
+            )  # TODO: maybe inline block instead of call
+            self.operations.append(jump_past_else)
             after_block = self.mark()
 
-            self.walk(node.else_chain)
-            if node.else_block is not None:
-                self.operations.append(Call(0))
-            after_else = self.mark()
+            with self.in_context("ElseStatement"):
+                self.walk(node.else_chain)
+                if node.else_block is not None:
+                    self.operations.append(Call(0, local=True))
+                after_else = self.mark()
 
         # Set the jump targets for the if statement
-        jump_if_op.jump = after_block - after_if
+        jump_to_else.jump = after_block - after_if
 
-        jump_op.jump = after_else - after_block
-        if jump_op.jump == 0:
+        jump_past_else.jump = after_else - after_block
+        if jump_past_else.jump == 0:
             # If there is no else block, skip the jump
             self.operations.pop()
+            jump_to_else.jump -= 1
+
+    def walk_WhileLoop(self, node: Node):
+        # This Jump is used to jump back to the top of the loop
+        jump_to_top = Jump(jump=0)
+
+        # This JumpIf is used to skip the loop if the condition is false
+        jump_past_loop = JumpIf(jump=0, sense=False)
+
+        with self.in_context("WhileLoop"):
+            before_cond = self.mark()
+            self.walk(node.condition)
+            self.operations.append(jump_past_loop)
+            after_cond = self.mark()
+
+            self.walk(node.block)
+            self.operations.append(
+                Call(0, local=True)
+            )  # TODO: maybe inline block instead of call
+            self.operations.append(Catch({"break": 2, "next": 1}))
+            self.operations.append(jump_to_top)
+            after_block = self.mark()
+
+        # Set the jump targets
+        jump_to_top.jump = before_cond - after_block  # This will be negative
+        jump_past_loop.jump = after_block - after_cond
+
+    def walk_Break(self, node: Node):
+        self.operations.append(Break())
+
+    def walk_Next(self, node: Node):
+        self.operations.append(())
 
     #
     # Function calls
@@ -244,7 +284,7 @@ class ProboticsCodeGenerator(NodeWalker):
         len_after = len(self.operations)
         num_args = len_after - len_before - 1
 
-        self.operations.append(Call(num_args))
+        self.operations.append(Call(num_args, local=False))
 
     def walk_BareCommand(self, node: Node):  # NOT IMPLEMENTED
         len_before = len(self.operations)
@@ -269,6 +309,6 @@ class ProboticsCodeGenerator(NodeWalker):
         if isinstance(first, ValueOf):
             if num_args > 0:
                 # If there are arguments, definitely treat as a function call
-                self.operations.append(Call(num_args))
+                self.operations.append(Call(num_args, local=False))
             else:
                 self.operations.append(MaybeCall())

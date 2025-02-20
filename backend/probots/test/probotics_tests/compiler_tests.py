@@ -4,7 +4,9 @@ from probots.probotics.compiler import ProboticsCompiler
 from probots.probotics.ops.all import (
     Addition,
     Assignment,
+    Break,
     Call,
+    Catch,
     CompareEqual,
     CompareGreaterThan,
     CompareGreaterThanOrEqual,
@@ -269,7 +271,8 @@ class TestBlocks:
                                 Immediate(Primitive.of(1)),
                                 Immediate(Primitive.of(2)),
                                 Addition(),
-                            ]
+                            ],
+                            name="Assignment",
                         )
                     ),
                     Assignment(),
@@ -290,43 +293,129 @@ class TestBlocks:
                 "if a { b }",
                 [
                     ValueOf("a"),
-                    JumpIf(jump=3),
-                    Immediate(Primitive.block([ValueOf("b")])),
-                    Call(0),
+                    JumpIf(jump=2, sense=False),
+                    Immediate(Primitive.block([ValueOf("b")], name="IfStatement")),
+                    Call(0, local=True),
                 ],
             ),
             (
                 "if a { b } else { c }",
                 [
                     ValueOf("a"),
-                    JumpIf(jump=3),
-                    Immediate(Primitive.block([ValueOf("b")])),
-                    Call(0),
+                    JumpIf(jump=3, sense=False),
+                    Immediate(Primitive.block([ValueOf("b")], name="IfStatement")),
+                    Call(0, local=True),
                     Jump(jump=2),
-                    Immediate(Primitive.block([ValueOf("c")])),
-                    Call(0),
+                    Immediate(Primitive.block([ValueOf("c")], name="ElseStatement")),
+                    Call(0, local=True),
                 ],
             ),
             (
                 "if a { b } else if (c) { d } else { e }",
                 [
                     ValueOf("a"),
-                    JumpIf(jump=3),
-                    Immediate(Primitive.block([ValueOf("b")])),
-                    Call(0),
+                    JumpIf(jump=3, sense=False),
+                    Immediate(Primitive.block([ValueOf("b")], name="IfStatement")),
+                    Call(0, local=True),
                     Jump(jump=7),
                     ValueOf("c"),
-                    JumpIf(jump=3),
-                    Immediate(Primitive.block([ValueOf("d")])),
-                    Call(0),
+                    JumpIf(jump=3, sense=False),
+                    Immediate(Primitive.block([ValueOf("d")], name="IfStatement")),
+                    Call(0, local=True),
                     Jump(jump=2),
-                    Immediate(Primitive.block([ValueOf("e")])),
-                    Call(0),
+                    Immediate(Primitive.block([ValueOf("e")], name="ElseStatement")),
+                    Call(0, local=True),
                 ],
             ),
         ],
     )
     def test_if(self, compiler: ProboticsCompiler, input: str, expected: list[Operation]):
+        ops = compiler.compile(input)
+        assert ops == expected
+
+    @pytest.mark.parametrize(
+        "input,expected",
+        [
+            (
+                "while true { false }",
+                [
+                    Immediate(Primitive.of(True)),
+                    JumpIf(jump=4, sense=False),
+                    Immediate(
+                        Primitive.block(
+                            [Immediate(Primitive.of(False))], name="WhileLoop"
+                        )
+                    ),
+                    Call(0, local=True),
+                    Catch({"break": 2, "next": 1}),
+                    Jump(jump=-6),
+                ],
+            ),
+            (
+                "while a { if b { break } }",
+                [
+                    ValueOf("a"),
+                    JumpIf(jump=4, sense=False),
+                    Immediate(
+                        Primitive.block(
+                            [
+                                ValueOf("b"),
+                                JumpIf(jump=2, sense=False),
+                                Immediate(Primitive.block([Break()], name="IfStatement")),
+                                Call(0, local=True),
+                            ],
+                            name="WhileLoop",
+                        )
+                    ),
+                    Call(0, local=True),
+                    Catch({"break": 2, "next": 1}),
+                    Jump(jump=-6),
+                ],
+            ),
+            (
+                """
+                i := 0
+                while True {
+                    i := i + 1
+                    if i = 5 {
+                        break
+                    }
+                }                   
+                """,
+                [
+                    Immediate(Primitive.symbol("i")),
+                    Immediate(Primitive.of(0)),
+                    Assignment(),
+                    Immediate(Primitive.of(True)),
+                    JumpIf(jump=4, sense=False),
+                    Immediate(
+                        Primitive.block(
+                            [
+                                Immediate(Primitive.symbol("i")),
+                                ValueOf("i"),
+                                Immediate(Primitive.of(1)),
+                                Addition(),
+                                Assignment(),
+                                ValueOf("i"),
+                                Immediate(Primitive.of(5)),
+                                CompareEqual(),
+                                JumpIf(jump=2, sense=False),
+                                Immediate(Primitive.block([Break()], name="IfStatement")),
+                                Call(0, local=True),
+                            ],
+                            name="WhileLoop",
+                        )
+                    ),
+                    Call(0, local=True),
+                    Catch({"break": 2, "next": 1}),
+                    Jump(jump=-6),
+                ],
+            ),
+        ],
+    )
+    def test_while(
+        self, compiler: ProboticsCompiler, input: str, expected: list[Operation]
+    ):
         ops = compiler.compile(input)
         assert ops == expected
 
@@ -340,7 +429,7 @@ class TestCompilerCalls:
         ops = compiler.compile("move()")
         assert ops == [
             ValueOf("move"),
-            Call(0),
+            Call(0, local=False),
         ]
 
     @pytest.mark.skip("Not implemented yet")
@@ -357,5 +446,5 @@ class TestCompilerCalls:
         assert ops == [
             ValueOf("turn"),
             ValueOf("left"),
-            Call(1),
+            Call(1, local=False),
         ]

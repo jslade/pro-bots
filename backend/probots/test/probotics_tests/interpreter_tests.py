@@ -146,3 +146,28 @@ class TestInterpreter:
 
         assert len(results) == 1
         assert results[0] == Primitive.of(4)
+
+    def test_while_break(
+        self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter
+    ):
+        ops = compiler.compile(
+            """
+            i := 0
+            while True {
+                i := i + 1
+                if i = 5 {
+                    break
+                }
+            }
+            i
+            """
+        )
+        results = []
+        context = make_context(ops, results)
+        interpreter.add(context)
+
+        while not interpreter.is_finished:
+            interpreter.execute_next()
+
+        assert len(results) == 1
+        assert results[0] == Primitive.of(5)

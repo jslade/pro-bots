@@ -1,21 +1,8 @@
-from dataclasses import dataclass
-from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .primitive import Primitive, PrimitiveType
+    from .primitive import Primitive
     from .stack_frame import StackFrame
-
-
-class Breakpoint(Exception):
-    """Exception to be raised when a breakpoint is hit during execution.
-    This allows the context to stop and let other contexts run.
-    """
-
-    def __init__(self, message: str, frame: "StackFrame") -> None:
-        super().__init__(message)
-        self.message = message
-        self.frame = frame
 
 
 class Operation:
@@ -23,6 +10,12 @@ class Operation:
 
     def execute(self, frame: "StackFrame") -> None:
         raise NotImplementedError
+
+    def __eq__(self, other: object) -> bool:
+        return type(other) is type(self)
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}()"
 
 
 class Immediate(Operation):
@@ -35,7 +28,7 @@ class Immediate(Operation):
         frame.push(self.value)
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Immediate):
+        if not super().__eq__(other):
             return False
         return self.value == other.value
 
@@ -54,9 +47,3 @@ class BinaryOperator(Operation):
 
     def _execute(self, left: "Primitive", right: "Primitive") -> "Primitive":
         raise NotImplementedError
-
-    def __eq__(self, other: object) -> bool:
-        return type(self) is type(other)
-
-    def __repr__(self):
-        return f"BinOp:{type(self).__name__}"
