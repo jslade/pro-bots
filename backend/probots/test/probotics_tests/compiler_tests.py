@@ -14,8 +14,10 @@ from probots.probotics.ops.all import (
     CompareLessThanOrEqual,
     CompareNotEqual,
     Division,
+    GetIndex,
     GetProperty,
     Immediate,
+    Index,
     Jump,
     JumpIf,
     LogicalAnd,
@@ -542,6 +544,11 @@ class TestCompilerObjects:
                     GetProperty(),
                 ],
             ),
+            ("a[b]", [GetValue("a"), GetValue("b"), Index(), GetIndex()]),
+            (
+                'a["b"]',
+                [GetValue("a"), Immediate(Primitive.of("b")), Index(), GetIndex()],
+            ),
         ],
     )
     def test_get_property(
@@ -561,6 +568,40 @@ class TestCompilerObjects:
                     GetValue("c"),
                     Property("d"),
                     GetProperty(),
+                    Assignment(),
+                ],
+            ),
+            (
+                "a[b] := c",
+                [
+                    GetValue("a"),
+                    GetValue("b"),
+                    Index(),
+                    GetValue("c"),
+                    Assignment(),
+                ],
+            ),
+            (
+                'a.b["c"] := d',
+                [
+                    GetValue("a"),
+                    Property("b"),
+                    GetProperty(),
+                    Immediate(Primitive.of("c")),
+                    Index(),
+                    GetValue("d"),
+                    Assignment(),
+                ],
+            ),
+            (
+                "a.b[0] := c",
+                [
+                    GetValue("a"),
+                    Property("b"),
+                    GetProperty(),
+                    Immediate(Primitive.of(0)),
+                    Index(),
+                    GetValue("c"),
                     Assignment(),
                 ],
             ),

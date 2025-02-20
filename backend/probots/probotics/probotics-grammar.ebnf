@@ -42,7 +42,7 @@ expression::Expression =
 
 assignment::Assignment = target:assignable ":=" ~ value:(block |expression) ;
 
-assignable::Assignable = symbol;
+assignable::Assignable = index | symbol;
 
 logical::Logical = left:expression op:logical_op ~ right:expression ;
 
@@ -65,6 +65,7 @@ factor::Factor =
      subexpression |
      atom |
      call |
+     index |
      symbol
      ;
 
@@ -109,7 +110,7 @@ logical_op = "and" | "or" ;
 break::Break = "break" ;
 next::Next = "next" ;
 
-index::Index = target:term LBRACKET ~ index:expression rbracket ;
+index::Index = target:symbol LBRACKET ~ index:(symbol | string | number) rbracket ;
 LBRACKET = '[' ;
 rbracket = ']' ;
 

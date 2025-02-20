@@ -13,7 +13,7 @@ from .comparison import (
 from .flow_control import Break, Breakpoint, Catch, Jump, JumpIf
 from .logical import LogicalAnd, LogicalNot, LogicalOr
 from .native import Native
-from .objects import GetProperty, Property
+from .objects import GetIndex, GetProperty, Index, Property
 from .primitive import Primitive, PrimitiveType
 from .stack_frame import EnterScope, ExitScope, ScopeVars, StackFrame, UndefinedSymbol
 from .symbol import GetValue

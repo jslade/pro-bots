@@ -20,6 +20,9 @@ class Assignment(Operation):
 
         elif left.is_property:
             target, name = left.value
+            if type(target) is list:
+                while len(target) <= name:
+                    target.append(None)
             target[name] = right
         else:
             raise ValueError(f"Invalid assignment target: {left.value} {left.type.value}")

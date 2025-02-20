@@ -17,9 +17,11 @@ from .ops.all import (
     CompareLessThanOrEqual,
     CompareNotEqual,
     Division,
+    GetIndex,
     GetProperty,
     GetValue,
     Immediate,
+    Index,
     Jump,
     JumpIf,
     LogicalAnd,
@@ -129,13 +131,16 @@ class ProboticsCodeGenerator(NodeWalker):
         # Symbol can be simple like x, or a property like x.y
         if type(node.ast) is tuple:
             self.walk_Property(node.ast)
-            if not self.is_in_context("Assignable"):
+            if not (self.is_in_context("Assignable") and not self.is_in_context("Index")):
+                # If it's not on the LHS of an assignment, get the value
+                # but if it is on the LHS of an assignment, and it's part of an Index,
+                # then we do want to get the value...
                 self.operations.append(GetProperty())
             return
 
         # For the case of a simple symbol:
         symbol_name = node.ast
-        if self.is_in_context("Assignable"):
+        if self.is_in_context("Assignable") and not self.is_in_context("Index"):
             # When a bare symbol is on the target side of an assignment,
             # the result should be the symbol itself
             self.operations.append(Immediate(Primitive.symbol(symbol_name)))
@@ -361,3 +366,13 @@ class ProboticsCodeGenerator(NodeWalker):
     #
     # Objects and lists
     #
+
+    def walk_Index(self, node: Node):
+        with self.in_context("Index"):
+            self.walk(node.target)
+            self.walk(node.index)
+
+        self.operations.append(Index())
+
+        if not self.is_in_context("Assignable"):
+            self.operations.append(GetIndex())

@@ -25,7 +25,7 @@ class Primitive:
     """The result of some execution"""
 
     type: PrimitiveType
-    value: int | float | str | list | dict | None
+    value: int | float | str | list | dict | tuple[dict, str] | tuple[list, str] | None
 
     @property
     def is_true(self) -> bool:
@@ -46,6 +46,10 @@ class Primitive:
     @property
     def is_object(self) -> bool:
         return self.type == PrimitiveType.OBJECT
+
+    @property
+    def is_list(self) -> bool:
+        return self.type == PrimitiveType.LIST
 
     @property
     def is_block(self) -> bool:
@@ -83,6 +87,10 @@ class Primitive:
     @classmethod
     def property(cls, target: dict, name: str) -> "Primitive":
         return Primitive(PrimitiveType.PROPERTY, value=(target, name))
+
+    @classmethod
+    def index(cls, target: list, idx: int) -> "Primitive":
+        return Primitive(PrimitiveType.PROPERTY, value=(target, idx))
 
     @classmethod
     def block(

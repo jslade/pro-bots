@@ -222,3 +222,36 @@ class TestInterpreter:
 
         assert len(results) == 1
         assert results[0] == Primitive.of(2)
+
+    def test_object_index(
+        self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter
+    ):
+        def new_object(frame: StackFrame) -> Primitive:
+            return Primitive.of({})
+
+        def new_list(frame: StackFrame) -> Primitive:
+            return Primitive.of([])
+
+        builtins = {
+            "object": Primitive.block([Native(new_object)], name="object"),
+            "list": Primitive.block([Native(new_list)], name="list"),
+        }
+
+        ops = compiler.compile(
+            """
+            x := object()
+            x.y := list()
+            x.y[0] := 1
+            x["z"] := x["y"]
+            x.z
+        """
+        )
+        results = []
+
+        context = make_context(ops, results, builtins)
+        interpreter.add(context)
+        while not interpreter.is_finished:
+            interpreter.execute_next()
+
+        assert len(results) == 1
+        assert results[0] == Primitive.of([Primitive.of(1)])
