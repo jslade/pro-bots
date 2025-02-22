@@ -31,6 +31,9 @@ class ExecutionContext:
     on_exception: Optional[ExceptionCallback]
     on_break: Optional[BreakCallback]
 
+    current_frame: Optional[StackFrame]
+    stopped: bool
+
     total_frames: int
     total_operations: int
 
@@ -76,6 +79,7 @@ class ExecutionContext:
         self.name = name
 
         self.current_frame: Optional[StackFrame] = None
+        self.stopped = False
 
         self.total_frames = 0
         self.total_operations = 0
@@ -86,6 +90,9 @@ class ExecutionContext:
         """Execute one operation. If the operation contains nested
         operations, it may stop when an appropriate break point is hit, for the
         purpose of other interpreters to run"""
+        if self.stopped:
+            return self.is_finished
+
         if self.current_frame is None:
             self.current_frame = StackFrame.make_outer(
                 self, self.operations, self.builtins, self.globals
@@ -171,6 +178,10 @@ class ExecutionContext:
         """
         # LOGGER.debug("Breakpoint hit", reason=bp.reason)
 
+        if bp.stop:
+            self.stop()
+            return frame
+
         next_frame = frame.parent
         while next_frame is not None:
             # Is the next op in the frame a catcher?
@@ -186,6 +197,12 @@ class ExecutionContext:
         # No catcher found
         return None
 
+    def stop(self) -> None:
+        self.stopped = True
+
+    def resume(self) -> None:
+        self.stopped = False
+
     @property
     def is_finished(self) -> bool:
         return self.current_frame is None
@@ -198,6 +215,7 @@ class ExecutionContext:
 class ProboticsInterpreter:
     def __init__(self) -> None:
         self.contexts: list[ExecutionContext] = []
+        self.stopped_contexts: list[ExecutionContext] = []
 
     def add(self, context: ExecutionContext) -> None:
         self.contexts.append(context)
@@ -223,11 +241,20 @@ class ProboticsInterpreter:
         try:
             finished = context.execute_next()
             if not finished:
-                self.contexts.append(context)
+                if context.stopped:
+                    self.stopped_contexts.append(context)
+                else:
+                    self.contexts.append(context)
         except Exception as ex:
             LOGGER.exception("Execution error", exception=ex)
             raise ex
 
+    def resume(self, context: ExecutionContext) -> None:
+        if context in self.stopped_contexts:
+            self.stopped_contexts.remove(context)
+            context.resume()
+            self.contexts.append(context)
+
     @property
     def is_finished(self) -> bool:
-        return len(self.contexts) == 0
+        return len(self.contexts) == 0 and len(self.stopped_contexts) == 0

@@ -11,7 +11,7 @@ from ...probotics.interpreter import (
     ProboticsInterpreter,
     ResultCallback,
 )
-from ...probotics.ops.all import Operation, ScopeVars, StackFrame
+from ...probotics.ops.all import Operation, ScopeVars, StackFrame, Primitive
 from .builtins import BuiltinsService
 from .processor import Work
 
@@ -38,6 +38,8 @@ class Programming:
 
         self.builtins = BuiltinsService(self.engine)
 
+        self.player_contexts: dict[str, ExecutionContext] = {}
+
     def compile(self, code: str) -> list[Operation]:
         """Compile the code into operations -- determine whether it is syntactically
         valid"""
@@ -55,21 +57,34 @@ class Programming:
     ) -> ExecutionContext:
         """Evaluate the code for the given player"""
 
-        def on_break(context: ExecutionContext, player: Player = player) -> None:
+        def wrap_on_break(context: ExecutionContext, player: Player = player) -> None:
             self.on_break(player, context)
+
+        def wrap_on_result(
+            result: Primitive, context: ExecutionContext, player: Player = player
+        ) -> None:
+            if on_result:
+                on_result(result, context)
+
+            if self.player_contexts.get(player.name, None) == context:
+                self.player_contexts.pop(player.name)
+
+            self.engine.update_score(player, context.latest_operations)
 
         context = self.create_context(
             player=player,
             globals=globals,
             operations=operations,
-            on_result=on_result,
+            on_result=wrap_on_result,
             on_exception=on_exception,
-            on_break=on_break,
+            on_break=wrap_on_break,
         )
 
         if replace and context.name is not None:
             # Only allow one context per player
             self.interpreter.remove(context.name)
+
+            self.player_contexts[player.name] = context
 
         self.interpreter.add(context)
         self.ensure_running()
@@ -120,6 +135,16 @@ class Programming:
         # If there are still contexts to run, reschedule this work
         if not self.interpreter.is_finished:
             self.schedule_run()
+
+    def is_player_waiting(self, player: Player) -> bool:
+        context = self.player_contexts.get(player.name, None)
+        return context is not None and context.stopped
+
+    def resume_player(self, player: Player) -> bool:
+        context = self.player_contexts.get(player.name, None)
+        if context is not None and context.stopped:
+            self.interpreter.resume(context)
+            self.ensure_running()
 
     def on_break(self, player: Player, context: ExecutionContext) -> None:
         """Called when a break point is hit in the interpreter.

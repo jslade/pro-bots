@@ -5,7 +5,7 @@ import structlog
 
 from ...models.game.player import Player
 from ...models.game.probot import ProbotState
-from ...probotics.ops.all import Native, Primitive, ScopeVars, StackFrame
+from ...probotics.ops.all import Native, Primitive, ScopeVars, StackFrame, Breakpoint
 from ..message_handlers.terminal_handler import TerminalOutput
 
 if TYPE_CHECKING:
@@ -130,8 +130,8 @@ class BuiltinsService:
 
     def _add_wait(self, player: Player, builtins: ScopeVars):
         def do_wait(frame: StackFrame) -> Primitive:
-            # This is just a busy wait for now...
-            pass
+            # Raise a break exception and stop the interpreter on this context
+            raise Breakpoint(reason="wait", stop=True)
 
         builtins["wait"] = Primitive.block(operations=[Native(do_wait)], name="wait")
 
@@ -142,6 +142,7 @@ class BuiltinsService:
         return builtins
 
     def update_me(self, player: Player):
+        LOGGER.info("update_me", player=player)
         builtins = self.get_builtins(player)
         me = builtins["me"].value
 

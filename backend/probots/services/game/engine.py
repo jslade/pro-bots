@@ -515,6 +515,13 @@ class Engine:
         if probot.energy > Probot.MAX_ENERGY:
             probot.energy = Probot.MAX_ENERGY
 
+    def probot_idle(self, probot: Probot) -> None:
+        """This is called whenever a probot is done with a task and is now idle."""
+        probot.state = ProbotState.idle
+
+        self.programming.resume_player(probot.player)
+        self.notify_of_probot_change(probot)
+
     def notify_of_probot_change(self, probot: Probot) -> None:
         """ "Send a message to all sessions about the change in this probot.
         Ideally would send a delta of some sort, but simple/dumb implementation

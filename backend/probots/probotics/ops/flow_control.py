@@ -63,9 +63,13 @@ class Breakpoint(Exception):
     This allows the context to stop and let other contexts run.
     """
 
-    def __init__(self, *, reason: str) -> None:
+    reason: str
+    stop: bool
+
+    def __init__(self, *, reason: str, stop: bool = False) -> None:
         super().__init__()
         self.reason = reason
+        self.stop = stop
 
 
 class Break(Operation):

@@ -34,6 +34,7 @@ class MovementService:
         # Validate move
         #
         if probot.state != ProbotState.idle:
+            self.engine.update_score(probot.player, -10)
             return False
 
         x, y, orient = probot.position
@@ -144,11 +145,10 @@ class MovementService:
         self.engine.notify_of_probot_change(probot)
 
     def complete_move(self, probot: Probot, transit: Transition, bonus: int = 0) -> None:
-        probot.state = ProbotState.idle
         probot.dx = 0
         probot.dy = 0
 
-        self.engine.notify_of_probot_change(probot)
+        self.engine.probot_idle(probot)
         self.engine.update_score(probot.player, 1 + bonus)
 
     def turn(self, probot: Probot, dir: str, bonus: int = 0) -> bool:
@@ -165,6 +165,7 @@ class MovementService:
         # Validate turn
         #
         if probot.state != ProbotState.idle:
+            self.engine.update_score(probot.player, -10)
             return False
 
         orient = probot.orientation
@@ -226,9 +227,8 @@ class MovementService:
         new_orient: ProbotOrientation,
         bonus: int = 0,
     ) -> None:
-        probot.state = ProbotState.idle
         probot.orientation = new_orient
         probot.dorient = 0
 
-        self.engine.notify_of_probot_change(probot)
+        self.engine.probot_idle(probot)
         self.engine.update_score(probot.player, 1 + bonus)
