@@ -5,7 +5,18 @@ import structlog
 from ...models.game.player import Player
 from ...models.game.probot import ProbotState
 from ...probotics.ops.all import Breakpoint, Native, Primitive, ScopeVars, StackFrame
-from .builtin.all import IsIdle, Me, Move, Print, Turn, Wait
+from .builtin.all import (
+    IsIdle,
+    Me,
+    Move,
+    Print,
+    Turn,
+    Wait,
+    ToInt,
+    ToStr,
+    NewList,
+    NewObject,
+)
 
 if TYPE_CHECKING:
     from .engine import Engine
@@ -30,8 +41,10 @@ class BuiltinsService:
         builtins: ScopeVars = {}
 
         # Basic language features
-        self._add_list(builtins)
-        self._add_object(builtins)
+        ToStr.add(player, self.engine, builtins)
+        ToInt.add(player, self.engine, builtins)
+        NewList.add(player, self.engine, builtins)
+        NewObject.add(player, self.engine, builtins)
 
         # Game-specific built-ins
         Me.add(player, self.engine, builtins)
@@ -42,25 +55,4 @@ class BuiltinsService:
         Turn.add(player, self.engine, builtins)
         Wait.add(player, self.engine, builtins)
 
-        return builtins
-
-    def _add_list(self, builtins: ScopeVars):
-        def new_list(frame: StackFrame) -> Primitive:
-            return Primitive.of([])
-
-        builtins["list"] = Primitive.block(
-            operations=[Native(new_list)], name="list", arg_names=[]
-        )
-
-    def _add_object(self, builtins: ScopeVars):
-        def new_object(frame: StackFrame) -> Primitive:
-            return Primitive.of({})
-
-        builtins["object"] = Primitive.block(
-            operations=[Native(new_object)], name="object", arg_names=[]
-        )
-
-    # TODO: needed? or maybe get_builtins() is enough?
-    def update_builtins(self, player: Player) -> None:
-        builtins = self.get_builtins(player)
         return builtins

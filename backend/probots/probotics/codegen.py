@@ -331,8 +331,7 @@ class ProboticsCodeGenerator(NodeWalker):
             self.walk(node.command)
             self.walk(node.args)
 
-        len_after = len(self.operations)
-        num_args = len_after - len_before - 1
+        num_args = len(node.args)
 
         self.operations.append(Call(num_args, local=False))
 
@@ -344,7 +343,7 @@ class ProboticsCodeGenerator(NodeWalker):
             self.walk(node.args)
 
         len_after = len(self.operations)
-        num_args = len_after - len_before - 1
+        num_args = len(node.args)
 
         # Is the first child op added a symbol? Then it may be a symbol that
         # resolves to a function call, but can't determine until runtime.

@@ -49,8 +49,6 @@ class Me(Builtin):
     }
 
     def on_get(self, key: str, default: Optional[Any] = None) -> Optional[Primitive]:
-        LOGGER.info("me.get", player=self.player.name, key=key)
-
         try:
             return self.data.get_(key)
         except KeyError:

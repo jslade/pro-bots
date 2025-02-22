@@ -255,3 +255,30 @@ class TestInterpreter:
 
         assert len(results) == 1
         assert results[0] == Primitive.of([Primitive.of(1)])
+
+    def test_str_concat(
+        self, compiler: ProboticsCompiler, interpreter: ProboticsInterpreter
+    ):
+        def to_str(frame: StackFrame) -> Primitive:
+            return Primitive.of(str(frame.get("value").value))
+
+        builtins = {
+            "str": Primitive.block([Native(to_str)], name="str", arg_names=["value"])
+        }
+
+        ops = compiler.compile(
+            """
+            name := "joe"
+            score := 10
+            x := str("hi " + name + " your score is " + str(score))
+            """
+        )
+        results = []
+
+        context = make_context(ops, results, builtins)
+        interpreter.add(context)
+        while not interpreter.is_finished:
+            interpreter.execute_next()
+
+        assert len(results) == 1
+        assert results[0] == Primitive.of("hi joe your score is 10")

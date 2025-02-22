@@ -121,7 +121,7 @@ class Programming:
 
         return ExecutionContext(
             operations=operations,
-            builtins=self.builtins.update_builtins(player),
+            builtins=self.builtins.get_builtins(player),
             globals=globals,
             on_result=on_result,
             on_exception=on_exception,
