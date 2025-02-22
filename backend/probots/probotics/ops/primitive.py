@@ -71,9 +71,9 @@ class Primitive:
             return Primitive(PrimitiveType.STRING, value)
         if t is bool:
             return Primitive(PrimitiveType.BOOL, value)
-        if t is list:
+        if isinstance(value, list):
             return Primitive(PrimitiveType.LIST, value)
-        if t is dict:
+        if isinstance(value, dict):
             return Primitive(PrimitiveType.OBJECT, value)
         if t is Primitive:
             return value

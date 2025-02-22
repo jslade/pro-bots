@@ -280,6 +280,8 @@ class Engine:
 
     def update_score(self, player: Player, delta: int) -> None:
         player.score += delta
+        if player.score < 0:
+            player.score = 0
 
         update = GameScoreUpdate(player_name=player.name, new_score=player.score)
 
