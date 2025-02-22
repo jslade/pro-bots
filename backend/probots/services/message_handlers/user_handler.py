@@ -168,6 +168,10 @@ class UserHandler(MessageHandler):
             replace=True,
         )
 
+        # Points for successfully executing a script -- that is the
+        # purpose of the game, after all
+        ENGINE.update_score(player, 100)
+
         return True
 
     def handle_stop_program(

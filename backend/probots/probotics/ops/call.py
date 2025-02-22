@@ -96,6 +96,7 @@ class Call(Operation):
     ) -> StackFrame:
         """Create a new stack frame for the function call."""
         frame = StackFrame(
+            context=parent_frame.context,
             name=f"{parent_frame.name}.{name}",
             builtins=parent_frame.builtins,
             operations=block.operations,

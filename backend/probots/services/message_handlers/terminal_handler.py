@@ -48,37 +48,10 @@ class TerminalHandler(MessageHandler):
     def handle_manual_input(
         self, session: Session, input: TerminalInput, dispatcher: Dispatcher
     ) -> bool:
-        from ..game.engine import ENGINE
-
         """Handle manual input from the terminal -- special commands that are not
         implemented in the probotics language."""
 
-        # TODO: Just for testing. Eventually this will be handled via probotics
-        if input.input.startswith("__move"):
-            backward = False
-            bonus = 5
-
-            words = input.input.split()
-            if len(words) > 1:
-                if words[1].startswith("back"):
-                    backward = True
-                    bonus = 10
-
-            probot = ENGINE.probot_for_session(session)
-            if probot:
-                ENGINE.mover.move(probot, backward=backward, bonus=bonus)
-            return True
-
-        # TODO: Just for testing. Eventually this will be handled via probotics
-        if input.input.startswith("__turn"):
-            words = input.input.split()
-            if len(words) > 1:
-                dir = words[1]
-
-                probot = ENGINE.probot_for_session(session)
-                if probot:
-                    ENGINE.mover.turn(probot, dir=dir, bonus=3)
-            return True
+        # ... currently nothing ...
 
         return False
 
@@ -146,5 +119,8 @@ class TerminalHandler(MessageHandler):
             on_exception=on_exception,
             replace=False,
         )
+
+        # Points just for executing something via the terminal.
+        ENGINE.update_score(player, 5)
 
         return True

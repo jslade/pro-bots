@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, TypeAlias
+from typing import TYPE_CHECKING, Optional, TypeAlias
 
 import structlog
 
@@ -8,6 +8,9 @@ from .primitive import Primitive
 
 ScopeVars: TypeAlias = dict[str, Primitive]
 
+
+if TYPE_CHECKING:
+    from ..interpreter import ExecutionContext
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -46,6 +49,8 @@ class StackFrame:
     It has a list of instructions to run in order, and a a stack of values(results)
     that are passed as arguments to operations.
     """
+
+    context: "ExecutionContext"
 
     name: str
     builtins: ScopeVars
@@ -131,6 +136,7 @@ class StackFrame:
     @classmethod
     def make_outer(
         cls,
+        context: "ExecutionContext",
         operations: list[Operation],
         builtins: ScopeVars,
         globals: ScopeVars,
@@ -138,6 +144,7 @@ class StackFrame:
         """Create a stack frame for the operations. This will always be an outer
         frame with no parent, so the only scope vars are the global ones"""
         frame = StackFrame(
+            context=context,
             name="<outer>",
             builtins=builtins,
             scope_vars=globals,

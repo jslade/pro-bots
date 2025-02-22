@@ -20,6 +20,7 @@ ResultCallback: TypeAlias = Callable[[Primitive, "ExecutionContext"], None]
 ExceptionCallback: TypeAlias = Callable[
     [Exception, "ExecutionContext", "StackFrame"], None
 ]
+BreakCallback: TypeAlias = Callable[["ExecutionContext"], None]
 
 
 class ExecutionContext:
@@ -28,6 +29,7 @@ class ExecutionContext:
     globals: ScopeVars
     on_result: Optional[ResultCallback]
     on_exception: Optional[ExceptionCallback]
+    on_break: Optional[BreakCallback]
 
     total_frames: int
     total_operations: int
@@ -45,6 +47,7 @@ class ExecutionContext:
         globals: Optional[ScopeVars] = None,
         on_result: Optional[ResultCallback] = None,
         on_exception: Optional[ExceptionCallback] = None,
+        on_break: Optional[BreakCallback] = None,
         name: Optional[str] = None,
     ) -> None:
         # Builtins are symbols that cannot be changed (assigned to or overridden
@@ -62,6 +65,9 @@ class ExecutionContext:
         # Callback to be called when there is an exception when executing operations,
         # potentially in a nested scope
         self.on_exception = on_exception
+
+        # Callback to be called when a breakpoint is hit
+        self.on_break = on_break
 
         # Globals are symbols can be assigned to in the outer scope only,
         # and will stay around as long as this execution context exists
@@ -82,10 +88,13 @@ class ExecutionContext:
         purpose of other interpreters to run"""
         if self.current_frame is None:
             self.current_frame = StackFrame.make_outer(
-                self.operations, self.builtins, self.globals
+                self, self.operations, self.builtins, self.globals
             )
 
         self.current_frame = self.execute_until_break(self.current_frame)
+
+        if self.on_break:
+            self.on_break(self)
 
         return self.is_finished
 
