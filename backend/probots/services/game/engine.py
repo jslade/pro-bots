@@ -501,16 +501,16 @@ class Engine:
 
         match probot.state:
             case ProbotState.idle:
-                rate *= 3.0
+                rate *= 0.4
             case ProbotState.moving:
-                rate *= 0.2
+                rate *= 0.01
             case ProbotState.turning:
-                rate *= 0.5
+                rate *= 0.02
             case ProbotState.jumping:
                 rate = 0.0
 
         if probot.crystals:
-            rate *= 3.0
+            rate *= 1.01
 
         pct = 1.0 * (probot.energy / Probot.MAX_ENERGY)
         delta_raw = rate * (1.0 - pct)
@@ -521,6 +521,8 @@ class Engine:
         probot.energy += delta
         if probot.energy > Probot.MAX_ENERGY:
             probot.energy = Probot.MAX_ENERGY
+
+        self.notify_of_probot_change(probot)
 
     def ensure_not_stopped(self, probot: Probot) -> None:
         """Periodic task just to make sure a probot doesn't get stuck in a stopped state.

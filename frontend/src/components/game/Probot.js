@@ -43,11 +43,14 @@ const ProbotModel = ({ probot, ...props }) => {
       <ExtrudedDisc sweep={Math.PI} color={probot?.colors?.head}
         radius={0.30} depth={0.04} bevelSize={.05} bevelThickness={0.02}
         position={[0.02, 0.06, 0]} rotation={[0, Math.PI/2.0, 0]}
-         />
+      />
+      <EnergyRing energy={probot.energy} innerRadius={0.43} outerRadius={0.46}
+        position={[0, -0.03, 0]} rotation={[Math.PI*1.5, 0, -Math.PI*1.5]} />
     </mesh>)
 };
 
 function ExtrudedRing({
+  sweep = Math.PI * 2,
   radius = 1,
   tubeRadius = 0.05,
   segments = 64,
@@ -59,8 +62,9 @@ function ExtrudedRing({
   const geometry = useMemo(() => {
     // 1. Create the circular path using CatmullRomCurve3:
     const points = [];
-    for (let i = 0; i <= segments; i++) {  // Include the last point to close the circle
-      const angle = (i / segments) * 2 * Math.PI;
+    if (sweep === Math.PI * 2) { segments += 1; } // Close the circle
+    for (let i = 0; i < segments; i++) {
+      const angle = (i / segments) * sweep;
       const x = radius * Math.cos(angle);
       const z = radius * Math.sin(angle);
       points.push(new THREE.Vector3(x, 0, z)); // y = 0 for x/z plane
@@ -80,9 +84,9 @@ function ExtrudedRing({
     return geometry;
   }, [radius, tubeRadius, segments, tubularSegments]);
 
-  useFrame(() => {
-    mesh.current.rotation.y += 0.01;
-  });
+  //useFrame(() => {
+  //  mesh.current.rotation.y += 0.01;
+  //});
 
   return (
     <mesh ref={mesh} geometry={geometry} {...props}>
@@ -132,4 +136,40 @@ const ExtrudedDisc = ({
   );
 };
 
+function EnergyRing({
+  energy,
+  innerRadius = 1,
+  outerRadius = 1.1,
+  thetaSegments = 64,
+  phiSegments = 1,
+  thetaStart = 0,
+  thetaLength = Math.PI, // 180 degrees in radians
+
+  ...props }) {
+  const meshRef = useRef();
+
+  const geometry = useMemo(() => {
+
+    return new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength);
+  }, []);
+
+  useFrame(() => {
+    // Update the ring geometry based on the energy value
+    const newThetaLength = (energy / 1000) * Math.PI; // Assuming energy is between 0 and 100
+    if (meshRef.current) {
+      meshRef.current.geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments, phiSegments, 0, newThetaLength);
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} {...props}>
+      <primitive object={geometry} attach="geometry" />
+      <meshPhysicalMaterial
+        color="#ff0000"
+        transparent={true}
+        opacity={0.9}
+      />
+    </mesh>
+  );
+}
 export default ProbotModel;

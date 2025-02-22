@@ -45,8 +45,9 @@ class MovementService:
             return False
 
         speed_factor = 2.5 if backward else 1
-        required_energy = int(100 * speed_factor)
+        required_energy = int(50 * speed_factor)
         if probot.energy < required_energy:
+            self.engine.update_score(probot.player, -5)
             return False
 
         #
@@ -176,6 +177,7 @@ class MovementService:
 
         required_energy = 10
         if probot.energy < required_energy:
+            self.engine.update_score(probot.player, -5)
             return False
 
         #

@@ -18,7 +18,7 @@ const viewProbot = {
     "y": 0,
     "orientation": "W",
     "state": "idle",
-    "energy": 973,
+    "energy": 1000,
     "crystals": 0,
     "dx": 0,
     "dy": 0,
