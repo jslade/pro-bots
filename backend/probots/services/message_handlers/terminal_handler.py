@@ -20,10 +20,6 @@ class TerminalOutput(BaseSchema):
 
 
 class TerminalHandler(MessageHandler):
-    def __init__(self) -> None:
-        super().__init__()
-        self.session_globals: dict[str, ScopeVars] = {}
-
     def register(self, dispatcher: Dispatcher) -> None:
         LOGGER.info(f"Registering {self.__class__.__name__}")
         dispatcher.register_handler("terminal", "input", self.handle_input)
@@ -74,16 +70,10 @@ class TerminalHandler(MessageHandler):
 
         # Compiled, so execute it
         # Result will be sent to the player asynchronously via the on_result callback
-        globals = self.session_globals.get(session.id, None)
-        if globals is None:
-            globals = ScopeVars()
-            self.session_globals[session.id] = globals
-
         LOGGER.debug(
             "Executing input",
             input=input.input,
             session=session.id,
-            globals=globals,
             operations=operations,
         )
 
@@ -95,7 +85,6 @@ class TerminalHandler(MessageHandler):
                 result=result,
             )
             if result:
-                self.session_globals[session.id] = context.globals
                 output = TerminalOutput(output=Primitive.output(result.value))
                 dispatcher.send(session, "terminal", "output", output.as_msg())
 
@@ -114,13 +103,12 @@ class TerminalHandler(MessageHandler):
         ENGINE.programming.execute(
             operations=operations,
             player=player,
-            globals=globals,
             on_result=on_result,
             on_exception=on_exception,
             replace=False,
         )
 
-        # Points just for executing something via the terminal.
+        # Points just for executing something via the terminal
         ENGINE.update_score(player, 5)
 
         return True

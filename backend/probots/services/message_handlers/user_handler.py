@@ -40,10 +40,6 @@ class UpdateProgramResponse(BaseSchema):
 
 
 class UserHandler(MessageHandler):
-    def __init__(self) -> None:
-        super().__init__()
-        self.session_globals: dict[str, ScopeVars] = {}
-
     def register(self, dispatcher: Dispatcher) -> None:
         LOGGER.info(f"Registering {self.__class__.__name__}")
         dispatcher.register_handler("user", "get_program", self.handle_get_program)
@@ -125,11 +121,6 @@ class UserHandler(MessageHandler):
     ) -> bool:
         player = ENGINE.player_for_session(session)
 
-        globals = self.session_globals.get(session.id, None)
-        if globals is None:
-            globals = ScopeVars()
-            self.session_globals[session.id] = globals
-
         LOGGER.debug(
             "Executing user script",
             session=session.id,
@@ -143,7 +134,6 @@ class UserHandler(MessageHandler):
                 result=result,
             )
             if result is not None:
-                self.session_globals[session.id] = context.globals
                 output = TerminalOutput(output=Primitive.output(result.value))
                 dispatcher.send(session, "terminal", "output", output.as_msg())
 
@@ -162,7 +152,6 @@ class UserHandler(MessageHandler):
         ENGINE.programming.execute(
             operations=compiled,
             player=player,
-            globals=globals,
             on_result=on_result,
             on_exception=on_exception,
             replace=True,

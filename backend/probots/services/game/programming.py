@@ -39,6 +39,7 @@ class Programming:
         self.builtins = BuiltinsService(self.engine)
 
         self.player_contexts: dict[str, ExecutionContext] = {}
+        self.player_globals: dict[str, ScopeVars] = {}
 
     def compile(self, code: str) -> list[Operation]:
         """Compile the code into operations -- determine whether it is syntactically
@@ -50,7 +51,6 @@ class Programming:
         *,
         operations: list[Operation],
         player: Player,
-        globals: ScopeVars,
         on_result: Optional[ResultCallback] = None,
         on_exception: Optional[ExceptionCallback] = None,
         replace: Optional[bool] = True,
@@ -66,10 +66,16 @@ class Programming:
             if on_result:
                 on_result(result, context)
 
+            # The context is done executing, remove it from the interpreter
             if self.player_contexts.get(player.name, None) == context:
                 self.player_contexts.pop(player.name)
 
+            # Award points for the amount of code that was executed
             self.engine.update_score(player, context.latest_operations)
+
+            self.player_globals[player.name] = context.globals
+
+        globals = self.get_player_globals(player)
 
         context = self.create_context(
             player=player,
@@ -85,11 +91,20 @@ class Programming:
             self.interpreter.remove(context.name)
 
             self.player_contexts[player.name] = context
+            globals.clear()
 
         self.interpreter.add(context)
         self.ensure_running()
 
         return context
+
+    def get_player_globals(self, player: Player) -> ScopeVars:
+        """Get the globals for the player, creating them if they do not exist"""
+        globals = self.player_globals.get(player.name, None)
+        if globals is None:
+            globals = self.player_globals[player.name] = ScopeVars()
+
+        return globals
 
     def create_context(
         self,

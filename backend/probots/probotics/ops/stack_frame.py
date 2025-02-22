@@ -54,6 +54,7 @@ class StackFrame:
 
     name: str
     builtins: ScopeVars
+    global_vars: ScopeVars
     scope_vars: ScopeVars
     args: ScopeVars
     parent: Optional["StackFrame"] = None
@@ -88,8 +89,11 @@ class StackFrame:
                 name,  # Get from args first
                 self.scope_vars.get(
                     name,  # Get from local scope next
-                    self.builtins.get(
-                        name,  # Get from the builtins (globals) last
+                    self.global_vars.get(
+                        name,  # Get from the global scope next
+                        self.builtins.get(
+                            name,  # Get from the builtins last
+                        ),
                     ),
                 ),
             )
@@ -108,11 +112,17 @@ class StackFrame:
             self.scope_vars[name] = value
             return
 
+        if name in self.global_vars:
+            # Already a defined global -- update it
+            self.global_vars[name] = value
+            return
+
         if name in self.builtins:
             # Builtins are not updatable
             raise ValueError(f"Cannot assign to builtin: {name}")
 
         # Otherwise, add it to the local scope
+        # This will be the same as the global vars for the outer frame
         self.scope_vars[name] = value
 
     def push(self, value: Primitive) -> None:
@@ -147,6 +157,7 @@ class StackFrame:
             context=context,
             name="<outer>",
             builtins=builtins,
+            global_vars=globals,
             scope_vars=globals,
             args={},
             operations=operations,

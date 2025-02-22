@@ -45,6 +45,7 @@ class Me(Builtin):
         "orientation": lambda me: me.engine.probot_for_player(me.player).orientation,
         "energy": lambda me: me.engine.probot_for_player(me.player).energy,
         "crystals": lambda me: me.engine.probot_for_player(me.player).crystals,
+        "globals": lambda me: me.get_globals(),
     }
 
     def on_get(self, key: str, default: Optional[Any] = None) -> Optional[Primitive]:
@@ -64,6 +65,10 @@ class Me(Builtin):
 
     def on_delete(self, key: str) -> None:
         raise KeyError(f"Not deletable: {key}")
+
+    def get_globals(self) -> list[str]:
+        globals = self.engine.programming.get_player_globals(self.player)
+        return sorted(globals.keys())
 
 
 def enum_string(enum_value: Enum) -> str:

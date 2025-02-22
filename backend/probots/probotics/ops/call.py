@@ -57,6 +57,7 @@ class Call(Operation):
             name=block.name,
             args=args,
             scope_vars=frame.scope_vars if self.local else None,
+            global_vars=frame.global_vars,
             block=block,
             parent_frame=frame,
         )
@@ -91,6 +92,7 @@ class Call(Operation):
         name: str,
         args: ScopeVars,
         scope_vars: Optional[ScopeVars],
+        global_vars: ScopeVars,
         block: Block,
         parent_frame: StackFrame,
     ) -> StackFrame:
@@ -100,6 +102,7 @@ class Call(Operation):
             name=f"{parent_frame.name}.{name}",
             builtins=parent_frame.builtins,
             operations=block.operations,
+            global_vars=global_vars,
             scope_vars=scope_vars or ScopeVars(),
             args=args,
             parent=parent_frame,
