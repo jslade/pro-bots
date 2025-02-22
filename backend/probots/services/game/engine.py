@@ -299,6 +299,11 @@ class Engine:
             func=self.collect_energy,
             repeat_interval=10,
         )
+        self.add_probot_work(
+            probot,
+            func=self.ensure_not_stopped,
+            repeat_interval=20,
+        )
 
         LOGGER.info(
             "Added probot",
@@ -516,6 +521,13 @@ class Engine:
         probot.energy += delta
         if probot.energy > Probot.MAX_ENERGY:
             probot.energy = Probot.MAX_ENERGY
+
+    def ensure_not_stopped(self, probot: Probot) -> None:
+        """Periodic task just to make sure a probot doesn't get stuck in a stopped state.
+        This is really just a workaround for a bug somewhere else that is preventing
+        the probot_idle callback from being called (and thus the resume_player()
+        doesn't happen, the players context stays in a stopped state)"""
+        self.programming.resume_player(probot.player)
 
     def probot_idle(self, probot: Probot) -> None:
         """This is called whenever a probot is done with a task and is now idle."""
