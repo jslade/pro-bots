@@ -38,23 +38,25 @@ const ProgrammingSpace = ({}) => {
     }, [api, program]);
 
     return ( <>
-    <Grid container spacing={0} style={{ height: '100%' }}>
-
-        <Box flex={30} border={0} borderColor="hotpink">
-            <ReactCodeMirror
-                className="editor"
-                value={program}
-                height="100%"
-                extensions={[/* Add your desired extensions here */]}
-                theme="dark"
-                onChange={handleCodeChange}
-            />
-        </Box>
-        <Box flex={1} className="controls" border={0} borderColor="green">
-            <Button onClick={handleSave}>Save</Button>
-            <Button onClick={handleSaveAndRun}>Run</Button>
-        </Box>
-    </Grid>
+        <Grid container sx={{display: 'flex', flexDirection: 'column'}}>
+            <Grid item sx={{ flex: 1, overflow: 'hidden' }}>
+                <Box sx={{ height: '38em', overflow: 'auto' }}>
+                    <ReactCodeMirror
+                        className="editor"
+                        value={program}
+                        theme="dark"
+                        onChange={handleCodeChange}
+                        style={{ height: '100%' }}
+                    />
+                </Box>
+            </Grid>
+            <Grid item xs={1} >
+                <Box sx={{ flexDirection: 'row', display: "flex" }} border={0} >
+                    <Button onClick={handleSave}>Save</Button>
+                    <Button onClick={handleSaveAndRun}>Run</Button>
+                </Box>
+            </Grid>
+        </Grid>
         </>
     );
 };

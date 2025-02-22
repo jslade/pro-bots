@@ -24,13 +24,13 @@ return ( <>
                 </Box>
             </Box>
         </Grid>
-        <Grid container spacing={0} style={{ height: 'calc(100vh - 1.5em)' }}>
+        <Grid container spacing={0} style={{ height: 'calc(100vh - 1.5em)', maxheight: 'calc(100vh - 1.5em)' }}> 
             <Grid item xs={6}>
                 <Box display="flex" flexDirection="column" height="100%">
                     <Box flex={3} border={0} borderColor="blue">
                         <ProgrammingSpace />
                     </Box>
-                    <Box flex={1} border={1} borderColor="white">
+                    <Box flex={1} border={0} borderColor="white">
                         <CommandSpace />
                     </Box>
                 </Box>
