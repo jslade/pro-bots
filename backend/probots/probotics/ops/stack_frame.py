@@ -62,7 +62,7 @@ class StackFrame:
         If the end of the operations is reached, raise the ExitScope exception.
         """
         if self.operations is None or self.op_index >= len(self.operations):
-            return_value = self.pop() if self.results else Primitive.of(None)
+            return_value = self.pop() if self.results else None
             raise ExitScope(self, return_value)
 
         op = self.operations[self.op_index]

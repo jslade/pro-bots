@@ -1,5 +1,7 @@
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+
+import structlog
 
 from ...models.game.player import Player
 from ...models.game.probot import ProbotState
@@ -8,6 +10,9 @@ from ..message_handlers.terminal_handler import TerminalOutput
 
 if TYPE_CHECKING:
     from .engine import Engine
+
+
+LOGGER = structlog.get_logger(__name__)
 
 
 class BuiltinsService:
@@ -92,14 +97,16 @@ class BuiltinsService:
         builtins["backward"] = Primitive.of("backward")
 
     def _add_print(self, player: Player, builtins: ScopeVars):
-        def do_print(frame: StackFrame) -> Primitive:
+        def do_print(frame: StackFrame, player=player) -> Optional[Primitive]:
+            msg = frame.get("what")
+            LOGGER.info("do_print", player=player, what=msg)
             self.engine.send_to_player(
                 player,
+                "terminal",
                 "output",
-                TerminalOutput(output=str(frame.get("what").value)).as_msg(),
-                type="terminal",
+                TerminalOutput(output=Primitive.output(msg)).as_msg(),
             )
-            return Primitive.of(None)
+            return None
 
         builtins["print"] = Primitive.block(
             operations=[Native(do_print)], name="print", arg_names=["what"]

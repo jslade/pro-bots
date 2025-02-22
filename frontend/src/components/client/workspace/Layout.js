@@ -12,11 +12,11 @@ import Controls from './Controls';
 
 import './Layout.css';
 
-const Workspace = () => {
+const Layout = () => {
     const session = useContext(SessionContext);
     const api = useContext(ApiContext);
 
-return ( <>
+return ( <div maxheight="100vh" style={{ display: 'block', height: '100vh' }}>
         <Grid item xs={12} style={{ height: '1.5em' }}>
             <Box display="flex" flexDirection="column" height="100%">
                 <Box flex={1} border={1}>
@@ -49,7 +49,7 @@ return ( <>
                 </Box>
             </Grid>
         </Grid>
-    </>);
+    </div>);
 };
 
-export default Workspace;
+export default Layout;

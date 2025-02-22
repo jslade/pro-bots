@@ -12,6 +12,11 @@ class Block:
     name: Optional[str]
     arg_names: list[str]
 
+    def __output__(self) -> str:
+        """This is what appears, for example, if the user types the name of
+        a built-in function or a user-defined function in the terminal"""
+        return f"Callable(name={self.name}, arg_names={self.arg_names})"
+
 
 class Call(Operation):
     """Call operator for function calls.

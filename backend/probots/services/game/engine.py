@@ -527,6 +527,7 @@ class Engine:
     def notify_of_current_state(self, session: Session) -> None:
         self.send_to_session(
             session=session,
+            type="game",
             event="current_state",
             data=self.construct_current_state().as_msg(),
         )
@@ -538,17 +539,25 @@ class Engine:
         )
 
     def send_to_player(
-        self, player: Player, event: str, data: dict, type: Optional[str] = None
+        self,
+        player: Player,
+        type: str,
+        event: str,
+        data: dict,
     ) -> None:
         session = self.player_session(player)
         if session:
-            self.send_to_session(session, event, data)
+            self.send_to_session(session, type, event, data)
 
     def send_to_session(
-        self, session: Session, event: str, data: dict, type: Optional[str] = None
+        self,
+        session: Session,
+        type: str,
+        event: str,
+        data: dict,
     ) -> None:
         message = Message(
-            type=type or "game",
+            type=type,
             event=event,
             session_id=session.id,
             data=data,

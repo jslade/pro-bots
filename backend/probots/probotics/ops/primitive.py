@@ -103,3 +103,17 @@ class Primitive:
 
         block = Block(operations=operations, name=name, arg_names=arg_names or [])
         return Primitive(PrimitiveType.BLOCK, value=block)
+
+    @classmethod
+    def output(cls, value: Any) -> str:
+        try:
+            return value.__output__()
+        except AttributeError:
+            return repr(value)
+
+    def __output__(self) -> str:
+        value = self.value
+        try:
+            return value.__output__()
+        except AttributeError:
+            return repr(value)

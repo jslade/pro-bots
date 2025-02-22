@@ -35,6 +35,8 @@ class ExecutionContext:
     latest_frames: int
     latest_operations: int
 
+    name: Optional[str] = None
+
     def __init__(
         self,
         *,
@@ -43,6 +45,7 @@ class ExecutionContext:
         globals: Optional[ScopeVars] = None,
         on_result: Optional[ResultCallback] = None,
         on_exception: Optional[ExceptionCallback] = None,
+        name: Optional[str] = None,
     ) -> None:
         # Builtins are symbols that cannot be changed (assigned to or overridden
         # by another global of the same name
@@ -63,6 +66,8 @@ class ExecutionContext:
         # Globals are symbols can be assigned to in the outer scope only,
         # and will stay around as long as this execution context exists
         self.globals = globals or ScopeVars()
+
+        self.name = name
 
         self.current_frame: Optional[StackFrame] = None
 
@@ -107,11 +112,13 @@ class ExecutionContext:
             frame = exit_scope.frame.parent
             if frame:
                 # Current frame gets the return value of the scope that just exited
-                frame.push(exit_scope.return_value)
+                if exit_scope.return_value is not None:
+                    frame.push(exit_scope.return_value)
                 return frame
             else:
                 # We just exited the outermost frame,
-                self.on_result(exit_scope.return_value, self)
+                if exit_scope.return_value is not None:
+                    self.on_result(exit_scope.return_value, self)
 
         except Breakpoint as bp:
             next_frame = self.handle_breakpoint(frame, bp)
@@ -185,6 +192,11 @@ class ProboticsInterpreter:
 
     def add(self, context: ExecutionContext) -> None:
         self.contexts.append(context)
+
+    def remove(self, name: str) -> None:
+        index = next((i for i, c in enumerate(self.contexts) if c.name == name), None)
+        if index is not None:
+            self.contexts.pop(index)
 
     def execute_next(self) -> None:
         """Execute the next sequence of operations. If the operation contains nested

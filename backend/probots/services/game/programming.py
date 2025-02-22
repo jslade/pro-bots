@@ -50,6 +50,7 @@ class Programming:
         globals: ScopeVars,
         on_result: Optional[ResultCallback] = None,
         on_exception: Optional[ExceptionCallback] = None,
+        replace: Optional[bool] = True,
     ) -> ExecutionContext:
         """Evaluate the code for the given player"""
         context = self.create_context(
@@ -59,6 +60,10 @@ class Programming:
             on_result=on_result,
             on_exception=on_exception,
         )
+
+        if replace and context.name is not None:
+            # Only allow one context per player
+            self.interpreter.remove(context.name)
 
         self.interpreter.add(context)
         self.ensure_running()
@@ -83,6 +88,7 @@ class Programming:
             globals=globals,
             on_result=on_result,
             on_exception=on_exception,
+            name=f"player:{player.name}",
         )
 
     def ensure_running(self) -> None:

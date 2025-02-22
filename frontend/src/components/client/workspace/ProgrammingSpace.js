@@ -36,6 +36,9 @@ const ProgrammingSpace = ({}) => {
     const handleSaveAndRun = React.useCallback((event) => {
         api.sendMessage('user', 'update_program', { program: program, run: true });
     }, [api, program]);
+    const handleStop = React.useCallback((event) => {
+        api.sendMessage('user', 'stop_program', { program: program, run: true });
+    }, [api, program]);
 
     return ( <>
         <Grid container sx={{display: 'flex', flexDirection: 'column'}}>
@@ -51,9 +54,10 @@ const ProgrammingSpace = ({}) => {
                 </Box>
             </Grid>
             <Grid item xs={1} >
-                <Box sx={{ flexDirection: 'row', display: "flex" }} border={0} >
+                <Box sx={{ flexDirection: 'row', display: "flex" }} border={0}>
                     <Button onClick={handleSave}>Save</Button>
                     <Button onClick={handleSaveAndRun}>Run</Button>
+                    <Button onClick={handleStop}>Stop</Button>
                 </Box>
             </Grid>
         </Grid>

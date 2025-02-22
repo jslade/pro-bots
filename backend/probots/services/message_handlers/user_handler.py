@@ -48,6 +48,7 @@ class UserHandler(MessageHandler):
         LOGGER.info(f"Registering {self.__class__.__name__}")
         dispatcher.register_handler("user", "get_program", self.handle_get_program)
         dispatcher.register_handler("user", "update_program", self.handle_update_program)
+        dispatcher.register_handler("user", "stop_program", self.handle_stop_program)
 
     def handle_get_program(
         self, session: Session, message: Message, dispatcher: Dispatcher
@@ -83,7 +84,7 @@ class UserHandler(MessageHandler):
         user = session.user
         program = user.current_program
         if not user.current_program:
-            program = Program(user=user)
+            program = Program(user=user, content="// Write your code here")
             DB.session.add(program)
 
         content = update_request.program
@@ -107,8 +108,6 @@ class UserHandler(MessageHandler):
 
         # Easy way to show error for now:
         if not compiled:
-            from .terminal_handler import TerminalOutput
-
             lines = error.splitlines()
             term_output = TerminalOutput(output="\n".join(lines[0:3]))
             dispatcher.send(session, "terminal", "output", term_output.as_msg())
@@ -143,9 +142,9 @@ class UserHandler(MessageHandler):
                 player=player.name,
                 result=result,
             )
-            if result:
+            if result is not None:
                 self.session_globals[session.id] = context.globals
-                output = TerminalOutput(output=str(result.value))
+                output = TerminalOutput(output=Primitive.output(result.value))
                 dispatcher.send(session, "terminal", "output", output.as_msg())
 
         def on_exception(
@@ -166,6 +165,19 @@ class UserHandler(MessageHandler):
             globals=globals,
             on_result=on_result,
             on_exception=on_exception,
+            replace=True,
         )
 
         return True
+
+    def handle_stop_program(
+        self, session: Session, message: Message, dispatcher: Dispatcher
+    ) -> None:
+        LOGGER.info(
+            "Stop program request",
+            session=session.id,
+        )
+
+        content = ""
+        compiled, _ = self.compile(content)
+        self.run(session, compiled, dispatcher)

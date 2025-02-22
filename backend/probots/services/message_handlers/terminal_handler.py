@@ -123,7 +123,7 @@ class TerminalHandler(MessageHandler):
             )
             if result:
                 self.session_globals[session.id] = context.globals
-                output = TerminalOutput(output=str(result.value))
+                output = TerminalOutput(output=Primitive.output(result.value))
                 dispatcher.send(session, "terminal", "output", output.as_msg())
 
         def on_exception(
@@ -144,6 +144,7 @@ class TerminalHandler(MessageHandler):
             globals=globals,
             on_result=on_result,
             on_exception=on_exception,
+            replace=False,
         )
 
         return True
