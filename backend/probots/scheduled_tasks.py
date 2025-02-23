@@ -25,3 +25,10 @@ def cleanup_stale_sessions() -> None:
     from .services.monitor import MONITOR
 
     MONITOR.cleanup_stale_sessions()
+
+
+@SCHEDULER.task(trigger="interval", seconds=60)
+def save_user_changes() -> None:
+    from .services.game.engine import ENGINE
+
+    ENGINE.save_user_changes()

@@ -6,7 +6,7 @@ import Ground from './Ground';
 import ProbotModel from './Probot';
 
 const Overview = () => {
-    const { gameState, probots } = useContext(GameContext);
+    const { gameState, pairs } = useContext(GameContext);
 
     const [width, setWidth] = useState(1);
     const [height, setHeight] = useState(1);
@@ -24,15 +24,15 @@ const Overview = () => {
         <Canvas>
             {gameState ? <OverviewScene
                 gameState={gameState}
-                probots={probots}
+                pairs={pairs}
                 width={width}
                 height={height}
-             /> : <></>}
+            /> : <></>}
         </Canvas>
-   );
+    );
 };
 
-const OverviewScene = ({ gameState, probots, width, height }) => {
+const OverviewScene = ({ gameState, pairs, width, height }) => {
     useThree(({ camera }) => {
         camera.position.set(width / 2.0 - 0.5, width * 0.58, - height / 3.0 - 2);
         camera.rotation.set(-Math.PI / 2, 0.0, 0);
@@ -43,7 +43,7 @@ const OverviewScene = ({ gameState, probots, width, height }) => {
         <spotLight position={[width*2, height*2, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[width/2, height*2, 2]} decay={0} intensity={Math.PI} />
         <Ground grid={gameState.grid} width={width} height={height} />
-        {probots.map((p) => <ProbotModel key={p.name} probot={p} />)}
+        {pairs.map((pp) => <ProbotModel key={pp.player.name} player={pp.player} probot={pp.probot} />)}
     </>);
 };
 

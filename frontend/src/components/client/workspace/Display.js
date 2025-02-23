@@ -8,7 +8,7 @@ import Ground from '../../game/Ground';
 import ProbotModel from '../../game/Probot';
 
 const Display = () => {
-    const { gameState, probots, probot } = React.useContext(GameContext);
+    const { gameState, pairs, player, probot } = React.useContext(GameContext);
 
     return (
         <Canvas
@@ -17,10 +17,11 @@ const Display = () => {
                 gl.setClearColor('lightblue'); // Replace 'lightblue' with your desired color
             }}
          >
-            {(gameState && probot) ? <DisplayScene
+            {(gameState && probot && player) ? <DisplayScene
                 gameState={gameState}
                 grid={gameState.grid}
-                probots={probots}
+                pairs={pairs}
+                player={player}
                 probot={probot}
             /> : <></>}
         </Canvas>
@@ -36,18 +37,14 @@ const orientationAngle = (orientation) => {
     }[orientation] || 0;
 }
 
-const DisplayScene = ({ gameState, grid, probots, probot }) => {
+const DisplayScene = ({ gameState, grid, pairs, player, probot }) => {
     return ( <>
         <ambientLight intensity={Math.PI / 2} />
         <spotLight position={[grid.width*2, grid.height*2, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[grid.width/2, grid.height*2, 2]} decay={0} intensity={Math.PI} />
         <Ground grid={gameState.grid} width={grid.width} height={grid.height} />
-        {gameState.probots.map((p) => <ProbotModel key={p.name} probot={p} />)}
+        {pairs.map((pp) => <ProbotModel key={pp.player.name} player={pp.player} probot={pp.probot} />)}
         <FollowingCamera probot={probot} />
-{/*
-        <OrbitControls />
-*/}
-
     </>);
 };
 

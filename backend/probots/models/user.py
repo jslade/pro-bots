@@ -28,6 +28,10 @@ class User(DB.Model, PKId, UniquelyNamed):
 
     programs: Mapped[list["Program"]] = relationship("Program", back_populates="user")
 
+    color_head: Mapped[str] = mapped_column(DB.String(20), nullable=True)
+    color_tail: Mapped[str] = mapped_column(DB.String(20), nullable=True)
+    color_body: Mapped[str] = mapped_column(DB.String(20), nullable=True)
+
     @property
     def current_program(self) -> Optional["Program"]:
         from .program import Program

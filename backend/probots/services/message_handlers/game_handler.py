@@ -33,9 +33,18 @@ class GameHandler(MessageHandler):
                 LOGGER.warning("Can't add player for session without user")
                 return
 
+            colors = ENGINE.coloring.generate_random(theme="dark")
+            if session.user.color_body:
+                colors.body = session.user.color_body
+            if session.user.color_head:
+                colors.head = session.user.color_head
+            if session.user.color_tail:
+                colors.tail = session.user.color_tail
+
             player = Player(
                 name=session.user.name,
-                colors=ENGINE.coloring.generate_random(theme="dark"),
+                display_name=session.user.display_name or session.user.name,
+                colors=colors,
                 session_id=session.id,
             )
             ENGINE.add_player(player, session=session)

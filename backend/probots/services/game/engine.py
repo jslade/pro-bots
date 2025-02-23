@@ -173,6 +173,22 @@ class Engine:
         # Create a new one from the old:
         # self.add_probot(self.duplicate_probot(probot))
 
+    def save_user_changes(self) -> None:
+        """This is a somewhat hacky way to save changes to the user object
+        that are made during the game"""
+        from probots.app import APP
+        from probots.db import DB
+
+        for player in self.players:
+            if user := self.user_for_player(player):
+                user.display_name = player.display_name
+                user.color_body = player.colors.body
+                user.color_head = player.colors.head
+                user.color_tail = player.colors.tail
+
+        with APP.app_context():
+            DB.session.commit()
+
     def setup_processor(self) -> None:
         LOGGER.info("Setting up processor")
         self.processor = Processor()
@@ -245,6 +261,7 @@ class Engine:
         LOGGER.info(
             "Added player",
             player=player.name,
+            name=player.display_name,
             session=session.id if session else None,
             user=session.user.name if session and session.user else None,
         )
@@ -254,6 +271,12 @@ class Engine:
 
     def player_session(self, player: Player) -> Optional[Session]:
         return SESSIONS.get_session(player.session_id)
+
+    def user_for_player(self, player: Player) -> Optional[User]:
+        if session := self.player_session(player):
+            return session.user
+
+        return None
 
     def player_for_user(self, user: User) -> Optional[Player]:
         for player in self.players:
@@ -337,6 +360,7 @@ class Engine:
         """Create a new player that runs as a bot (primarily for testing)"""
         player = Player(
             name=name,
+            display_name=name,
             colors=self.coloring.generate_random(theme="light"),
             score=0,
         )
@@ -537,6 +561,15 @@ class Engine:
 
         self.programming.resume_player(probot.player)
         self.notify_of_probot_change(probot)
+
+    def notify_of_player_change(self, player: Player) -> None:
+        """ "Send a message to all sessions about the change in this player.
+        Ideally would send a delta of some sort, but simple/dumb implementation
+        is to just send the full player state"""
+        self.send_broadcast(
+            event="update_player",
+            data=player.as_msg(),
+        )
 
     def notify_of_probot_change(self, probot: Probot) -> None:
         """ "Send a message to all sessions about the change in this probot.

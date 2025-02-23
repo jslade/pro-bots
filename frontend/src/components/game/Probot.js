@@ -1,6 +1,7 @@
 import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
+import { Billboard, Text } from '@react-three/drei';
 
 const orientationAngle = (orientation) => {
     return {
@@ -11,7 +12,7 @@ const orientationAngle = (orientation) => {
     }[orientation] || 0;
 }
 
-const ProbotModel = ({ probot, ...props }) => {
+const ProbotModel = ({ player, probot, ...props }) => {
     const meshRef = React.useRef()
 
     useFrame(() => {
@@ -44,8 +45,9 @@ const ProbotModel = ({ probot, ...props }) => {
         radius={0.30} depth={0.04} bevelSize={.05} bevelThickness={0.02}
         position={[0.02, 0.06, 0]} rotation={[0, Math.PI/2.0, 0]}
       />
-      <EnergyRing energy={probot.energy} innerRadius={0.43} outerRadius={0.46}
+      <EnergyRing energy={probot?.energy} innerRadius={0.43} outerRadius={0.46}
         position={[0, -0.03, 0]} rotation={[Math.PI*1.5, 0, -Math.PI*1.5]} />
+      {/*<InfoPanel message={`${player?.displayName}\n${player?.score}`} position={[0, 0.6, 0]} />*/}
     </mesh>)
 };
 
@@ -170,6 +172,27 @@ function EnergyRing({
         opacity={0.9}
       />
     </mesh>
+  );
+}
+
+
+const InfoPanel = ({ message, ...props }) => {
+  const textRef = useRef();
+
+  return (
+    <Billboard>
+      <Text
+        ref={textRef}
+        position={[0, 0.3, 0]}
+        fontSize={0.1}
+        color="black"
+        anchorX="center"
+        anchorY="middle"
+        rotation={[0, 0, 0]}
+      >
+        {message}
+      </Text>
+    </Billboard>
   );
 }
 export default ProbotModel;

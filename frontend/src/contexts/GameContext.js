@@ -4,6 +4,7 @@ import { ApiContext } from './ApiContext';
 import { SessionContext } from './SessionContext';
 import { ScoreUpdater } from './game/ScoreUpdater';
 import { ProbotUpdater } from './game/ProbotUpdater';
+import { PlayerUpdater } from './game/PlayerUpdater';
 
 const GameContext = createContext();
 
@@ -17,17 +18,34 @@ const GameProvider = ({ children }) => {
     const [ gameState, setGameState ] = useState(null)
     const [ player, setPlayer ] = useState(null)
     const [ probot, setProbot ] = useState(null)
+    const [ pairs, setPairs ] = useState({})
 
     const [ scoresUpdated, setScoresUpdated ] = useState(null);
+    const [ playersUpdated, setPlayersUpdated ] = useState(null);
     const [ probotsUpdated, setProbotsUpdated ] = useState(null);
+
+    const matchPairs = useCallback((players, probots) => {
+        const pp = []
+        for(const player of players) {
+            for(const probot of probots) {
+                if (player.name === probot.player) {
+                    pp.push({ player, probot });
+                }
+            }
+        }
+        console.log("Matched pairs", pp);
+        setPairs(pp);
+    }, [setPairs])
 
     const handleGameStateReset = useCallback((data) => {
         setGameState(data.current);
-    }, [setGameState])
+        matchPairs(data.current.players, data.current.probots);
+    }, [setGameState, matchPairs])
 
     const handleGameStateCurrent = useCallback((data) => {
         setGameState(data);
-    }, [setGameState])
+        matchPairs(data.players, data.probots);
+    }, [setGameState, matchPairs])
 
     useEffect(() => {
         if (!api) return;
@@ -121,6 +139,7 @@ const GameProvider = ({ children }) => {
             gameState,
             players: gameState?.players || [],
             probots: gameState?.probots || [],
+            pairs: pairs || [],
             player, // myself
             probot, // my bot
 
@@ -129,6 +148,9 @@ const GameProvider = ({ children }) => {
             <ScoreUpdater
                 players={gameState?.players || []}
                 setScoresUpdated={setScoresUpdated} />
+            <PlayerUpdater
+                players={gameState?.players || []}
+                setPlayersUpdated={setPlayersUpdated} />
             <ProbotUpdater
                 probots={gameState?.probots || []}
                 setProbotsUpdated={setProbotsUpdated} />

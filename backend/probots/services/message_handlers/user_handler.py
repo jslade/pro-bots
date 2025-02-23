@@ -8,7 +8,7 @@ from ...models.mixins.pydantic_base import BaseSchema
 from ...probotics.interpreter import ExecutionContext
 from ...probotics.ops.base import Operation
 from ...probotics.ops.primitive import Primitive
-from ...probotics.ops.stack_frame import ScopeVars, StackFrame
+from ...probotics.ops.stack_frame import StackFrame
 from ..dispatcher import Dispatcher
 from ..game.engine import ENGINE
 from .base import MessageHandler

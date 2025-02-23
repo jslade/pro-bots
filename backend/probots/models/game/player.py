@@ -15,6 +15,8 @@ class Player(BaseSchema):
     A player's behavior is defined by the program it is running."""
 
     name: str
+    display_name: str
+
     score: int = 0
 
     colors: ColorScheme = None

@@ -5,6 +5,17 @@ import { OrbitControls } from '@react-three/drei';
 
 import ProbotModel from './Probot';
 
+const viewPlayer = {
+    "name": "bot-0",
+    "displayName": "Bot 0",
+    "score": 12345,
+    "colors": {
+        "body": "#404040",
+        "head": "darkred",
+        "tail": "midnightblue"
+    },
+}
+
 const viewProbot = {
     "player": "bot-0",
     "colors": {
@@ -34,7 +45,7 @@ const ModelViewer = () => {
                 </Box>
             </Grid>
         </Grid>
-   );
+    );
 };
 
 const ViewerCanvas = () => {
@@ -45,15 +56,15 @@ const ViewerCanvas = () => {
                 gl.setClearColor('lightblue');
             }}
         >
-            <ViewerCanvasContent probot={viewProbot}/>
+            <ViewerCanvasContent player={viewPlayer} probot={viewProbot}/>
             <OrbitControls />
         </Canvas>
     )
 };
 
-const ViewerCanvasContent = ({ probot }) => {
+const ViewerCanvasContent = ({ player, probot }) => {
     useThree(({ camera }) => {
-        camera.position.set(-1.5, 1.5, 0);
+        camera.position.set(-1.0, 1.0, 0);
         camera.lookAt([0, 0, 0]);
     })
 
@@ -61,7 +72,7 @@ const ViewerCanvasContent = ({ probot }) => {
         <ambientLight intensity={Math.PI / 2} />
         <spotLight position={[40, 40, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[10, 20, 2]} decay={0} intensity={Math.PI} />
-        <ProbotModel probot={probot} />
+        <ProbotModel player={player} probot={probot} />
     </>);
 };
 
