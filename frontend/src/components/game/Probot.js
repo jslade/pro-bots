@@ -45,8 +45,8 @@ const ProbotModel = ({ player, probot, ...props }) => {
         radius={0.30} depth={0.04} bevelSize={.05} bevelThickness={0.02}
         position={[0.02, 0.06, 0]} rotation={[0, Math.PI/2.0, 0]}
       />
-      <EnergyRing energy={probot?.energy} innerRadius={0.43} outerRadius={0.46}
-        position={[0, -0.03, 0]} rotation={[Math.PI*1.5, 0, -Math.PI*1.5]} />
+      <EnergyRing energy={probot?.energy} innerRadius={0.45} outerRadius={0.52}
+        position={[0, -0.04, 0]} rotation={[Math.PI*1.5, 0, -Math.PI*1.5]} />
       {/*<InfoPanel message={`${player?.displayName}\n${player?.score}`} position={[0, 0.6, 0]} />*/}
     </mesh>)
 };
