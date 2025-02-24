@@ -4,6 +4,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 
 import ProbotModel from './Probot';
+import { Crystal, CrystalGroup } from './Crystal';
 
 const viewPlayer = {
     "name": "bot-0",
@@ -30,7 +31,7 @@ const viewProbot = {
     "orientation": "W",
     "state": "idle",
     "energy": 1000,
-    "crystals": 0,
+    "crystals": 1000,
     "dx": 0,
     "dy": 0,
     "dorient": 0
@@ -64,7 +65,7 @@ const ViewerCanvas = () => {
 
 const ViewerCanvasContent = ({ player, probot }) => {
     useThree(({ camera }) => {
-        camera.position.set(-1.0, 1.0, 0);
+        camera.position.set(1.0, 1.0, 0);
         camera.lookAt([0, 0, 0]);
     })
 
@@ -73,6 +74,7 @@ const ViewerCanvasContent = ({ player, probot }) => {
         <spotLight position={[40, 40, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[10, 20, 2]} decay={0} intensity={Math.PI} />
         <ProbotModel player={player} probot={probot} />
+        <CrystalGroup count={5} speed={1} position={[0.15, 0.24, 0]} scale={[0.5, 0.5, 0.5]}/>
     </>);
 };
 

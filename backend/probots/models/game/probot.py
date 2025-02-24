@@ -26,6 +26,7 @@ class ProbotState(str, Enum):
 
 class Probot(BaseSchema):
     MAX_ENERGY: ClassVar[int] = 1000
+    MAX_CRYSTALS: ClassVar[int] = 1000
 
     player: Player
     colors: ColorScheme

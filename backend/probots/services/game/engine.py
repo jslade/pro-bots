@@ -18,6 +18,7 @@ from ...models.game.all import (
 from ..dispatcher import DISPATCHER
 from ..session_service import SESSIONS
 from .coloring import ColoringService
+from .energy import EnergyService
 from .map_maker import MapMaker
 from .movement import MovementService
 from .processor import Processor, Work
@@ -65,6 +66,7 @@ class Engine:
 
         # Helper services
         self.coloring = ColoringService()
+        self.energy = EnergyService(self)
         self.mover = MovementService(self)
         self.programming = Programming(self)
         self.transitioner = TransitionService(self)
@@ -319,7 +321,7 @@ class Engine:
         # Schedule work to make it run...
         self.add_probot_work(
             probot,
-            func=self.collect_energy,
+            func=self.energy.collect_energy,
             repeat_interval=10,
         )
         self.add_probot_work(
@@ -399,7 +401,7 @@ class Engine:
             orientation=orientation,
             state=ProbotState.idle,
             energy=Probot.MAX_ENERGY / 2,
-            crystals=0,
+            crystals=Probot.MAX_CRYSTALS,
         )
         self.add_probot(probot)
 
@@ -514,39 +516,6 @@ class Engine:
         item.player = probot.player if probot else None
 
         return item
-
-    def collect_energy(self, probot: Probot) -> None:
-        """Probots increase energy automatically, faster when idle"""
-        # TODO: Move to a separate service of some sort
-        if probot.energy >= Probot.MAX_ENERGY:
-            return
-
-        rate = 50.0
-
-        match probot.state:
-            case ProbotState.idle:
-                rate *= 0.4
-            case ProbotState.moving:
-                rate *= 0.01
-            case ProbotState.turning:
-                rate *= 0.02
-            case ProbotState.jumping:
-                rate = 0.0
-
-        if probot.crystals:
-            rate *= 1.01
-
-        pct = 1.0 * (probot.energy / Probot.MAX_ENERGY)
-        delta_raw = rate * (1.0 - pct)
-        if delta_raw <= 0:
-            return
-
-        delta = int(delta_raw) or 1
-        probot.energy += delta
-        if probot.energy > Probot.MAX_ENERGY:
-            probot.energy = Probot.MAX_ENERGY
-
-        self.notify_of_probot_change(probot)
 
     def ensure_not_stopped(self, probot: Probot) -> None:
         """Periodic task just to make sure a probot doesn't get stuck in a stopped state.

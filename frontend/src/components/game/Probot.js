@@ -45,8 +45,14 @@ const ProbotModel = ({ player, probot, ...props }) => {
         radius={0.30} depth={0.04} bevelSize={.05} bevelThickness={0.02}
         position={[0.02, 0.06, 0]} rotation={[0, Math.PI/2.0, 0]}
       />
-      <EnergyRing energy={probot?.energy} innerRadius={0.45} outerRadius={0.52}
-        position={[0, -0.04, 0]} rotation={[Math.PI*1.5, 0, -Math.PI*1.5]} />
+      <EnergyRing energy={probot?.energy} color="red"
+        innerRadius={0.45} outerRadius={0.52}
+        thetaStart={Math.PI/2} thetaMax={Math.PI/2}
+        position={[0, -0.04, 0]} rotation={[-Math.PI/2, 0, 0]} />
+      <EnergyRing energy={probot?.crystals} color="green"
+        thetaStart = {0} thetaMax={Math.PI/2} reverse={true}
+        innerRadius={0.45} outerRadius={0.52}
+        position={[0, -0.04, 0]} rotation={[-Math.PI/2, 0, -Math.PI/2]} />
       {/*<InfoPanel message={`${player?.displayName}\n${player?.score}`} position={[0, 0.6, 0]} />*/}
     </mesh>)
 };
@@ -145,21 +151,25 @@ function EnergyRing({
   thetaSegments = 64,
   phiSegments = 1,
   thetaStart = 0,
-  thetaLength = Math.PI, // 180 degrees in radians
-
+  thetaMax = Math.PI / 2,
+  reverse = false,
+  color,
   ...props }) {
   const meshRef = useRef();
 
   const geometry = useMemo(() => {
 
-    return new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength);
-  }, []);
+    return new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments, phiSegments, 0, 0);
+  }, [innerRadius, outerRadius, phiSegments, thetaSegments]);
 
   useFrame(() => {
     // Update the ring geometry based on the energy value
-    const newThetaLength = (energy / 1000) * Math.PI; // Assuming energy is between 0 and 100
+    const newThetaLength = (energy / 1000) * thetaMax; // Assuming energy is between 0 and 100
     if (meshRef.current) {
-      meshRef.current.geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments, phiSegments, 0, newThetaLength);
+      meshRef.current.geometry = new THREE.RingGeometry(
+        innerRadius, outerRadius, thetaSegments, phiSegments,
+        reverse ? thetaStart - newThetaLength : thetaStart, newThetaLength
+      );
     }
   });
 
@@ -167,9 +177,9 @@ function EnergyRing({
     <mesh ref={meshRef} {...props}>
       <primitive object={geometry} attach="geometry" />
       <meshPhysicalMaterial
-        color="#ff0000"
+        color={color}
         transparent={true}
-        opacity={0.9}
+        opacity={0.7}
       />
     </mesh>
   );
