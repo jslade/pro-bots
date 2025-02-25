@@ -92,7 +92,7 @@ class StackFrame:
                     self.global_vars.get(
                         name,  # Get from the global scope next
                         self.builtins.get(
-                            name,  # Get from the builtins last
+                            name  # Get from the builtins last
                         ),
                     ),
                 ),

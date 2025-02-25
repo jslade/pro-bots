@@ -134,7 +134,7 @@ class UserHandler(MessageHandler):
                 result=result,
             )
             if result is not None:
-                output = TerminalOutput(output=Primitive.output(result.value))
+                output = TerminalOutput(output=Primitive.output(result))
                 dispatcher.send(session, "terminal", "output", output.as_msg())
 
         def on_exception(

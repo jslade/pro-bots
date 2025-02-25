@@ -6,6 +6,7 @@ from ...models.game.player import Player
 from ...models.game.probot import ProbotState
 from ...probotics.ops.all import Breakpoint, Native, Primitive, ScopeVars, StackFrame
 from .builtin.all import (
+    Inspect,
     IsIdle,
     Me,
     Move,
@@ -47,11 +48,11 @@ class BuiltinsService:
         NewObject.add(player, self.engine, builtins)
 
         # Game-specific built-ins
-        Me.add(player, self.engine, builtins)
-        Print.add(player, self.engine, builtins)
-
+        Inspect.add(player, self.engine, builtins)
         IsIdle.add(player, self.engine, builtins)
+        Me.add(player, self.engine, builtins)
         Move.add(player, self.engine, builtins)
+        Print.add(player, self.engine, builtins)
         Turn.add(player, self.engine, builtins)
         Wait.add(player, self.engine, builtins)
 

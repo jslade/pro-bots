@@ -271,6 +271,13 @@ class Engine:
         # Notify all sessions
         self.processor.add_work(self.broadcast_current_state, delay=10)
 
+    def get_player(self, name: str) -> Optional[Player]:
+        for player in self.players:
+            if player.name == name or player.display_name == name:
+                return player
+
+        return None
+
     def player_session(self, player: Player) -> Optional[Session]:
         return SESSIONS.get_session(player.session_id)
 
@@ -415,12 +422,20 @@ class Engine:
             if self.is_empty_cell(x, y):
                 return (x, y)
 
-    def is_empty_cell(self, x: int, y: int, ignore_crystals: bool = True) -> bool:
+    def get_cell(self, x: int, y: int) -> tuple[Cell, Optional[Probot]]:
+        cell = self.grid.get(x, y)
+
         for probot in self.probots:
             if probot.x == x and probot.y == y:
-                return False
+                return [cell, probot]
 
-        cell = self.grid.get(x, y)
+        return [cell, None]
+
+    def is_empty_cell(self, x: int, y: int, ignore_crystals: bool = True) -> bool:
+        cell, probot = self.get_cell(x, y)
+        if probot is not None:
+            return False
+
         if cell.crystals != 0 and not ignore_crystals:
             return False
 

@@ -1,7 +1,6 @@
-import React, { useRef, useMemo, useEffect, useState } from 'react';
+import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
-import { MeshDistortMaterial } from '@react-three/drei';
 
 function Crystal({ color, radius = 0.02, length = 0.08, facets=4, ...props }) {
     const geometry = useMemo(() => {
@@ -101,7 +100,6 @@ function CrystalPlacement({speed=1, ...props}) {
         group.current.rotation.z += 0.003 * speed;
     });
 
-    console.log("CrystalPlacement", crystals);
     return (
         <group ref={group} {...props}>
             {crystals}

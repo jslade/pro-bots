@@ -1,10 +1,15 @@
 from dataclasses import dataclass
 from enum import Enum
 from types import NoneType
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
+
+import structlog
 
 if TYPE_CHECKING:
     from .base import Operation
+
+
+LOGGER = structlog.get_logger(__name__)
 
 
 class PrimitiveType(str, Enum):
@@ -26,6 +31,10 @@ class Primitive:
 
     type: PrimitiveType
     value: int | float | str | list | dict | tuple[dict, str] | tuple[list, str] | None
+
+    @property
+    def is_str(self) -> bool:
+        return self.type == PrimitiveType.STRING
 
     @property
     def is_true(self) -> bool:
@@ -107,13 +116,17 @@ class Primitive:
     @classmethod
     def output(cls, value: Any) -> str:
         try:
-            return value.__output__()
+            return str(value.__output__())
         except AttributeError:
             return repr(value)
 
-    def __output__(self) -> str:
-        value = self.value
-        try:
-            return value.__output__()
-        except AttributeError:
-            return repr(value)
+    def __output__(self) -> str | dict | list:
+        if self.is_object:
+            return {k: v.__output__() for k, v in self.value.items()}
+        if self.is_list:
+            return [v.__output__() for v in self.value]
+
+        if self.is_block:
+            return repr(self.value)
+
+        return self.value
