@@ -1,9 +1,9 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { MeshDistortMaterial } from '@react-three/drei';
 
-function Crystal({ color, radius = 0.02, length = 0.08, facets=6, ...props }) {
+function Crystal({ color, radius = 0.02, length = 0.08, facets=4, ...props }) {
     const geometry = useMemo(() => {
         const shape = new THREE.Shape();
 
@@ -27,19 +27,73 @@ function Crystal({ color, radius = 0.02, length = 0.08, facets=6, ...props }) {
 
     return (
         <mesh geometry={geometry} {...props} >
-            <MeshDistortMaterial
-                color={color}
-                transparent={true}
-                opacity={0.8}
-                distort={0.1}
-                speed={0}
-            />
+            <meshStandardMaterial color={color} />
         </mesh>
     );
 }
 
-function CrystalGroup({ count, speed=1, position, ...props }) {
+// Only generate a fixed number of crystals and reuse them
+// This is to avoid creating new geometries and materials every frame
+// This is a performance optimization
+// The number of crystals is arbitrary, you can adjust it to your needs
+const crystalCount = 100;
+const crystalCache = [];
+
+for (let i = 0; i < crystalCount; i++) {
+    const facets = 4 ;//+ Math.floor(Math.random() * 3) ;
+    const radius = 0.02 + Math.random() * 0.01;
+    const length = radius * (6 + Math.random()) * 0.5;
+    const color = new THREE.Color(Math.random(), Math.random(), Math.random()).getStyle(); // Random color
+
+    crystalCache.push(
+        <Crystal facets={facets} radius={radius} length={length} color={color} />
+    );
+}
+
+function CrystalGroup({ count=5, ...props }) {
     const group = useRef();
+
+    const crystals = useMemo(() => {
+        return Array.from({ length: count }, (_, i) => {
+            const angleX = (i/count) * Math.PI * 2 + Math.random() * 0.5;
+            const angleY = (i/count) * Math.PI * 2 + Math.random() * 0.5;
+            const angleZ = 0;
+            const index = Math.floor(Math.random() * crystalCount);
+
+            return (
+                <mesh key={i}
+                    rotation={[angleX, angleY, angleZ]}>
+                    {crystalCache[index]}
+                </mesh>
+            );
+        });
+    }, [count]);
+    return ( <group ref={group} {...props}>
+        {crystals}
+    </group> );
+}
+
+// Only generate a fixed number of crystal groups and reuse them
+// This is to avoid creating new geometries and materials every frame
+// This is a performance optimization
+const crystalGroupCount = 20;
+const crystalGroupCache = [];
+
+for (let i = 0; i < crystalGroupCount; i++) {
+    const count = 5 + Math.floor(Math.random() * 2);
+    crystalGroupCache.push(<CrystalGroup count={count} key={i} />);
+}   
+
+function CrystalPlacement({speed=1, ...props}) {
+    const group = useRef();
+    const crystals = useMemo(() => {
+        const index = Math.floor(Math.random() * crystalGroupCount);
+        const rotation = [Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2];
+
+        return <mesh rotation={rotation}>
+            {crystalGroupCache[index]}
+        </mesh>
+    }, [props.rotation]);
 
     useFrame(() => {
         group.current.rotation.x += 0.005 * speed;
@@ -47,35 +101,12 @@ function CrystalGroup({ count, speed=1, position, ...props }) {
         group.current.rotation.z += 0.003 * speed;
     });
 
-    const crystals = Array.from({ length: count }, (_, i) => {
-        const facets = 4 + Math.floor(Math.random() * 4) ;
-        const radius = 0.02 + Math.random() * 0.01;
-        const length = radius * (6 + Math.random()) * 0.5;
-        const angleX = (i/count) * Math.PI * 2 + Math.random() * 0.5;
-        const angleY = (i/count) * Math.PI * 2 + Math.random() * 0.5;
-        const angleZ = 0;
-        const offsetX = 0;
-        const offsetY = 0;
-        const offsetZ = 0;
-        const color = new THREE.Color(Math.random(), Math.random(), Math.random()).getStyle(); // Random color
-
-        return (
-            <Crystal
-            key={i}
-            facets={facets}
-            color={color}
-            radius={radius}
-            length={length}
-            position={[offsetX, offsetY, offsetZ]}
-            rotation={[angleX, angleY, angleZ]}
-            {...props}
-            />
-        );
-        });
-
-    return ( <group ref={group} position={position}>
-        {crystals}
-    </group> );
+    console.log("CrystalPlacement", crystals);
+    return (
+        <group ref={group} {...props}>
+            {crystals}
+        </group>
+    );
 }
 
-export { Crystal, CrystalGroup };
+export { Crystal, CrystalGroup, CrystalPlacement };

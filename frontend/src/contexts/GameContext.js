@@ -5,6 +5,7 @@ import { SessionContext } from './SessionContext';
 import { ScoreUpdater } from './game/ScoreUpdater';
 import { ProbotUpdater } from './game/ProbotUpdater';
 import { PlayerUpdater } from './game/PlayerUpdater';
+import StatsComponent from '../components/game/Stats';
 
 const GameContext = createContext();
 
@@ -154,6 +155,7 @@ const GameProvider = ({ children }) => {
             <ProbotUpdater
                 probots={gameState?.probots || []}
                 setProbotsUpdated={setProbotsUpdated} />
+            <StatsComponent stat={0} />
             {children}
         </GameContext.Provider>
     );

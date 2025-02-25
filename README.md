@@ -110,7 +110,7 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 
 # TODO
 
-[ ] crystals in UI
+[ ] auto-wait during movement
 [ ] builtins: `jump`, `collect`, `inspect`,  `say`,
 [ ] event-driven programs
 [ ] scripts for bots
@@ -120,3 +120,5 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 [ ] code syntax highlighting
 [ ] audio effects
 [ ] game end conditions - high score
+[ ] cookie to retain login session
+

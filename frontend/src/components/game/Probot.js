@@ -2,6 +2,7 @@ import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Billboard, Text } from '@react-three/drei';
+import { CrystalPlacement } from './Crystal';
 
 const orientationAngle = (orientation) => {
     return {
@@ -49,11 +50,12 @@ const ProbotModel = ({ player, probot, ...props }) => {
         innerRadius={0.45} outerRadius={0.52}
         thetaStart={Math.PI/2} thetaMax={Math.PI/2}
         position={[0, -0.04, 0]} rotation={[-Math.PI/2, 0, 0]} />
-      <EnergyRing energy={probot?.crystals} color="green"
+      <EnergyRing energy={probot?.crystals} color="blue"
         thetaStart = {0} thetaMax={Math.PI/2} reverse={true}
         innerRadius={0.45} outerRadius={0.52}
         position={[0, -0.04, 0]} rotation={[-Math.PI/2, 0, -Math.PI/2]} />
-      {/*<InfoPanel message={`${player?.displayName}\n${player?.score}`} position={[0, 0.6, 0]} />*/}
+      <Payload crystals={probot?.crystals} />
+      {/*<InfoPanel message={player?.displayName} position={[0, 0.6, 0]} />*/}
     </mesh>)
 };
 
@@ -61,8 +63,8 @@ function ExtrudedRing({
   sweep = Math.PI * 2,
   radius = 1,
   tubeRadius = 0.05,
-  segments = 64,
-  tubularSegments = 16,
+  segments = 32,
+  tubularSegments = 12,
   ...props
 }) {
   const mesh = useRef();
@@ -106,7 +108,7 @@ function ExtrudedRing({
 const ExtrudedDisc = ({
   radius = 1,
   depth = 0.2,
-  segments = 64,
+  segments = 32,
   sweep = Math.PI * 2,
   bevelSegments = 1,
   bevelSize = 0.01,
@@ -185,7 +187,6 @@ function EnergyRing({
   );
 }
 
-
 const InfoPanel = ({ message, ...props }) => {
   const textRef = useRef();
 
@@ -205,4 +206,39 @@ const InfoPanel = ({ message, ...props }) => {
     </Billboard>
   );
 }
+
+
+const payloadPositions = [
+  [0, 0, 0],
+  [0.1, 0, 0.1],
+  [-0.1, 0, 0.15],
+  [0.1, 0, -0.12],
+  [-0.09, 0, -0.13],
+  [0.025, 0, 0.25],
+  [-0.17, 0, -0.01],
+  [-0.015, 0, -0.27],
+  [0.14, 0, 0.25],
+  [0.13, 0, -0.26],
+  [-0.25, 0, 0.12],
+  [0.10, 0, -0.42],
+  [-0.08, 0, 0.40],
+  [-0.08, 0, 0.40],
+]
+function Payload({ crystals, ...props }) {
+  const groupRef = useRef();
+
+  const groupPositions = Array.from({ length: Math.ceil(crystals / (1000 / payloadPositions.length)) }, (_, i) => 
+    payloadPositions[i % payloadPositions.length]
+  );
+
+  return (
+    <group ref={groupRef} position={[-0.15, 0.04, 0]} scale={[0.5, 0.5, 0.5]} {...props}>
+      {groupPositions.map((position, index) => (
+        <CrystalPlacement key={index} speed={1} position={position} />
+      ))}
+    </group>
+  );
+}
+
+
 export default ProbotModel;
