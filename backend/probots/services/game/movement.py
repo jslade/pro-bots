@@ -129,6 +129,7 @@ class MovementService:
                 probot.dx = -1 if backward else 1.0
 
         self.engine.notify_of_probot_change(probot)
+        self.engine.programming.suspend_player(probot.player)
 
     def update_move(self, probot: Probot, transit: Transition, backward: bool) -> None:
         dtick = (-1.0 if backward else 1.0) / transit.total_steps
@@ -212,6 +213,7 @@ class MovementService:
         probot.energy -= required_energy
 
         self.engine.notify_of_probot_change(probot)
+        self.engine.programming.suspend_player(probot.player)
 
     def update_turn(self, probot: Probot, transit: Transition, dir: str) -> None:
         dtick = RADS_90 / transit.total_steps

@@ -155,6 +155,11 @@ class Programming:
         context = self.player_contexts.get(player.name, None)
         return context is not None and context.stopped
 
+    def suspend_player(self, player: Player) -> bool:
+        context = self.player_contexts.get(player.name, None)
+        if context is not None and not context.stopped:
+            self.interpreter.stop(context)
+
     def resume_player(self, player: Player) -> bool:
         context = self.player_contexts.get(player.name, None)
         if context is not None and context.stopped:
