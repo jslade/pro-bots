@@ -57,7 +57,7 @@ class Inspect(Builtin):
                 "score": Primitive.of(cell_probot.player.score),
                 "x": Primitive.of(cell_probot.x),
                 "y": Primitive.of(cell_probot.y),
-                "orientation": Primitive.of(cell_probot.orientation),
+                "orientation": Primitive.of(enum_string(cell_probot.orientation)),
             }
 
             if cell_probot.player != self.player:

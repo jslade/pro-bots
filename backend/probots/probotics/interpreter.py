@@ -74,7 +74,7 @@ class ExecutionContext:
 
         # Globals are symbols can be assigned to in the outer scope only,
         # and will stay around as long as this execution context exists
-        self.globals = globals or ScopeVars()
+        self.globals = globals if globals is not None else ScopeVars()
 
         self.name = name
 
@@ -94,9 +94,7 @@ class ExecutionContext:
             return self.is_finished
 
         if self.current_frame is None:
-            self.current_frame = StackFrame.make_outer(
-                self, self.operations, self.builtins, self.globals
-            )
+            self.current_frame = StackFrame.make_outer(self)
 
         self.current_frame = self.execute_until_break(self.current_frame)
 

@@ -105,7 +105,8 @@ class TerminalHandler(MessageHandler):
             player=player,
             on_result=on_result,
             on_exception=on_exception,
-            replace=False,
+            replace_program=False,
+            replace_globals=False,
         )
 
         # Points just for executing something via the terminal

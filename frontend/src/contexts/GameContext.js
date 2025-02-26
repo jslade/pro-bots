@@ -155,7 +155,7 @@ const GameProvider = ({ children }) => {
             <ProbotUpdater
                 probots={gameState?.probots || []}
                 setProbotsUpdated={setProbotsUpdated} />
-            <StatsComponent stat={0} />
+            {/*<StatsComponent stat={0} />*/}
             {children}
         </GameContext.Provider>
     );

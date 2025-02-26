@@ -113,11 +113,16 @@ class UserHandler(MessageHandler):
             operations = ENGINE.programming.compile(content)
             return operations, None
         except Exception as ex:
-            # LOGGER.exception("Compilation error", exception=ex)
+            LOGGER.exception("Compilation error", exception=ex)
             return None, str(ex)
 
     def run(
-        self, session: Session, compiled: list[Operation], dispatcher: Dispatcher
+        self,
+        session: Session,
+        compiled: list[Operation],
+        dispatcher: Dispatcher,
+        replace_program: bool = True,
+        replace_globals: bool = True,
     ) -> bool:
         player = ENGINE.player_for_session(session)
 
@@ -154,7 +159,8 @@ class UserHandler(MessageHandler):
             player=player,
             on_result=on_result,
             on_exception=on_exception,
-            replace=True,
+            replace_program=replace_program,
+            replace_globals=replace_globals,
         )
 
         # Points for successfully executing a script -- that is the
@@ -173,4 +179,6 @@ class UserHandler(MessageHandler):
 
         content = ""
         compiled, _ = self.compile(content)
-        self.run(session, compiled, dispatcher)
+        self.run(
+            session, compiled, dispatcher, replace_program=True, replace_globals=False
+        )

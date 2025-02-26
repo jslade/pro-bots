@@ -11,7 +11,7 @@ from ...probotics.interpreter import (
     ProboticsInterpreter,
     ResultCallback,
 )
-from ...probotics.ops.all import Operation, ScopeVars, StackFrame, Primitive
+from ...probotics.ops.all import Operation, Primitive, ScopeVars, StackFrame
 from .builtins import BuiltinsService
 from .processor import Work
 
@@ -53,7 +53,8 @@ class Programming:
         player: Player,
         on_result: Optional[ResultCallback] = None,
         on_exception: Optional[ExceptionCallback] = None,
-        replace: Optional[bool] = True,
+        replace_program: bool = True,
+        replace_globals: bool = True,
     ) -> ExecutionContext:
         """Evaluate the code for the given player"""
 
@@ -73,25 +74,21 @@ class Programming:
             # Award points for the amount of code that was executed
             self.engine.update_score(player, context.latest_operations)
 
-            self.player_globals[player.name] = context.globals
-
-        globals = self.get_player_globals(player)
-
         context = self.create_context(
             player=player,
-            globals=globals,
             operations=operations,
             on_result=wrap_on_result,
             on_exception=on_exception,
             on_break=wrap_on_break,
         )
 
-        if replace and context.name is not None:
+        if replace_program and context.name is not None:
             # Only allow one context per player
             self.interpreter.remove(context.name)
-
             self.player_contexts[player.name] = context
-            globals.clear()
+
+        if replace_globals:
+            self.get_player_globals(player).clear()
 
         self.interpreter.add(context)
         self.ensure_running()
@@ -102,7 +99,8 @@ class Programming:
         """Get the globals for the player, creating them if they do not exist"""
         globals = self.player_globals.get(player.name, None)
         if globals is None:
-            globals = self.player_globals[player.name] = ScopeVars()
+            globals = ScopeVars()
+            self.player_globals[player.name] = globals
 
         return globals
 
@@ -110,7 +108,6 @@ class Programming:
         self,
         *,
         player: Player,
-        globals: ScopeVars,
         operations: list[Operation],
         on_result: Optional[ResultCallback],
         on_exception: Optional[ExceptionCallback] = None,
@@ -122,7 +119,7 @@ class Programming:
         return ExecutionContext(
             operations=operations,
             builtins=self.builtins.get_builtins(player),
-            globals=globals,
+            globals=self.get_player_globals(player),
             on_result=on_result,
             on_exception=on_exception,
             on_break=on_break,
@@ -139,7 +136,7 @@ class Programming:
     def schedule_run(self) -> None:
         self.engine.processor.add_work(
             self.run,
-            critical=False,  # TODO: should be True?
+            critical=True,
             work_type=InterpreterWork,
         )
 

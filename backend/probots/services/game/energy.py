@@ -1,9 +1,16 @@
+import math
 from typing import TYPE_CHECKING
 
+import structlog
+
+from ...models.game.all import Cell, Probot, ProbotOrientation, ProbotState, Transition
 from ...models.game.probot import Probot, ProbotState
 
 if TYPE_CHECKING:
     from .engine import Engine
+
+
+LOGGER = structlog.get_logger(__name__)
 
 
 class EnergyService:
@@ -49,3 +56,83 @@ class EnergyService:
         probot.crystals -= delta
         if probot.crystals < 0:
             probot.crystals = 0
+
+    def collect_crystals(self, probot: Probot, bonus: int = 0) -> bool:
+        """Initiate collection of crystals"""
+        # LOGGER.info("COLLECT", probot=probot, backward=backward)
+
+        #
+        # Validate
+        #
+        if probot.state != ProbotState.idle:
+            self.engine.update_score(probot.player, -10)
+            return False
+
+        x, y, _ = probot.position
+        cell, _ = self.engine.get_cell(x, y)
+
+        if cell.crystals <= 0:
+            return False
+        if probot.crystals >= Probot.MAX_CRYSTALS:
+            return False
+
+        # Time and energy required inverse proportional to the number of crystals
+        # in the cell
+        speed_factor = 1 + 3 * (1.0 - (1.0 * cell.crystals / Cell.MAX_CRYSTALS))
+        required_energy = int(10 * speed_factor)
+        if probot.energy < required_energy:
+            self.engine.update_score(probot.player, -5)
+            return False
+
+        per_collection = 50
+        if per_collection > cell.crystals:
+            per_collection = cell.crystals
+        if probot.crystals + per_collection > Probot.MAX_CRYSTALS:
+            per_collection = Probot.MAX_CRYSTALS - probot.crystals
+
+        #
+        # Execute
+        #
+
+        # Create a transition to animate the moving state
+        def start_collection(transit):
+            self.start_collection(probot, transit, required_energy)
+
+        def update_collection(transit):
+            self.update_collection(probot, transit)
+
+        def complete_collection(transit):
+            self.complete_collection(probot, transit, bonus)
+
+        transit = Transition(
+            name="collecting",
+            total_steps=int(20 * speed_factor),
+            initial=probot.crystals,
+            final=probot.crystals + per_collection,
+            on_start=start_collection,
+            on_update=update_collection,
+            on_complete=complete_collection,
+        )
+        self.engine.transitioner.add(transit)
+
+    def start_collection(
+        self, probot: Probot, transit: Transition, required_energy: int
+    ) -> None:
+        probot.state = ProbotState.collecting
+        probot.energy -= required_energy
+
+        self.engine.notify_of_probot_change(probot)
+        self.engine.programming.suspend_player(probot.player)
+
+    def update_collection(self, probot: Probot, transit: Transition) -> None:
+        dtick = 1.0 / transit.total_steps
+
+        # self.engine.notify_of_probot_change(probot)
+
+    def complete_collection(
+        self, probot: Probot, transit: Transition, bonus: int = 0
+    ) -> None:
+        probot.crystals = transit.final
+
+        self.engine.probot_idle(probot)
+        self.engine.update_score(probot.player, bonus)

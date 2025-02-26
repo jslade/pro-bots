@@ -42,7 +42,9 @@ class Me(Builtin):
         "state": lambda me: enum_string(me.engine.probot_for_player(me.player).state),
         "x": lambda me: me.engine.probot_for_player(me.player).x,
         "y": lambda me: me.engine.probot_for_player(me.player).y,
-        "orientation": lambda me: me.engine.probot_for_player(me.player).orientation,
+        "orientation": lambda me: enum_string(
+            me.engine.probot_for_player(me.player).orientation
+        ),
         "energy": lambda me: me.engine.probot_for_player(me.player).energy,
         "crystals": lambda me: me.engine.probot_for_player(me.player).crystals,
         "colors": lambda me: me.get_colors(),
@@ -72,9 +74,9 @@ class Me(Builtin):
     def on_delete(self, key: str) -> None:
         raise KeyError(f"Not deletable: {key}")
 
-    def get_globals(self) -> list[str]:
+    def get_globals(self) -> Primitive:
         globals = self.engine.programming.get_player_globals(self.player)
-        return sorted(globals.keys())
+        return Primitive.of(globals)
 
     def get_colors(self) -> Primitive:
         color_dict = CallbackDict(

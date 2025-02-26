@@ -53,7 +53,7 @@ const ProbotModel = ({ player, probot, ...props }) => {
       <EnergyRing energy={probot?.crystals} color="blue"
         thetaStart = {0} thetaMax={Math.PI/2} reverse={true}
         innerRadius={0.45} outerRadius={0.52}
-        position={[0, -0.04, 0]} rotation={[-Math.PI/2, 0, -Math.PI/2]} />
+        position={[0, -0.0401, 0]} rotation={[-Math.PI/2, 0, -Math.PI/2]} />
       <Payload crystals={probot?.crystals} />
       {/*<InfoPanel message={player?.displayName} position={[0, 0.6, 0]} />*/}
     </mesh>)

@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from typing import Callable, Optional, Self
+from typing import Callable, ClassVar, Optional, Self
 
 from ..mixins.pydantic_base import BaseSchema
 
 
 class Cell(BaseSchema):
+    MAX_CRYSTALS: ClassVar[int] = 1000
+
     x: int
     y: int
     crystals: int = 0

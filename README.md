@@ -110,8 +110,10 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 
 # TODO
 
-[ ] auto-wait during movement
-[ ] builtins: `jump`, `collect`, `inspect`,  `say`,
+[ ] builtins: `jump`, `say`, `give`
+[ ] animation for collect
+[ ] fix code editor, terminal layout issues
+[ ] fix memory leak
 [ ] event-driven programs
 [ ] scripts for bots
 [ ] documentation / reference materials

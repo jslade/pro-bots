@@ -1,3 +1,4 @@
+from .collect import Collect
 from .inspect import Inspect
 from .me import Me
 from .movement import IsIdle, Move, Turn, Wait

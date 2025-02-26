@@ -100,7 +100,7 @@ class StackFrame:
         except KeyError:
             raise UndefinedSymbol(f"No value for {name}")
 
-    def set(self, name: str, value: Primitive):
+    def set(self, name: str, value: Primitive) -> None:
         """Set the value of a symbol in the current scope."""
         if name in self.args:
             # Arguments can be updated
@@ -147,20 +147,17 @@ class StackFrame:
     def make_outer(
         cls,
         context: "ExecutionContext",
-        operations: list[Operation],
-        builtins: ScopeVars,
-        globals: ScopeVars,
     ) -> "StackFrame":
         """Create a stack frame for the operations. This will always be an outer
         frame with no parent, so the only scope vars are the global ones"""
         frame = StackFrame(
             context=context,
             name="<outer>",
-            builtins=builtins,
-            global_vars=globals,
-            scope_vars=globals,
+            builtins=context.builtins,
+            global_vars=context.globals,
+            scope_vars=context.globals,
             args={},
-            operations=operations,
+            operations=context.operations,
             op_index=0,
             results=[],
         )
