@@ -7,7 +7,7 @@ import { ApiContext } from '../../contexts/ApiContext';
 
 import Scoreboard from './Scoreboard';
 import WatcherDisplay from './WatcherDisplay';
-
+import StatsComponent from '../game/Stats';
 
 import './WatcherLayout.css';
 
@@ -21,6 +21,8 @@ const WatcherLayout = () => {
                 <Box flex={1} border={1}>
                     {api ? `Connected [${session.sessionId}]` : 'Disconnected'}
                 </Box>
+                <div id="stats0" style={{position: 'fixed', top: 0, right: 0}} />
+                <StatsComponent container="#stats0"/>
             </Box>
         </Grid>
         <Grid container spacing={0} style={{ height: 'calc(100vh - 1.5em)' }}>
