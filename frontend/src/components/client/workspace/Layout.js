@@ -30,7 +30,7 @@ return (
     <Box sx={{ display: 'flex', width: '100vw', height: '100vh', overflow: "hidden" }}>
         <PanelGroup direction="horizontal" >
             {/* Left Column */}
-            <Panel defaultSize={30} minSize={10}>
+            <Panel defaultSize={40} minSize={20}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: "hidden" }}>
                     <PanelGroup direction="vertical">
                         <Panel defaultSize={70} minSize={10}>
@@ -48,7 +48,7 @@ return (
                 </Box>
             </Panel>
             <PanelResizeHandle />
-            <Panel defaultSize={70} minSize={10}>
+            <Panel defaultSize={60} minSize={30}>
                 {/* Right Column */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: "hidden" }}>
                     {/* Status Field */}

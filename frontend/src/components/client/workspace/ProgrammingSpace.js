@@ -43,7 +43,7 @@ const ProgrammingSpace = ({}) => {
 
     return ( <>
         <Grid container sx={{display: 'flex', flexDirection: 'column', overflow: 'auto'}}>
-            <Grid item sx={{ flex: 1, overflow: 'hidden' }}>
+            <Grid item sx={{ flex: 1, overflow: 'auto' }}>
                 <ReactCodeMirror
                     className="editor"
                     value={program}
@@ -53,14 +53,19 @@ const ProgrammingSpace = ({}) => {
                     style={{ height: '100%' }}
                 />
             </Grid>
-            <Grid item xs={1} >
-                <Box sx={{ flexDirection: 'row', display: "flex" }} border={0}>
-                    <Button onClick={handleSave}>Save</Button>
-                    <Button onClick={handleSaveAndRun}>Run</Button>
-                    <Button onClick={handleStop}>Stop</Button>
-                </Box>
-            </Grid>
         </Grid>
+
+        <Box container style={{ display: 'flex', flexDirection: 'row', justifyContext: 'flex-end' }}>
+            <Box>
+                <Button onClick={handleSave}>Save</Button>
+            </Box>
+            <Box>
+                <Button onClick={handleSaveAndRun}>Run</Button>
+            </Box>
+            <Box>
+                <Button onClick={handleStop}>Stop</Button>
+            </Box>
+        </Box>
         </>
     );
 };
