@@ -10,7 +10,7 @@ from .comparison import (
     CompareLessThanOrEqual,
     CompareNotEqual,
 )
-from .flow_control import Break, Breakpoint, Catch, Jump, JumpIf
+from .flow_control import Break, Breakpoint, Catch, Jump, JumpIf, Return
 from .logical import LogicalAnd, LogicalNot, LogicalOr
 from .native import Native
 from .objects import GetIndex, GetProperty, Index, Property

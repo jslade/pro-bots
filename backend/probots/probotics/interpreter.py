@@ -188,6 +188,8 @@ class ExecutionContext:
                 if jump is not None:
                     # This catcher handles the breakpoint:
                     catcher.do_jump(jump, next_frame)
+                    if bp.value is not None:
+                        next_frame.push(bp.value)
                     return next_frame
 
             next_frame = next_frame.parent

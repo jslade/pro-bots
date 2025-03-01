@@ -33,6 +33,7 @@ from .ops.all import (
     Primitive,
     PrimitiveType,
     Property,
+    Return,
     Subtraction,
 )
 
@@ -314,6 +315,13 @@ class ProboticsCodeGenerator(NodeWalker):
         jump_to_top.jump = before_cond - after_block  # This will be negative
         jump_past_loop.jump = after_block - after_cond
 
+    def walk_Return(self, node: Node):
+        before = self.mark()
+        with self.in_context("Return"):
+            self.walk(node.value)
+            after = self.mark()
+        self.operations.append(Return(with_value=after > before))
+
     def walk_Break(self, node: Node):
         self.operations.append(Break())
 
@@ -332,6 +340,7 @@ class ProboticsCodeGenerator(NodeWalker):
         num_args = len(node.args)
 
         self.operations.append(Call(num_args, local=False))
+        self.operations.append(Catch({"return": 1}))
 
     def walk_BareCommand(self, node: Node):  # NOT IMPLEMENTED
         len_before = len(self.operations)

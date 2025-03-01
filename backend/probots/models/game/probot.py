@@ -22,6 +22,7 @@ class ProbotState(str, Enum):
     jumping = "jumping"
     turning = "turning"
     collecting = "collecting"
+    saying = "saying"
 
 
 class Probot(BaseSchema):

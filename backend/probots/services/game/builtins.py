@@ -3,21 +3,21 @@ from typing import TYPE_CHECKING
 import structlog
 
 from ...models.game.player import Player
-from ...models.game.probot import ProbotState
-from ...probotics.ops.all import Breakpoint, Native, Primitive, ScopeVars, StackFrame
+from ...probotics.ops.all import ScopeVars
 from .builtin.all import (
     Collect,
     Inspect,
     IsIdle,
     Me,
     Move,
-    Print,
-    Turn,
-    Wait,
-    ToInt,
-    ToStr,
     NewList,
     NewObject,
+    Print,
+    Say,
+    ToInt,
+    ToStr,
+    Turn,
+    Wait,
 )
 
 if TYPE_CHECKING:
@@ -55,6 +55,7 @@ class BuiltinsService:
         Me.add(player, self.engine, builtins)
         Move.add(player, self.engine, builtins)
         Print.add(player, self.engine, builtins)
+        Say.add(player, self.engine, builtins)
         Turn.add(player, self.engine, builtins)
         Wait.add(player, self.engine, builtins)
 

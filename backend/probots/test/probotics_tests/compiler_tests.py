@@ -28,6 +28,7 @@ from probots.probotics.ops.all import (
     Operation,
     Primitive,
     Property,
+    Return,
     Subtraction,
     GetValue,
 )
@@ -368,6 +369,17 @@ class TestBlocks:
                     Call(0, local=True),
                 ],
             ),
+            (
+                "if a { return }",
+                [
+                    GetValue("a"),
+                    JumpIf(jump=2, sense=False),
+                    Immediate(
+                        Primitive.block([Return(with_value=False)], name="IfStatement")
+                    ),
+                    Call(0, local=True),
+                ],
+            ),
         ],
     )
     def test_if(self, compiler: ProboticsCompiler, input: str, expected: list[Operation]):
@@ -452,6 +464,22 @@ class TestBlocks:
                     Jump(jump=-6),
                 ],
             ),
+            (
+                "while true { return 5 }",
+                [
+                    Immediate(Primitive.of(True)),
+                    JumpIf(jump=4, sense=False),
+                    Immediate(
+                        Primitive.block(
+                            [Immediate(Primitive.of(5)), Return(with_value=True)],
+                            name="WhileLoop",
+                        )
+                    ),
+                    Call(0, local=True),
+                    Catch({"break": 2, "next": 1}),
+                    Jump(jump=-6),
+                ],
+            ),
         ],
     )
     def test_while(
@@ -474,6 +502,7 @@ class TestCompilerCalls:
                 [
                     GetValue("blah"),
                     Call(0, local=False),
+                    Catch({"return": 1}),
                 ],
             ),
             (
@@ -482,6 +511,7 @@ class TestCompilerCalls:
                     Immediate(Primitive.symbol("a")),
                     GetValue("b"),
                     Call(0, local=False),
+                    Catch({"return": 1}),
                     Assignment(),
                 ],
             ),
@@ -492,6 +522,7 @@ class TestCompilerCalls:
                     Immediate(Primitive.of(1)),
                     Immediate(Primitive.of(2)),
                     Call(2, local=False),
+                    Catch({"return": 1}),
                     Immediate(Primitive.of(True)),
                     CompareEqual(),
                 ],

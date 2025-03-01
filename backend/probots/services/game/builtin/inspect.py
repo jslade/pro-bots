@@ -70,6 +70,6 @@ class Inspect(Builtin):
             "probot": Primitive.of(probot_info),
         }
 
-        self.engine.update_score(probot.player, bonus)
+        self.engine.update_score(self.player, bonus)
 
         return Primitive.of(result)

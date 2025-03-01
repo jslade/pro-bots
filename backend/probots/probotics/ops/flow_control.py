@@ -1,4 +1,6 @@
+from typing import Optional
 from .base import Operation
+from .primitive import Primitive
 from .stack_frame import StackFrame
 
 
@@ -65,11 +67,31 @@ class Breakpoint(Exception):
 
     reason: str
     stop: bool
+    value: Optional[Primitive]
 
-    def __init__(self, *, reason: str, stop: bool = False) -> None:
+    def __init__(
+        self, *, reason: str, stop: bool = False, value: Optional[Primitive] = None
+    ) -> None:
         super().__init__()
         self.reason = reason
         self.stop = stop
+        self.value = value
+
+
+class Return(Operation):
+    """Break out of the current frame by raising a breakpoint.
+    This will cause the interpreter to unwind the stack until it finds a Catch"""
+
+    def __init__(self, with_value: bool) -> None:
+        self.with_value = with_value
+
+    def execute(self, frame: StackFrame) -> None:
+        if self.with_value:
+            value = frame.pop()
+        else:
+            value = Primitive.of(None)
+
+        raise Breakpoint(reason="return", value=value)
 
 
 class Break(Operation):

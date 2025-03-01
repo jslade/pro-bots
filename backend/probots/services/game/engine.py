@@ -23,6 +23,7 @@ from .map_maker import MapMaker
 from .movement import MovementService
 from .processor import Processor, Work
 from .programming import Programming
+from .saying import SayingService
 from .transitioner import TransitionService
 
 LOGGER = structlog.get_logger(__name__)
@@ -69,6 +70,7 @@ class Engine:
         self.energy = EnergyService(self)
         self.mover = MovementService(self)
         self.programming = Programming(self)
+        self.saying = SayingService(self)
         self.transitioner = TransitionService(self)
 
     def run(self) -> None:

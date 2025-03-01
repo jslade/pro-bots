@@ -16,6 +16,7 @@
 @@keyword::not
 @@keyword::null
 @@keyword::or
+@@keyword::return
 @@keyword::True
 @@keyword::true
 @@keyword::while
@@ -28,6 +29,7 @@ statement::Statement =
      while_loop |
      break |
      next |
+     return |
      expression
      ;
 
@@ -106,6 +108,8 @@ condition::Condition = left:term op:comparison_op ~ right:factor ;
 comparison_op = /={2,3}/ | /!={1,2}/ | "<=" | ">=" | "<" | ">" ;
 
 logical_op = "and" | "or" ;
+
+return::Return = "return" ~ value:[expression] ;
 
 break::Break = "break" ;
 next::Next = "next" ;
