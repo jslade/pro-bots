@@ -410,7 +410,7 @@ class Engine:
             orientation=orientation,
             state=ProbotState.idle,
             energy=Probot.MAX_ENERGY / 2,
-            crystals=Probot.MAX_CRYSTALS,
+            crystals=Probot.MAX_CRYSTALS / 2,
         )
         self.add_probot(probot)
 

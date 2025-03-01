@@ -26,7 +26,7 @@ class Collect(Builtin):
         self.player = player
 
     def collect(self, frame: StackFrame) -> Primitive:
-        bonus = 20
+        bonus = 200
 
         probot = self.engine.probot_for_player(self.player)
         self.engine.energy.collect_crystals(probot, bonus=bonus)

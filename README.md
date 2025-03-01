@@ -110,12 +110,14 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 
 # TODO
 
-[ ] builtins: `jump`, `say`, `give`
+[ ] builtins: `jump`, `say`, `give`, `builtins` (or `commands`)
 [ ] animation for collect
+[ ] animation for say
+[ ] animation for give
 [ ] fix code editor, terminal layout issues
-[ ] fix memory leak
 [ ] event-driven programs
 [ ] scripts for bots
+[ ] execution error info - line numbers, etc
 [ ] documentation / reference materials
 [ ] admin stuff: game reset, password reset
 [ ] visual improvements in 3d view

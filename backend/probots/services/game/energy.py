@@ -53,7 +53,7 @@ class EnergyService:
 
     def consume_crystals(self, probot: Probot, rate: float, delta: int) -> None:
         """Consume crystals to increase the energy rate"""
-        probot.crystals -= delta
+        probot.crystals -= int(delta / 3)
         if probot.crystals < 0:
             probot.crystals = 0
 
@@ -79,12 +79,12 @@ class EnergyService:
         # Time and energy required inverse proportional to the number of crystals
         # in the cell
         speed_factor = 1 + 3 * (1.0 - (1.0 * cell.crystals / Cell.MAX_CRYSTALS))
-        required_energy = int(10 * speed_factor)
+        required_energy = int(100 * speed_factor)
         if probot.energy < required_energy:
             self.engine.update_score(probot.player, -5)
             return False
 
-        per_collection = 50
+        per_collection = 200
         if per_collection > cell.crystals:
             per_collection = cell.crystals
         if probot.crystals + per_collection > Probot.MAX_CRYSTALS:

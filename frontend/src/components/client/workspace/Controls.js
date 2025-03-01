@@ -42,9 +42,6 @@ const Controls = () => {
             <Grid item xs={2}>
                 <Button variant="contained" onClick={onTurnRight}>turn&nbsp;R</Button>
             </Grid>
-            <Grid item xs={2}>
-                <Typography >Score: {player?.score || 0}</Typography>
-            </Grid>
         </Grid>
     );
 };

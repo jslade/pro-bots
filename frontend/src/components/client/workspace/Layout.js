@@ -10,6 +10,7 @@ import CommandSpace from './commands/CommandSpace';
 import Overview from '../../game/Overview';
 import Display from './Display';
 import Controls from './Controls';
+import Score from './Score';
 
 import './Layout.css';
 import StatsComponent from '../../game/Stats';
@@ -60,7 +61,14 @@ return (
                     {/* Overview and Main Scene */}
                     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                         <Box sx={{ flex: 1 }}>
-                            <Overview />
+                            <Box container style={{ display: 'flex', flexDirection: 'row'}}>
+                                <Box sx={{ flex: 1 }}>
+                                    <Overview />
+                                </Box>
+                                <Box sx={{ flex: 1 }}>
+                                    <Score />
+                                </Box>
+                            </Box>
                         </Box>
                         <Box sx={{ flex: 5 }}>
                             <Display />

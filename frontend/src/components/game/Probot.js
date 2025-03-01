@@ -66,7 +66,7 @@ const ProbotModel = ({ player, probot, ...props }) => {
 
     const payload = useMemo(() => {
       if (!probot?.crystals) return null;
-        return <Payload crystals={probot?.crystals} />
+      return (probot?.crystals > 0) && <Payload crystals={1} />
     }, [probot?.crystals]);
 
     return (<mesh ref={meshRef}
