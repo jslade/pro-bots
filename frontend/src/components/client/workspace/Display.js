@@ -8,22 +8,15 @@ import Ground from '../../game/Ground';
 import ProbotModel from '../../game/Probot';
 
 const Display = () => {
-    const { gameState, pairs, player, probot } = React.useContext(GameContext);
-
     return (
         <Canvas
             gl={{ alpha: false, antialias: true }}
             onCreated={({ gl }) => {
                 gl.setClearColor('lightblue'); // Replace 'lightblue' with your desired color
             }}
-         >
-            {(gameState && probot && player) ? <DisplayScene
-                gameState={gameState}
-                grid={gameState.grid}
-                pairs={pairs}
-                player={player}
-                probot={probot}
-            /> : <></>}
+            >
+            <ambientLight intensity={Math.PI / 2} />
+            <DisplayScene />
         </Canvas>
     );
 };
@@ -37,22 +30,39 @@ const orientationAngle = (orientation) => {
     }[orientation] || 0;
 }
 
-const DisplayScene = ({ gameState, grid, pairs, player, probot }) => {
+const DisplayScene = ({  }) => {
     return ( <>
-        <ambientLight intensity={Math.PI / 2} />
+        <DisplayFixed />
+        <DisplayDynamic />
+    </>);
+};
+
+const DisplayFixed = () => {
+    const { grid } = React.useContext(GameContext);
+
+    if (!grid) return <></>;
+
+    return ( <>
         <spotLight position={[grid.width*2, grid.height*2, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[grid.width/2, grid.height*2, 2]} decay={0} intensity={Math.PI} />
-        <Ground grid={gameState.grid} width={grid.width} height={grid.height} />
+        <Ground grid={grid} />
+    </> );
+};
+
+const DisplayDynamic = () => {
+    const { pairs, probot } = React.useContext(GameContext);
+
+    return ( <>
         {pairs.map((pp) => <ProbotModel key={pp.player.name} player={pp.player} probot={pp.probot} />)}
         <FollowingCamera probot={probot} />
-    </>);
+    </>)
 };
 
 function FollowingCamera({ probot }) {
     const cameraRef = React.useRef();
-  
+
     useFrame(() => {
-        if (!cameraRef.current) return;
+        if (!cameraRef.current || !probot) return;
 
         const angle = orientationAngle(probot.orientation) + probot.dorient;
 
@@ -68,17 +78,19 @@ function FollowingCamera({ probot }) {
         cameraRef.current.position.set(cameraX, cameraY, cameraZ);
         cameraRef.current.lookAt(proX, proY, proZ); // Look at the robot
     });
-  
+
+    if (!probot) return <></>;
+    
     return (
-      <PerspectiveCamera
-        ref={cameraRef}
-        makeDefault
-        position={[probot.x, probot.y, 0]}
-        near={0.1}
-        far={1000}
-        fov={75}
-      />
+        <PerspectiveCamera
+            ref={cameraRef}
+            makeDefault
+            position={[probot.x, probot.y, 0]}
+            near={0.1}
+            far={1000}
+            fov={75}
+        />
     );
-  }
-  
+}
+
 export default Display;

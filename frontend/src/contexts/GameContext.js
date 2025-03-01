@@ -137,7 +137,7 @@ const GameProvider = ({ children }) => {
 
     return (
         <GameContext.Provider value={{
-            gameState,
+            grid: gameState?.grid || null,
             players: gameState?.players || [],
             probots: gameState?.probots || [],
             pairs: pairs || [],

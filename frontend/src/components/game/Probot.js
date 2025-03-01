@@ -33,29 +33,48 @@ const ProbotModel = ({ player, probot, ...props }) => {
         meshRef.current.rotation.set(rotX, rotY, rotZ);
     });
 
+    const baseGeometry = useMemo(() => {
+      if (!probot?.colors) return null;
 
-  
+      return <>
+        <ExtrudedRing color={probot.colors.body}
+          radius={0.38} tubeRadius={0.05}/>
+        <ExtrudedDisc sweep={Math.PI*2} color={probot.colors.tail}
+          radius={0.35} depth={0.035} />
+        <ExtrudedDisc sweep={Math.PI} color={probot.colors.head}
+          radius={0.30} depth={0.04} bevelSize={.05} bevelThickness={0.02}
+          position={[0.02, 0.06, 0]} rotation={[0, Math.PI/2.0, 0]}
+        />
+      </>
+    }, [probot?.colors, probot.colors?.body, probot.colors?.head, probot.colors?.tail]);
+
+    const energyRing = useMemo(() => {
+      if (!probot?.energy) return null;
+        return <EnergyRing energy={probot?.energy} color="red"
+          innerRadius={0.45} outerRadius={0.52}
+          thetaStart={Math.PI/2} thetaMax={Math.PI/2}
+          position={[0, -0.04, 0]} rotation={[-Math.PI/2, 0, 0]} />
+    }, [probot?.energy]);
+
+    const crystalRing = useMemo(() => {
+      if (!probot?.crystals) return null;
+        return <EnergyRing energy={probot?.crystals} color="blue"
+          thetaStart = {0} thetaMax={Math.PI/2} reverse={true}
+          innerRadius={0.45} outerRadius={0.52}
+          position={[0, -0.0401, 0]} rotation={[-Math.PI/2, 0, -Math.PI/2]} />
+    }, [probot?.crystals]);
+
+    const payload = useMemo(() => {
+      if (!probot?.crystals) return null;
+        return <Payload crystals={probot?.crystals} />
+    }, [probot?.crystals]);
+
     return (<mesh ref={meshRef}
             {...props}>
-      
-      <ExtrudedRing color={probot?.colors?.body}
-        radius={0.38} tubeRadius={0.05}/>
-      <ExtrudedDisc sweep={Math.PI*2} color={probot?.colors?.tail}
-        radius={0.35} depth={0.035} />
-      <ExtrudedDisc sweep={Math.PI} color={probot?.colors?.head}
-        radius={0.30} depth={0.04} bevelSize={.05} bevelThickness={0.02}
-        position={[0.02, 0.06, 0]} rotation={[0, Math.PI/2.0, 0]}
-      />
-      <EnergyRing energy={probot?.energy} color="red"
-        innerRadius={0.45} outerRadius={0.52}
-        thetaStart={Math.PI/2} thetaMax={Math.PI/2}
-        position={[0, -0.04, 0]} rotation={[-Math.PI/2, 0, 0]} />
-      <EnergyRing energy={probot?.crystals} color="blue"
-        thetaStart = {0} thetaMax={Math.PI/2} reverse={true}
-        innerRadius={0.45} outerRadius={0.52}
-        position={[0, -0.0401, 0]} rotation={[-Math.PI/2, 0, -Math.PI/2]} />
-      <Payload crystals={probot?.crystals} />
-      {/*<InfoPanel message={player?.displayName} position={[0, 0.6, 0]} />*/}
+      {baseGeometry}
+      {energyRing}
+      {crystalRing}
+      {payload}
     </mesh>)
 };
 
@@ -186,27 +205,6 @@ function EnergyRing({
     </mesh>
   );
 }
-
-const InfoPanel = ({ message, ...props }) => {
-  const textRef = useRef();
-
-  return (
-    <Billboard>
-      <Text
-        ref={textRef}
-        position={[0, 0.3, 0]}
-        fontSize={0.1}
-        color="black"
-        anchorX="center"
-        anchorY="middle"
-        rotation={[0, 0, 0]}
-      >
-        {message}
-      </Text>
-    </Billboard>
-  );
-}
-
 
 const payloadPositions = [
   [0, 0, 0],

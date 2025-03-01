@@ -1,18 +1,28 @@
 import { lighten } from '@mui/material';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { CrystalPlacement } from './Crystal';
 
-function Ground({ grid, width, height}) {
-    const cells = [];
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
-            const i = y*width + x;
-            const cell = grid.cells[i];
-            cells.push(<Cell key={`${x}-${y}`} x={x} y={y} cell={cell} />);
+function Ground({ grid }) {
+    const groundRef = React.useRef();
+
+    const renderCells = useMemo(() => {
+        const cells = [];
+        for (let x = 0; x < grid.width; x++) {
+            for (let y = 0; y < grid.height; y++) {
+                const i = y*grid.width + x;
+                const cell = grid.cells[i];
+                cells.push(<Cell key={`${x}-${y}`} x={x} y={y} cell={cell} />);
+            }
         }
-    }
-    return <>{cells}</>;
+        return cells;
+    }, [grid]);
+
+    return (
+        <group ref={groundRef}>
+            {renderCells}
+        </group>
+    );
 }
 
 const cellColor = (cell) => {
