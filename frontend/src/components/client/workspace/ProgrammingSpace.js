@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactCodeMirror from '@uiw/react-codemirror';
+import { langs } from '@uiw/codemirror-extensions-langs';
 import { Grid, Button, Box, Typography } from '@mui/material';
 
 import { ApiContext } from '../../../contexts/ApiContext';
@@ -41,17 +42,16 @@ const ProgrammingSpace = ({}) => {
     }, [api, program]);
 
     return ( <>
-        <Grid container sx={{display: 'flex', flexDirection: 'column'}}>
+        <Grid container sx={{display: 'flex', flexDirection: 'column', overflow: 'auto'}}>
             <Grid item sx={{ flex: 1, overflow: 'hidden' }}>
-                <Box sx={{ height: '38em', overflow: 'auto' }}>
-                    <ReactCodeMirror
-                        className="editor"
-                        value={program}
-                        theme="dark"
-                        onChange={handleCodeChange}
-                        style={{ height: '100%' }}
-                    />
-                </Box>
+                <ReactCodeMirror
+                    className="editor"
+                    value={program}
+                    theme="dark"
+                    extensions={[langs.go()]}
+                    onChange={handleCodeChange}
+                    style={{ height: '100%' }}
+                />
             </Grid>
             <Grid item xs={1} >
                 <Box sx={{ flexDirection: 'row', display: "flex" }} border={0}>

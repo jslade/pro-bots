@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState, useRef } from 'react';
 import Terminal, { ColorMode, TerminalOutput } from 'react-terminal-ui';
 
 import { ApiContext } from '../../../../contexts/ApiContext';
@@ -11,6 +11,8 @@ const TerminalComponent = () => {
     const [input, setInput] = useState('');
     const [history, setHistory] = useState([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
+
+    const terminalRef = useRef(null);
   
     const handleCommand = (command) => {
         // Process the command
@@ -65,19 +67,26 @@ const TerminalComponent = () => {
     }, [api, api?.registerCallback, onOutput]);
 
 
+    // Scroll to the bottom whenever terminalLines changes
+    useEffect(() => {
+        if (terminalRef.current) {
+            terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+        }
+    }, [terminalLineData]);
+
     return (
-        <div className="container">
-        <Terminal
-            name="Command Terminal"
-            colorMode={ColorMode.Dark}
-            TopButtonsPanel={()=> null}
-            height="20em"
-            prompt=">>>"
-            onInput={handleCommand}
-            startingInputValue={input}
-        >
-            {terminalLineData}
-        </Terminal>
+        <div className="container" ref={terminalRef}>
+            <Terminal
+                name="Command Terminal"
+                colorMode={ColorMode.Dark}
+                TopButtonsPanel={()=> null}
+                prompt=">>>"
+                height={`${terminalLineData.length + 2}em`}
+                onInput={handleCommand}
+                startingInputValue={input}
+            >
+                {terminalLineData}
+            </Terminal>
         </div>
     );
 };

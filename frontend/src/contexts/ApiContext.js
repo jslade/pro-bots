@@ -153,7 +153,7 @@ const ApiWs = ({onConnected, onDisconnected, dispatch }) => {
 
     useEffect(() => {
         if (!lastJsonMessage) return;
-
+    
         dispatch(lastJsonMessage);
     }, [dispatch, lastJsonMessage])
 

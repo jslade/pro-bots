@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
-import { Grid, Box } from '@mui/material';
+import React from 'react';
+import { Box, Button, Typography } from '@mui/material';
+import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 
 import { SessionContext } from '../../../contexts/SessionContext';
 import { ApiContext } from '../../../contexts/ApiContext';
@@ -11,45 +12,66 @@ import Display from './Display';
 import Controls from './Controls';
 
 import './Layout.css';
+import StatsComponent from '../../game/Stats';
+
+const OverviewScene = () => {
+    return null
+};
+const MainScene = () => {
+    return null
+};
 
 const Layout = () => {
-    const session = useContext(SessionContext);
-    const api = useContext(ApiContext);
+    const session = React.useContext(SessionContext);
+    const api = React.useContext(ApiContext);
 
-return ( <div maxheight="100vh" style={{ display: 'block', height: '100vh' }}>
-        <Grid item xs={12} style={{ height: '1.5em' }}>
-            <Box display="flex" flexDirection="column" height="100%">
-                <Box flex={1} border={1}>
-                    {api ? `Connected [${session.sessionId}]` : 'Disconnected'}
+return (
+    <Box sx={{ display: 'flex', width: '100vw', height: '100vh', overflow: "hidden" }}>
+        <PanelGroup direction="horizontal" >
+            {/* Left Column */}
+            <Panel defaultSize={30} minSize={10}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: "hidden" }}>
+                    <PanelGroup direction="vertical">
+                        <Panel defaultSize={70} minSize={10}>
+                            <div style={{ overflow: "auto" }} >
+                                <ProgrammingSpace />
+                            </div>
+                        </Panel>
+                        <PanelResizeHandle />
+                        <Panel defaultSize={30} minSize={10}>
+                            <div style={{ overflow: "auto" }} >
+                                <CommandSpace />
+                            </div>
+                        </Panel>
+                    </PanelGroup>
                 </Box>
-            </Box>
-        </Grid>
-        <Grid container spacing={0} style={{ height: 'calc(100vh - 1.5em)', maxheight: 'calc(100vh - 1.5em)' }}> 
-            <Grid item xs={6}>
-                <Box display="flex" flexDirection="column" height="100%">
-                    <Box flex={3} border={0} borderColor="blue">
-                        <ProgrammingSpace />
+            </Panel>
+            <PanelResizeHandle />
+            <Panel defaultSize={70} minSize={10}>
+                {/* Right Column */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: "hidden" }}>
+                    {/* Status Field */}
+                    <Box sx={{ backgroundColor: '#d0d0d0', p: 1 }}>
+                        <Typography variant="body1">{api ? `Connected [${session.sessionId}]` : 'Disconnected'}
+                        </Typography>
+                        <div id="stats0" style={{position: 'fixed', top: 0, right: 0}} />
+                        <StatsComponent container="#stats0"/>
                     </Box>
-                    <Box flex={1} border={0} borderColor="white">
-                        <CommandSpace />
+                    {/* Overview and Main Scene */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Overview />
+                        </Box>
+                        <Box sx={{ flex: 5 }}>
+                            <Display />
+                        </Box>
                     </Box>
+                    <Controls />
                 </Box>
-            </Grid>
-            <Grid item xs={6}>
-                <Box display="flex" flexDirection="column" height="100%">
-                    <Box flex={4} border={1}>
-                        <Overview />
-                    </Box>
-                    <Box flex={12} border={0}>
-                        <Display />
-                    </Box>
-                    <Box flex={1} border={0}>
-                        <Controls />
-                    </Box>
-                </Box>
-            </Grid>
-        </Grid>
-    </div>);
+            </Panel>
+        </PanelGroup>
+    </Box>
+    );
 };
 
 export default Layout;

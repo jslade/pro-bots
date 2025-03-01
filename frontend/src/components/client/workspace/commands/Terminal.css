@@ -1,4 +1,14 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: auto;
+    bottom: 0;
+    background-color: #252a33;
+}
+
 .react-terminal-wrapper {
+    flex: 1;
     background: #252a33;
     color: #eee;
     font-size: 14px;
@@ -6,4 +16,5 @@
     padding: 1.5em 0px 2px 4px;
     position: relative;
     bottom: "0px";
+    height: 100%;
 }

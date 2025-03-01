@@ -29,6 +29,9 @@ const Controls = () => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
+            position: 'relative',
+            bottom: '4.5em',
+            height: '1px',
         }} spacing={3} >
             <Grid item xs={2}>
                 <Button variant="contained" onClick={onTurnLeft}>turn&nbsp;L</Button>
