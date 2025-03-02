@@ -1,4 +1,4 @@
-import { TerminalComponent } from "./Terminal";
+import TerminalComponent from "./Terminal";
 
 const CommandSpace = () => {
     return (

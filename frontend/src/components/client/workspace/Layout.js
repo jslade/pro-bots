@@ -6,7 +6,7 @@ import { SessionContext } from '../../../contexts/SessionContext';
 import { ApiContext } from '../../../contexts/ApiContext';
 
 import ProgrammingSpace from './ProgrammingSpace';
-import CommandSpace from './commands/CommandSpace';
+import TerminalComponent from './commands/Terminal';
 import Overview from '../../game/Overview';
 import Display from './Display';
 import Controls from './Controls';
@@ -26,6 +26,13 @@ const Layout = () => {
     const session = React.useContext(SessionContext);
     const api = React.useContext(ApiContext);
 
+    const promptRef = React.useRef(null);
+
+    const handleClick = React.useCallback(() => {
+        promptRef.current?.focus();
+    }
+    , [promptRef.current]);
+
 return (
     <Box sx={{ display: 'flex', width: '100vw', height: '100vh', overflow: "hidden" }}>
         <PanelGroup direction="horizontal" >
@@ -39,10 +46,10 @@ return (
                             </div>
                         </Panel>
                         <PanelResizeHandle />
-                        <Panel defaultSize={30} minSize={10}>
-                            <div style={{ overflow: "auto" }} >
-                                <CommandSpace />
-                            </div>
+                        <Panel defaultSize={30} minSize={10}
+                            style={{ overflow: "auto", backgroundColor: '#252222' }}
+                            onClick={handleClick}>
+                                <TerminalComponent promptRef={promptRef} />
                         </Panel>
                     </PanelGroup>
                 </Box>
