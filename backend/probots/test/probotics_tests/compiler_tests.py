@@ -314,7 +314,42 @@ class TestBlocks:
                                 Immediate(Primitive.of(2)),
                                 Addition(),
                             ],
-                            name="Assignment",
+                            name="a",
+                        )
+                    ),
+                    Assignment(),
+                ],
+            ),
+            (
+                "a := { (b, c)\n" "    b + c\n" "}",
+                [
+                    Immediate(Primitive.symbol("a")),
+                    Immediate(
+                        Primitive.block(
+                            [
+                                GetValue("b"),
+                                GetValue("c"),
+                                Addition(),
+                            ],
+                            name="a",
+                            arg_names=["b", "c"],
+                        )
+                    ),
+                    Assignment(),
+                ],
+            ),
+            (
+                "a.b := { (c)   # test \n" "    true\n" "}",
+                [
+                    GetValue("a"),
+                    Property("b"),
+                    Immediate(
+                        Primitive.block(
+                            [
+                                Immediate(Primitive.of(True)),
+                            ],
+                            name="b",
+                            arg_names=["c"],
                         )
                     ),
                     Assignment(),

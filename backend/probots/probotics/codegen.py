@@ -140,7 +140,7 @@ class ProboticsCodeGenerator(NodeWalker):
             return
 
         # For the case of a simple symbol:
-        symbol_name = node.ast
+        symbol_name = node.ast.name
         if self.is_in_context("Assignable") and not self.is_in_context("Index"):
             # When a bare symbol is on the target side of an assignment,
             # the result should be the symbol itself
@@ -157,9 +157,11 @@ class ProboticsCodeGenerator(NodeWalker):
             self.walk_Property(left)
             self.operations.append(GetProperty())
         else:
-            self.operations.append(GetValue(left))
+            symbol_name = left.name
+            self.operations.append(GetValue(symbol_name))
 
-        self.operations.append(Property(right))
+        symbol_name = right.name
+        self.operations.append(Property(symbol_name))
 
     #
     # Arithmetic
@@ -237,6 +239,20 @@ class ProboticsCodeGenerator(NodeWalker):
             self.walk(node.value)
         self.operations.append(Assignment())
 
+        # special case of assignment of a block to a symbol:
+        # the block gets the symbol's name
+        if isinstance(self.operations[-2], Immediate):
+            immediate = self.operations[-2]
+            if immediate.value.is_block:
+                block_prim = immediate.value
+                name_op = self.operations[-3]
+                if isinstance(name_op, Immediate):
+                    name = name_op.value.value
+                    block_prim.value.name = name
+                elif isinstance(name_op, Property):
+                    name = name_op.name
+                    block_prim.value.name = name
+
     def walk_Assignable(self, node: Node):
         with self.in_context("Assignable"):
             self.walk(node.children())
@@ -254,6 +270,18 @@ class ProboticsCodeGenerator(NodeWalker):
         self.operations[before:] = []
 
         block = Primitive.block(operations, name=self.context[-1])
+        self.operations.append(Immediate(block))
+
+    def walk_BlockWithArgs(self, node: Node):
+        before = self.mark()
+        with self.in_context("Block"):
+            self.walk(node.statements)
+
+        arg_names = [name.name for name in node.arg_names]
+        operations = self.operations[before:]
+        self.operations[before:] = []
+
+        block = Primitive.block(operations, name=self.context[-1], arg_names=arg_names)
         self.operations.append(Immediate(block))
 
     def walk_IfStatement(self, node: Node):
