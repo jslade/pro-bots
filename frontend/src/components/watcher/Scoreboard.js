@@ -1,11 +1,11 @@
-import React, { useContext, useEffect } from 'react';
+import React from 'react';
 
 import { List, ListItem } from '@mui/material';
 
 import {GameContext} from '../../contexts/GameContext';
 
 const Scoreboard = () => {
-    const { players } = useContext(GameContext);
+    const { players } = React.useContext(GameContext);
 
     const playerItem = (player) => {
         let displayName = player.displayName;
@@ -16,7 +16,7 @@ const Scoreboard = () => {
             <ListItem key={player.name}>
                 <ColorPattern colors={player.colors} />
                 <div>
-                &nbsp;: {player.score} : {displayName}
+                    &nbsp;: {player.score} : {displayName}
                 </div>
             </ListItem>
         )

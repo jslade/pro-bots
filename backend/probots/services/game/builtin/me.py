@@ -131,6 +131,7 @@ class Me(Builtin):
 
         self.engine.update_score(self.player, 5)
         self.engine.notify_of_player_change(self.player)
+        self.engine.notify_of_probot_change(self.player)
 
     def on_delete_color(self, key: str) -> None:
         raise KeyError(f"Not deletable: {key}")

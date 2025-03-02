@@ -49,7 +49,7 @@ function Cell(props) {
             <boxGeometry args={[1, 0, 1]} />
             <meshStandardMaterial color={hovered ? 'hotpink' : cellColor(props.cell)} />
         </mesh>
-        {/*<GroundCrystals crystals={props.cell.crystals} position={[props.x, 0.11, -props.y]} />*/}
+        <GroundCrystals crystals={props.cell.crystals} position={[props.x, 0.0, -props.y]} />
         </>
     )
 }
@@ -73,15 +73,19 @@ const crystalPositions = [
 function GroundCrystals({ crystals, ...props }) {
     const groupRef = React.useRef();
 
-    const groupPositions = Array.from({ length: Math.ceil(crystals / (5000 / crystalPositions.length)) }, (_, i) => 
-        crystalPositions[i % crystalPositions.length]
-    );
+    const rendered = useMemo(() => {
+        const groupPositions = Array.from({ length: Math.ceil(crystals / (5000 / crystalPositions.length)) }, (_, i) => 
+            crystalPositions[i % crystalPositions.length]
+        );
+        
+        return Array.from({ length: Math.ceil(crystals / 500) }, (_, i) => 
+            <CrystalPlacement key={i} position={groupPositions[i % groupPositions.length]} speed={0}/>
+        );
+    }, [crystals]);
 
     return (
         <group ref={groupRef} {...props}>
-            {groupPositions.map((position, index) => (
-            <CrystalPlacement key={index} speed={0} position={position} />
-            ))}
+            {rendered}
         </group>
     );
 }

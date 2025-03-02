@@ -19,7 +19,7 @@ const Score = () => {
     );
 };
 
-const ScoreValue = ({}) => {
+const ScoreValue = () => {
     const { player } = useContext(GameContext);
 
     return (

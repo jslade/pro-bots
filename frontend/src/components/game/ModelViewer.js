@@ -4,7 +4,6 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 
 import ProbotModel from './Probot';
-import { Crystal, CrystalGroup, CrystalPlacement } from './Crystal';
 
 const viewPlayer = {
     "name": "bot-0",

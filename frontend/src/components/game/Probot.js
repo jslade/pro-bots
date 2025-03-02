@@ -1,7 +1,6 @@
 import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
-import { Billboard, Text } from '@react-three/drei';
 import { CrystalPlacement } from './Crystal';
 
 const orientationAngle = (orientation) => {
@@ -60,7 +59,7 @@ const ProbotModel = ({ player, probot, ...props }) => {
           position={[0.02, 0.06, 0]} rotation={[0, Math.PI/2.0, 0]}
         />
       </>
-    }, [probot?.colors, probot.colors?.body, probot.colors?.head, probot.colors?.tail]);
+    }, [probot?.colors]);
 
     const energyRing = useMemo(() => {
       if (!probot?.energy) return null;
@@ -99,8 +98,8 @@ function ExtrudedRing({
   const geometry = useMemo(() => {
     // 1. Create the circular path using CatmullRomCurve3:
     const points = [];
-    if (sweep === Math.PI * 2) { segments += 1; } // Close the circle
-    for (let i = 0; i < segments; i++) {
+    const full = sweep === Math.PI * 2;
+    for (let i = 0; i < segments + (full ? 1 : 0); i++) {
       const angle = (i / segments) * sweep;
       const x = radius * Math.cos(angle);
       const z = radius * Math.sin(angle);
@@ -119,7 +118,7 @@ function ExtrudedRing({
     );
 
     return geometry;
-  }, [radius, tubeRadius, segments, tubularSegments]);
+  }, [sweep, radius, tubeRadius, segments, tubularSegments]);
 
   //useFrame(() => {
   //  mesh.current.rotation.y += 0.01;
@@ -192,7 +191,10 @@ function EnergyRing({
       innerRadius, outerRadius, thetaSegments, phiSegments,
       reverse ? thetaStart - thetaLength : thetaStart, thetaLength
     );
-  }, [innerRadius, outerRadius, phiSegments, thetaSegments, energy]);
+  }, [
+    innerRadius, outerRadius, phiSegments, thetaSegments,
+    energy, reverse, thetaStart, thetaMax
+  ]);
 
   return (
     <mesh ref={meshRef} {...props}>

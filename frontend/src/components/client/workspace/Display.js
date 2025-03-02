@@ -30,7 +30,7 @@ const orientationAngle = (orientation) => {
     }[orientation] || 0;
 }
 
-const DisplayScene = ({  }) => {
+const DisplayScene = () => {
     return ( <>
         <DisplayFixed />
         <DisplayDynamic />

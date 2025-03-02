@@ -18,7 +18,7 @@ const Overview = () => {
     );
 };
 
-const DisplayStatic = ({ }) => {
+const DisplayStatic = () => {
     const { grid } = useContext(GameContext);
 
     useThree(({ camera }) => {
@@ -34,7 +34,7 @@ const DisplayStatic = ({ }) => {
     </>);
 };
 
-const DisplayDynamic = ({  }) => {
+const DisplayDynamic = () => {
     const { pairs } = useContext(GameContext);
 
     if (!pairs?.map) return <></>;

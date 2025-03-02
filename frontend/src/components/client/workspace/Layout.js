@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 
 import { SessionContext } from '../../../contexts/SessionContext';
@@ -15,13 +15,6 @@ import Score from './Score';
 import './Layout.css';
 import StatsComponent from '../../game/Stats';
 
-const OverviewScene = () => {
-    return null
-};
-const MainScene = () => {
-    return null
-};
-
 const Layout = () => {
     const session = React.useContext(SessionContext);
     const api = React.useContext(ApiContext);
@@ -31,7 +24,7 @@ const Layout = () => {
     const handleClick = React.useCallback(() => {
         promptRef.current?.focus();
     }
-    , [promptRef.current]);
+    , []);
 
 return (
     <Box sx={{ display: 'flex', width: '100vw', height: '100vh', overflow: "hidden" }}>

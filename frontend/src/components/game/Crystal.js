@@ -92,7 +92,7 @@ function CrystalPlacement({speed=1, ...props}) {
         return <mesh rotation={rotation}>
             {crystalGroupCache[index]}
         </mesh>
-    }, [props.rotation]);
+    }, []);
 
     useFrame(() => {
         group.current.rotation.x += 0.005 * speed;

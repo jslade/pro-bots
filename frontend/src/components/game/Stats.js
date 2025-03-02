@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Stats from 'stats.js';
 
 const StatsComponent = ({stat=0, container}) => {
-    useEffect(() => {
+    React.useEffect(() => {
         const stats = new Stats();
         stats.showPanel(stat); // 0: fps, 1: ms, 2: mb, 3+: custom
 
@@ -22,7 +22,7 @@ const StatsComponent = ({stat=0, container}) => {
         return () => {
             parent.removeChild(stats.dom);
         };
-    }, []);
+    }, [stat, container]);
 
     return null;
 };

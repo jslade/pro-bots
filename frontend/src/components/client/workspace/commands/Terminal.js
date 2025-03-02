@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState, useRef, useMemo } from 'react';
-import { Box, Grid, Typography, Paper, TextField, Button } from '@mui/material';
+import { Box, Grid, Typography, Paper, TextField } from '@mui/material';
 
 import { ApiContext } from '../../../../contexts/ApiContext';
 import './Terminal.css';
@@ -79,7 +79,7 @@ const TerminalComponent = ({ promptRef }) => {
         }
         const newIndex = -1; 
         setHistoryIndex(newIndex);
-    }, [history, setHistory, setHistoryIndex, setInput])
+    }, [history, setHistory, setHistoryIndex])
 
     const onOutput = useCallback((output) => {
         setLines([...lines, output]);

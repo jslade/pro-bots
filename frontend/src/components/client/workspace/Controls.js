@@ -1,6 +1,6 @@
-import { useCallback, useContext, useEffect } from 'react';
+import { useCallback, useContext } from 'react';
 
-import { Grid, Button, Typography } from '@mui/material';
+import { Grid, Button } from '@mui/material';
 
 import { ApiContext } from '../../../contexts/ApiContext';
 
