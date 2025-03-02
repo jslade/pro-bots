@@ -19,7 +19,7 @@ class Print(Builtin):
     def add(cls, player: Player, engine: "Engine", builtins: ScopeVars) -> None:
         def do_print(frame: StackFrame, player=player) -> Optional[Primitive]:
             msg = frame.get("what")
-            LOGGER.info("do_print", player=player, what=msg)
+            # LOGGER.info("do_print", player=player, what=msg)
             engine.send_to_player(
                 player,
                 "terminal",
