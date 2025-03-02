@@ -34,20 +34,7 @@ class Me(Builtin):
             on_get=self.on_get,
             on_set=self.on_set,
             on_delete=self.on_delete,
-            name=Primitive.of(self.player.display_name),
-            score=Primitive.of(self.player.score),
-            state=Primitive.of(
-                enum_string(self.engine.probot_for_player(self.player).state)
-            ),
-            x=Primitive.of(self.engine.probot_for_player(self.player).x),
-            y=Primitive.of(self.engine.probot_for_player(self.player).y),
-            orientation=Primitive.of(
-                enum_string(self.engine.probot_for_player(self.player).orientation)
-            ),
-            energy=Primitive.of(self.engine.probot_for_player(self.player).energy),
-            crystals=Primitive.of(self.engine.probot_for_player(self.player).crystals),
-            colors=Primitive.of(self.get_colors()),
-            globals=Primitive.of(self.get_globals()),
+            on_iter=self.on_iter,
         )
 
     GET = {
@@ -64,6 +51,9 @@ class Me(Builtin):
         "colors": lambda me: me.get_colors(),
         "globals": lambda me: me.get_globals(),
     }
+
+    def on_iter(self) -> list[str]:
+        return list(self.GET.keys())
 
     def on_get(self, key: str, default: Optional[Any] = None) -> Optional[Primitive]:
         try:
@@ -97,11 +87,12 @@ class Me(Builtin):
             on_get=self.on_get_color,
             on_set=self.on_set_color,
             on_delete=self.on_delete_color,
-            head=Primitive.of(self.player.colors.head),
-            tail=Primitive.of(self.player.colors.tail),
-            body=Primitive.of(self.player.colors.body),
+            on_iter=self.on_iter_color,
         )
         return Primitive.of(color_dict)
+
+    def on_iter_color(self) -> list[str]:
+        return ["head", "tail", "body"]
 
     def on_get_color(
         self, key: str, default: Optional[Any] = None
