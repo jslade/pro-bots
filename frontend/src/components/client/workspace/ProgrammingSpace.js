@@ -25,6 +25,11 @@ const ProgrammingSpace = ({}) => {
 
             api.sendMessage('user', 'get_program', {});
         }
+
+        return () => {
+            api?.unregisterCallback('user', 'get_program');
+            api?.unregisterCallback('user', 'update_program');
+        }
     }, [api, program, setProgram]);
 
     const handleCodeChange = React.useCallback((value, viewUpdate) => {

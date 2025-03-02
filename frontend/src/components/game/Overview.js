@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { GameContext } from '../../contexts/GameContext';
 
@@ -36,6 +36,8 @@ const DisplayStatic = ({ }) => {
 
 const DisplayDynamic = ({  }) => {
     const { pairs } = useContext(GameContext);
+
+    if (!pairs?.map) return <></>;
 
     return ( <>
         {pairs.map((pp) => <ProbotModel key={pp.player.name} player={pp.player} probot={pp.probot} />)}

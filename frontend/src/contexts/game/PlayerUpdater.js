@@ -21,9 +21,11 @@ const PlayerUpdater = ({ players, setPlayersUpdated }) => {
     useEffect(() => {
         if (!api) return;
 
-        api.registerCallback('game', 'update_player', (data) => {
-            handleUpdatePlayer(data);
-        });
+        api.registerCallback('game', 'update_player', handleUpdatePlayer);
+
+        return () => {
+            api?.unregisterCallback('game', 'update_player');
+        }
     }, [api, api?.registerCallback, handleUpdatePlayer, players]);
 
 

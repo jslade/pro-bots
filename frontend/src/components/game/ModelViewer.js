@@ -74,7 +74,6 @@ const ViewerCanvasContent = ({ player, probot }) => {
         <spotLight position={[40, 40, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[10, 20, 2]} decay={0} intensity={Math.PI} />
         <ProbotModel player={player} probot={probot} />
-        {/*<CrystalPlacement position={[0.15, 0.24, 0]} scale={[0.5, 0.5, 0.5]}/>*/}
     </>);
 };
 

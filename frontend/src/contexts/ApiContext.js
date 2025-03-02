@@ -43,6 +43,11 @@ const ApiProvider = ({ children }) => {
         dispatchRef.current[key] = handler;
     }, []);
 
+    const unregisterCallback = useCallback((type, event, handler) => {
+        const key = `${type}:${event ? event : ''}`;
+        delete dispatchRef.current[key];
+    }, []);
+
     const sessionAccepted = useCallback(() => {
         console.log("SESSION ACCEPTED");
         setAccepted(true);
@@ -68,7 +73,10 @@ const ApiProvider = ({ children }) => {
 
     useEffect(() => {
         registerCallback("connection", "accepted", sessionAccepted);
-    }, [registerCallback, sessionAccepted]);
+        return () => {
+            unregisterCallback("connection", "accepted");
+        }
+    }, [registerCallback, unregisterCallback, sessionAccepted]);
 
     const dispatch = useCallback((message) => {
         if (!message) return;
@@ -105,7 +113,7 @@ const ApiProvider = ({ children }) => {
 
     return (
         <ApiContext.Provider value={
-            accepted ? { sendMessage, registerCallback } : null
+            accepted ? { sendMessage, registerCallback, unregisterCallback } : null
         }>
             {session?.sessionId ? <ApiWs 
                 onConnected={onConnected}

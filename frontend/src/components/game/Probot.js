@@ -13,11 +13,25 @@ const orientationAngle = (orientation) => {
     }[orientation] || 0;
 }
 
+const energyRings = [];
+const crystalRings = [];
+
+for (const i of Array.from({ length: 1001 }, (_, i) => i)) {
+  energyRings.push(<EnergyRing energy={i} color="red"
+    innerRadius={0.45} outerRadius={0.52}
+    thetaStart={Math.PI/2} thetaMax={Math.PI/2}
+    position={[0, -0.04, 0]} rotation={[-Math.PI/2, 0, 0]} />);
+  crystalRings.push(<EnergyRing energy={i} color="blue"
+    thetaStart = {0} thetaMax={Math.PI/2} reverse={true}
+    innerRadius={0.45} outerRadius={0.52}
+    position={[0, -0.0401, 0]} rotation={[-Math.PI/2, 0, -Math.PI/2]} />);
+}
+
 const ProbotModel = ({ player, probot, ...props }) => {
-    const meshRef = React.useRef()
+    const probotMeshRef = React.useRef()
 
     useFrame(() => {
-        if (!meshRef.current) return;
+        if (!probotMeshRef.current) return;
 
         const angle = orientationAngle(probot.orientation)
 
@@ -29,8 +43,8 @@ const ProbotModel = ({ player, probot, ...props }) => {
         const rotY = angle + probot.dorient;
         const rotZ = 0;
 
-        meshRef.current.position.set(proX, proY, proZ);
-        meshRef.current.rotation.set(rotX, rotY, rotZ);
+        probotMeshRef.current.position.set(proX, proY, proZ);
+        probotMeshRef.current.rotation.set(rotX, rotY, rotZ);
     });
 
     const baseGeometry = useMemo(() => {
@@ -50,18 +64,12 @@ const ProbotModel = ({ player, probot, ...props }) => {
 
     const energyRing = useMemo(() => {
       if (!probot?.energy) return null;
-        return <EnergyRing energy={probot?.energy} color="red"
-          innerRadius={0.45} outerRadius={0.52}
-          thetaStart={Math.PI/2} thetaMax={Math.PI/2}
-          position={[0, -0.04, 0]} rotation={[-Math.PI/2, 0, 0]} />
+      return energyRings[probot?.energy];
     }, [probot?.energy]);
 
     const crystalRing = useMemo(() => {
       if (!probot?.crystals) return null;
-        return <EnergyRing energy={probot?.crystals} color="blue"
-          thetaStart = {0} thetaMax={Math.PI/2} reverse={true}
-          innerRadius={0.45} outerRadius={0.52}
-          position={[0, -0.0401, 0]} rotation={[-Math.PI/2, 0, -Math.PI/2]} />
+      return crystalRings[probot?.crystals];
     }, [probot?.crystals]);
 
     const payload = useMemo(() => {
@@ -69,7 +77,7 @@ const ProbotModel = ({ player, probot, ...props }) => {
       return (probot?.crystals > 0) && <Payload crystals={1} />
     }, [probot?.crystals]);
 
-    return (<mesh ref={meshRef}
+    return (<mesh ref={probotMeshRef}
             {...props}>
       {baseGeometry}
       {energyRing}
@@ -179,20 +187,12 @@ function EnergyRing({
   const meshRef = useRef();
 
   const geometry = useMemo(() => {
-
-    return new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments, phiSegments, 0, 0);
-  }, [innerRadius, outerRadius, phiSegments, thetaSegments]);
-
-  useFrame(() => {
-    // Update the ring geometry based on the energy value
-    const newThetaLength = (energy / 1000) * thetaMax; // Assuming energy is between 0 and 100
-    if (meshRef.current) {
-      meshRef.current.geometry = new THREE.RingGeometry(
-        innerRadius, outerRadius, thetaSegments, phiSegments,
-        reverse ? thetaStart - newThetaLength : thetaStart, newThetaLength
-      );
-    }
-  });
+    const thetaLength = (energy / 1000) * thetaMax;
+    return new THREE.RingGeometry(
+      innerRadius, outerRadius, thetaSegments, phiSegments,
+      reverse ? thetaStart - thetaLength : thetaStart, thetaLength
+    );
+  }, [innerRadius, outerRadius, phiSegments, thetaSegments, energy]);
 
   return (
     <mesh ref={meshRef} {...props}>

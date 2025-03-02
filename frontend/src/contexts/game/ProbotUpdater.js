@@ -25,6 +25,10 @@ const ProbotUpdater = ({ probots, setProbotsUpdated }) => {
         api.registerCallback('game', 'update_probot', (data) => {
             handleUpdateProbot(data);
         });
+
+        return () => {
+            api?.unregisterCallback('game', 'update_probot');
+        }
     }, [api, api?.registerCallback, handleUpdateProbot, probots]);
 
 

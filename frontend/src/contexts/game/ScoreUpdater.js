@@ -28,6 +28,10 @@ const ScoreUpdater = ({ players, setScoresUpdated }) => {
         api.registerCallback('game', 'update_score', (data) => {
             handleUpdateScore(data);
         });
+
+        return () => {
+            api?.unregisterCallback('game', 'update_score');
+        }
     }, [api, api?.registerCallback, handleUpdateScore, players]);
 
 

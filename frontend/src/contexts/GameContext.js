@@ -58,6 +58,10 @@ const GameProvider = ({ children }) => {
             handleGameStateCurrent(data);
         });
 
+        return () => {
+            api?.unregisterCallback('game', 'reset');
+            api?.unregisterCallback('game', 'current_state');
+        }
     }, [api, api?.registerCallback, handleGameStateCurrent, handleGameStateReset]);
 
     const requestGameState = useCallback(() => {
