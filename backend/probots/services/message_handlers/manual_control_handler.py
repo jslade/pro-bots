@@ -32,7 +32,7 @@ class ManualControlHandler(MessageHandler):
             LOGGER.warning("no probot for session", session=session.id)
             return
 
-        LOGGER.info("manual movement", ev=event, probot=probot)
+        # LOGGER.info("manual movement", ev=event, probot=probot)
 
         if event.move:
             ENGINE.mover.move(probot, backward=event.move == "backward")

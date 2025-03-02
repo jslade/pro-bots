@@ -82,7 +82,7 @@ class Dispatcher:
 
     def receive(self, session: Session, message: Message) -> None:
         """Called when a message is received from a session's websocket."""
-        LOGGER.info("Received message", session=session.id, message=message)
+        # LOGGER.debug("Received message", session=session.id, message=message)
 
         handled = False
 
