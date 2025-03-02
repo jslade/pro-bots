@@ -15,11 +15,14 @@ class CallbackDict(dict):
         on_get: OnGetCallback,
         on_set: OnSetCallback,
         on_delete: OnDeleteCallback,
+        **values,
     ):
         super().__init__()
         self.on_get = on_get
         self.on_set = on_set
         self.on_delete = on_delete
+        for key, value in values.items():
+            self.set_(key, value)
 
     def get(self, key: str, default: Any = None) -> Any:
         return self.on_get(key, default)

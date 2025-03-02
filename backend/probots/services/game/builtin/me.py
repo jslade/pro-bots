@@ -34,6 +34,20 @@ class Me(Builtin):
             on_get=self.on_get,
             on_set=self.on_set,
             on_delete=self.on_delete,
+            name=Primitive.of(self.player.display_name),
+            score=Primitive.of(self.player.score),
+            state=Primitive.of(
+                enum_string(self.engine.probot_for_player(self.player).state)
+            ),
+            x=Primitive.of(self.engine.probot_for_player(self.player).x),
+            y=Primitive.of(self.engine.probot_for_player(self.player).y),
+            orientation=Primitive.of(
+                enum_string(self.engine.probot_for_player(self.player).orientation)
+            ),
+            energy=Primitive.of(self.engine.probot_for_player(self.player).energy),
+            crystals=Primitive.of(self.engine.probot_for_player(self.player).crystals),
+            colors=Primitive.of(self.get_colors()),
+            globals=Primitive.of(self.get_globals()),
         )
 
     GET = {
@@ -83,6 +97,9 @@ class Me(Builtin):
             on_get=self.on_get_color,
             on_set=self.on_set_color,
             on_delete=self.on_delete_color,
+            head=Primitive.of(self.player.colors.head),
+            tail=Primitive.of(self.player.colors.tail),
+            body=Primitive.of(self.player.colors.body),
         )
         return Primitive.of(color_dict)
 
