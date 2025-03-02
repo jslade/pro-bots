@@ -95,6 +95,8 @@ function CrystalPlacement({speed=1, ...props}) {
     }, []);
 
     useFrame(() => {
+        if (speed === 0) return;
+        
         group.current.rotation.x += 0.005 * speed;
         group.current.rotation.y += 0.004 * speed;
         group.current.rotation.z += 0.003 * speed;
