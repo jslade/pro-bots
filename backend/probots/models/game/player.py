@@ -2,7 +2,7 @@ from typing import Optional
 
 from ..mixins.pydantic_base import BaseSchema
 from .color_scheme import ColorScheme
-from .program import Program
+from .program import ProgramState
 
 
 class Player(BaseSchema):
@@ -18,9 +18,8 @@ class Player(BaseSchema):
     display_name: str
 
     score: int = 0
+    program_state: ProgramState = ProgramState.not_running
 
     colors: ColorScheme = None
 
     session_id: Optional[str] = None
-
-    program: Optional[Program] = None

@@ -5,13 +5,14 @@ import { ApiContext } from '../ApiContext';
 const ScoreUpdater = ({ players, setScoresUpdated }) => {
     const api = useContext(ApiContext);
 
-    const handleUpdateScore = useCallback(({ playerName, newScore }) => {
+    const handleUpdateScore = useCallback(({ playerName, newScore, programState }) => {
         if (!players) return;
 
         // Update the score of the specific player
         for (const player of players) {
             if (player.name === playerName) {
                 player.score = newScore;
+                player.programState = programState;
                 break;
             }
         }

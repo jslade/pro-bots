@@ -67,9 +67,12 @@ class ProboticsCodeGenerator(NodeWalker):
     # Catch-all
     #
     def walk_object(self, node: Node):
-        # import ipdb
+        if node is None:
+            return
 
-        # ipdb.set_trace()
+        if node == "else":
+            return
+
         LOGGER.warning("walker not defined", node=node.__repr__())
 
     #

@@ -26,6 +26,34 @@ for (const i of Array.from({ length: 1001 }, (_, i) => i)) {
     position={[0, -0.0401, 0]} rotation={[-Math.PI/2, 0, -Math.PI/2]} />);
 }
 
+const programStateSize = 0.05;
+
+const StateCube = ({ color, ...props }) => {
+  const meshRef = useRef();
+
+  React.useEffect(() => {
+    if (!meshRef.current) return;
+
+    return () => {
+      meshRef.current?.geometry.dispose();
+      meshRef.current?.material.dispose();
+    }
+  }, []);
+
+  return (
+    <mesh ref={meshRef} position={[0.1, 0.1, 0]} {...props}>
+      <boxGeometry args={[programStateSize, programStateSize, programStateSize]} />
+      <meshStandardMaterial color={color} />
+    </mesh>
+  );
+};
+
+const programStates = {
+  "running": <StateCube color="#55ff55" />,
+  "paused": <StateCube color="cyan" />,
+  "not_running": <StateCube color="red" />,
+}
+
 const ProbotModel = ({ player, probot, ...props }) => {
     const probotMeshRef = React.useRef()
 
@@ -61,6 +89,11 @@ const ProbotModel = ({ player, probot, ...props }) => {
       </>
     }, [probot?.colors]);
 
+    const programState = useMemo(() => {
+      if (!player?.programState) return null;
+      return programStates[player?.programState];
+    }, [player?.programState]);
+
     const energyRing = useMemo(() => {
       if (!probot?.energy) return null;
       return energyRings[probot?.energy];
@@ -79,6 +112,7 @@ const ProbotModel = ({ player, probot, ...props }) => {
     return (<mesh ref={probotMeshRef}
             {...props}>
       {baseGeometry}
+      {programState}
       {energyRing}
       {crystalRing}
       {payload}

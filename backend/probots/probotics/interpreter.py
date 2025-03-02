@@ -21,6 +21,7 @@ ExceptionCallback: TypeAlias = Callable[
     [Exception, "ExecutionContext", "StackFrame"], None
 ]
 BreakCallback: TypeAlias = Callable[["ExecutionContext"], None]
+CompleteCallback: TypeAlias = Callable[["ExecutionContext"], None]
 
 
 class ExecutionContext:
@@ -30,6 +31,7 @@ class ExecutionContext:
     on_result: Optional[ResultCallback]
     on_exception: Optional[ExceptionCallback]
     on_break: Optional[BreakCallback]
+    on_complete: Optional[CompleteCallback]
 
     current_frame: Optional[StackFrame]
     stopped: bool
@@ -51,6 +53,7 @@ class ExecutionContext:
         on_result: Optional[ResultCallback] = None,
         on_exception: Optional[ExceptionCallback] = None,
         on_break: Optional[BreakCallback] = None,
+        on_complete: Optional[CompleteCallback] = None,
         name: Optional[str] = None,
     ) -> None:
         # Builtins are symbols that cannot be changed (assigned to or overridden
@@ -71,6 +74,9 @@ class ExecutionContext:
 
         # Callback to be called when a breakpoint is hit
         self.on_break = on_break
+
+        # Callback to be called the context is all the way done
+        self.on_complete = on_complete
 
         # Globals are symbols can be assigned to in the outer scope only,
         # and will stay around as long as this execution context exists
@@ -245,6 +251,9 @@ class ProboticsInterpreter:
                     self.stopped_contexts.append(context)
                 else:
                     self.contexts.append(context)
+            else:
+                if context.on_complete:
+                    context.on_complete(context)
         except Exception as ex:
             LOGGER.exception("Execution error", exception=ex)
             raise ex

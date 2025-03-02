@@ -405,6 +405,18 @@ class TestBlocks:
                 ],
             ),
             (
+                "if a { b }\nelse { c }",
+                [
+                    GetValue("a"),
+                    JumpIf(jump=3, sense=False),
+                    Immediate(Primitive.block([GetValue("b")], name="IfStatement")),
+                    Call(0, local=True),
+                    Jump(jump=2),
+                    Immediate(Primitive.block([GetValue("c")], name="ElseStatement")),
+                    Call(0, local=True),
+                ],
+            ),
+            (
                 "if a { return }",
                 [
                     GetValue("a"),

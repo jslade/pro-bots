@@ -5,7 +5,7 @@ from typing import Callable, Optional, TypeAlias
 
 import structlog
 
-from ...models.all import BaseSchema, Message, Session, User
+from ...models.all import BaseSchema, Message, Session, User, ProgramState
 from ...models.game.all import (
     Cell,
     ColorScheme,
@@ -46,6 +46,7 @@ class GameResetData(BaseSchema):
 class GameScoreUpdate(BaseSchema):
     player_name: str
     new_score: int
+    program_state: ProgramState
 
 
 class Engine:
@@ -317,7 +318,11 @@ class Engine:
         if player.score < 0:
             player.score = 0
 
-        update = GameScoreUpdate(player_name=player.name, new_score=player.score)
+        update = GameScoreUpdate(
+            player_name=player.name,
+            new_score=player.score,
+            program_state=player.program_state,
+        )
 
         self.send_broadcast("update_score", update.as_msg())
 
@@ -546,6 +551,7 @@ class Engine:
         probot.state = ProbotState.idle
 
         self.programming.resume_player(probot.player)
+        self.programming.emit_event("idle", probot.player, {})
         self.notify_of_probot_change(probot)
 
     def notify_of_player_change(self, player: Player) -> None:

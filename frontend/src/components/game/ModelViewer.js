@@ -14,6 +14,7 @@ const viewPlayer = {
         "head": "darkred",
         "tail": "midnightblue"
     },
+    "programState": "running"
 }
 
 const viewProbot = {
@@ -33,7 +34,7 @@ const viewProbot = {
     "crystals": 1000,
     "dx": 0,
     "dy": 0,
-    "dorient": 0
+    "dorient": 0,
 };
 
 const ModelViewer = () => {

@@ -47,7 +47,7 @@ class Probot(BaseSchema):
     dy: Optional[float] = 0
     dorient: Optional[float] = 0
 
-    program_state: Optional[ProgramState] = Field(None, exclude=True)
+    program_state: ProgramState = ProgramState.not_running
 
     @property
     def position(self) -> tuple[int, int, ProbotOrientation]:
@@ -56,3 +56,7 @@ class Probot(BaseSchema):
     @field_serializer("player")
     def serializer_player(self, player: Player) -> str:
         return player.name
+
+    @field_serializer("program_state")
+    def serializer_program_state(self, program_state: ProgramState) -> str:
+        return self.player.program_state.value

@@ -2,10 +2,11 @@ from typing import TYPE_CHECKING, Optional
 
 import structlog
 
-from ...models.game.all import Player
+from ...models.game.all import Player, ProgramState
 from ...probotics.compiler import ProboticsCompiler
 from ...probotics.interpreter import (
     BreakCallback,
+    CompleteCallback,
     ExceptionCallback,
     ExecutionContext,
     ProboticsInterpreter,
@@ -60,6 +61,7 @@ class Programming:
 
         def wrap_on_break(context: ExecutionContext, player: Player = player) -> None:
             self.on_break(player, context)
+            player.program_state = ProgramState.paused
 
         def wrap_on_result(
             result: Primitive, context: ExecutionContext, player: Player = player
@@ -74,12 +76,28 @@ class Programming:
             # Award points for the amount of code that was executed
             self.engine.update_score(player, context.latest_operations)
 
+        def wrap_on_exception(
+            exception: Exception, context: ExecutionContext, player: Player = player
+        ) -> None:
+            player.program_state = ProgramState.not_running
+            on_exception(exception, context)
+
+        def wrap_on_complete(context: ExecutionContext, player: Player = player) -> None:
+            player.program_state = (
+                ProgramState.running
+                if self.is_player_running(player)
+                else ProgramState.not_running
+            )
+
+            self.engine.update_score(player, 0)
+
         context = self.create_context(
             player=player,
             operations=operations,
             on_result=wrap_on_result,
             on_exception=on_exception,
             on_break=wrap_on_break,
+            on_complete=wrap_on_complete,
         )
 
         if replace_program and context.name is not None:
@@ -93,6 +111,7 @@ class Programming:
         self.interpreter.add(context)
         self.ensure_running()
 
+        player.program_state = ProgramState.running
         return context
 
     def get_player_globals(self, player: Player) -> ScopeVars:
@@ -112,6 +131,7 @@ class Programming:
         on_result: Optional[ResultCallback],
         on_exception: Optional[ExceptionCallback] = None,
         on_break: Optional[BreakCallback] = None,
+        on_complete: Optional[CompleteCallback] = None,
     ) -> ExecutionContext:
         """Create a new execution context for the given player, using the given globals
         as the starting point"""
@@ -123,6 +143,7 @@ class Programming:
             on_result=on_result,
             on_exception=on_exception,
             on_break=on_break,
+            on_complete=on_complete,
             name=f"player:{player.name}",
         )
 
@@ -148,6 +169,10 @@ class Programming:
         if not self.interpreter.is_finished:
             self.schedule_run()
 
+    def is_player_running(self, player: Player) -> bool:
+        context = self.player_contexts.get(player.name, None)
+        return context is not None and not context.is_finished
+
     def is_player_waiting(self, player: Player) -> bool:
         context = self.player_contexts.get(player.name, None)
         return context is not None and context.stopped
@@ -156,12 +181,14 @@ class Programming:
         context = self.player_contexts.get(player.name, None)
         if context is not None and not context.stopped:
             self.interpreter.stop(context)
+            player.program_state = ProgramState.paused
 
     def resume_player(self, player: Player) -> bool:
         context = self.player_contexts.get(player.name, None)
         if context is not None and context.stopped:
             self.interpreter.resume(context)
             self.ensure_running()
+            player.program_state = ProgramState.running
 
     def on_break(self, player: Player, context: ExecutionContext) -> None:
         """Called when a break point is hit in the interpreter.

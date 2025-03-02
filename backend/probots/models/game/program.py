@@ -1,3 +1,4 @@
+from enum import Enum
 from ..mixins.pydantic_base import BaseSchema
 
 
@@ -10,7 +11,9 @@ class Program(BaseSchema):
     # add the AST, instruction pointer, stack etc
 
 
-class ProgramState(BaseSchema):
+class ProgramState(str, Enum):
     """The runtime execution state of the program"""
 
-    program: Program
+    not_running = "not_running"
+    running = "running"
+    paused = "paused"
