@@ -13,6 +13,7 @@ from .builtin.all import (
     NewList,
     NewObject,
     Print,
+    Random,
     Say,
     ToInt,
     ToStr,
@@ -43,10 +44,11 @@ class BuiltinsService:
         builtins: ScopeVars = {}
 
         # Basic language features
-        ToStr.add(player, self.engine, builtins)
-        ToInt.add(player, self.engine, builtins)
         NewList.add(player, self.engine, builtins)
         NewObject.add(player, self.engine, builtins)
+        Random.add(player, self.engine, builtins)
+        ToInt.add(player, self.engine, builtins)
+        ToStr.add(player, self.engine, builtins)
 
         # Game-specific built-ins
         Collect.add(player, self.engine, builtins)
