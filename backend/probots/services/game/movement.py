@@ -80,6 +80,8 @@ class MovementService:
         )
         self.engine.transitioner.add(transit)
 
+        return True
+
     def next_location(
         self, x: int, y: int, orient: ProbotOrientation, delta: int
     ) -> tuple[int, int]:
@@ -205,6 +207,8 @@ class MovementService:
             on_complete=complete_turn,
         )
         self.engine.transitioner.add(transit)
+
+        return True
 
     def start_turn(
         self, probot: Probot, transit: Transition, required_energy: int

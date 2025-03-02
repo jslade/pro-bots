@@ -5,6 +5,7 @@ import structlog
 
 from ...models.game.all import Cell, Probot, ProbotOrientation, ProbotState, Transition
 from ...models.game.probot import Probot, ProbotState
+from ...probotics.ops.all import Primitive
 
 if TYPE_CHECKING:
     from .engine import Engine
@@ -26,7 +27,9 @@ class SayingService:
         #
         if probot.state != ProbotState.idle:
             self.engine.update_score(probot.player, -10)
-            LOGGER.info("say: probot not idle", probot=probot.player.name)
+            LOGGER.info(
+                "say: probot not idle", probot=probot.player.name, state=probot.state
+            )
             return False
 
         target_player = self.engine.get_player(to_whom)
@@ -85,6 +88,8 @@ class SayingService:
         )
         self.engine.transitioner.add(transit)
 
+        return True
+
     def is_in_front(self, probot: Probot, target: Probot) -> bool:
         x, y, orientation = probot.position
         tx, ty, _ = target.position
@@ -119,12 +124,24 @@ class SayingService:
     def complete_saying(
         self, probot: Probot, transit: Transition, target: Probot, bonus: int = 0
     ) -> None:
-        # TODO: Notify target of msg
-        self.engine.emit_event(
+        msg = transit.final
+        self.engine.programming.emit_event(
             "on_message",
-            receiver=target,
-            target=target,
-            args={"msg": transit.final, "sender": probot.player.display_name},
+            player=target.player,
+            args={
+                "what": Primitive.of(msg),
+                "from_whom": Primitive.of(probot.player.display_name),
+            },
+        )
+
+        # Just for testing:
+        self.engine.programming.emit_event(
+            "on_said",
+            player=probot.player,
+            args={
+                "what": Primitive.of(msg),
+                "to_whom": Primitive.of(target.player.display_name),
+            },
         )
 
         self.engine.probot_idle(probot)

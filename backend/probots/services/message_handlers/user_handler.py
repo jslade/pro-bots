@@ -133,11 +133,11 @@ class UserHandler(MessageHandler):
 
         def on_result(result: Primitive, context: ExecutionContext) -> None:
             """Called when there is a result from the interpreter"""
-            LOGGER.info(
-                "on_player_result",
-                player=player.name,
-                result=result,
-            )
+            # LOGGER.info(
+            #    "on_player_result",
+            #    player=player.name,
+            #    result=result,
+            # )
             if result is not None:
                 output = TerminalOutput(output=Primitive.output(result))
                 dispatcher.send(session, "terminal", "output", output.as_msg())

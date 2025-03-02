@@ -114,14 +114,12 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 [ ] animation for collect
 [ ] animation for say
 [ ] animation for give
-[ ] fix code editor, terminal layout issues
-[ ] event-driven programs
+[ ] fix code editor layout issues
 [ ] scripts for bots
 [ ] execution error info - line numbers, etc
 [ ] documentation / reference materials
 [ ] admin stuff: game reset, password reset
 [ ] visual improvements in 3d view
-[ ] code syntax highlighting
 [ ] audio effects
 [ ] game end conditions - high score
 [ ] cookie to retain login session

@@ -3,8 +3,9 @@ from typing import TYPE_CHECKING
 
 import structlog
 
-from ...models.game.all import Cell, Probot, ProbotOrientation, ProbotState, Transition
+from ...models.game.all import Cell, Probot, ProbotState, Transition
 from ...models.game.probot import Probot, ProbotState
+from ...probotics.ops.all import Primitive
 
 if TYPE_CHECKING:
     from .engine import Engine
@@ -115,6 +116,8 @@ class EnergyService:
         )
         self.engine.transitioner.add(transit)
 
+        return True
+
     def start_collection(
         self, probot: Probot, transit: Transition, required_energy: int
     ) -> None:
@@ -136,3 +139,12 @@ class EnergyService:
 
         self.engine.probot_idle(probot)
         self.engine.update_score(probot.player, bonus)
+
+        # Just for testing:
+        self.engine.programming.emit_event(
+            "on_collected",
+            player=probot.player,
+            args={
+                "crystals": Primitive.of(probot.crystals),
+            },
+        )

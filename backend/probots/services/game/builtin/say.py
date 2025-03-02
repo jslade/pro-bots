@@ -37,7 +37,6 @@ class Say(Builtin):
         probot = self.engine.probot_for_player(self.player)
 
         said = self.engine.saying.say(
-            probot, Primitive.output(what.value), Primitive.output(to_whom.value)
+            probot, Primitive.output(what), Primitive.output(to_whom)
         )
-        if not said:
-            raise ValueError("Failed to send message")
+        return Primitive.of(said)

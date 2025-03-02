@@ -18,7 +18,9 @@ class ToStr(Builtin):
     @classmethod
     def add(cls, player: Player, engine: "Engine", builtins: ScopeVars) -> None:
         def do_str(frame: StackFrame) -> Primitive:
-            return Primitive.of(Primitive.output(frame.args["value"].value))
+            value = frame.args["value"]
+            formatted = Primitive.output(value)
+            return Primitive.of(formatted)
 
         builtins["str"] = Primitive.block(
             operations=[Native(do_str)], name="str", arg_names=["value"]
@@ -31,7 +33,9 @@ class ToInt(Builtin):
     @classmethod
     def add(cls, player: Player, engine: "Engine", builtins: ScopeVars) -> None:
         def do_int(frame: StackFrame) -> Primitive:
-            return Primitive.of(int(frame.args["value"].value))
+            value = frame.args["value"]
+            formatted = int(value)
+            return Primitive.of(formatted)
 
         builtins["int"] = Primitive.block(
             operations=[Native(do_int)], name="int", arg_names=["value"]

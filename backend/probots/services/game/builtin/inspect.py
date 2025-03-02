@@ -45,7 +45,10 @@ class Inspect(Builtin):
             x = Primitive.of(probot.x)
             y = Primitive.of(probot.y)
 
-        cell, cell_probot = self.engine.get_cell(x.value, y.value)
+        try:
+            cell, cell_probot = self.engine.get_cell(x.value, y.value)
+        except ValueError:
+            return Primitive.of(None)
 
         probot_info = None
         if cell_probot:

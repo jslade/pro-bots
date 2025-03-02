@@ -29,4 +29,5 @@ class Collect(Builtin):
         bonus = 200
 
         probot = self.engine.probot_for_player(self.player)
-        self.engine.energy.collect_crystals(probot, bonus=bonus)
+        collected = self.engine.energy.collect_crystals(probot, bonus=bonus)
+        return Primitive.of(collected)

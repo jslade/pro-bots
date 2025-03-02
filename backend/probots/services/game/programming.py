@@ -11,7 +11,7 @@ from ...probotics.interpreter import (
     ProboticsInterpreter,
     ResultCallback,
 )
-from ...probotics.ops.all import Operation, Primitive, ScopeVars, StackFrame
+from ...probotics.ops.all import Immediate, Operation, Primitive, ScopeVars, StackFrame
 from .builtins import BuiltinsService
 from .processor import Work
 
@@ -169,6 +169,68 @@ class Programming:
         for the amount of code that was executed.
         """
         self.engine.update_score(player, context.latest_operations)
+
+    def emit_event(self, event: str, player: Player, args: ScopeVars) -> None:
+        """Emit an event to the player. This will execute an event handler in the
+        player's code, if one is defined."""
+
+        # LOGGER.debug("emit_event", name=event, player=player.name, args=args)
+
+        # Get the event handler
+        # Don't do anything if the player does not have a handler defined
+        if not self.has_callable(player, event):
+            # LOGGER.debug(
+            #    "emit_event - no handler", name=event, player=player.name, args=args
+            # )
+            return
+
+        try:
+            call = f"{event}()"
+            operations = self.compiler.compile(call)
+
+            # the call op is initially the second operation
+            # - GetValue(event)
+            # - Call()
+            call_op = operations[1]
+            call_op.num_args = len(args)
+
+            # Put the call arguments onto the stack by creating immediate operations
+            # These go after the GetValue(event) op, before the Call op
+            immediate_args = [Immediate(arg_value) for arg_value in args.values()]
+            while immediate_args:
+                arg = immediate_args.pop()
+                operations.insert(1, arg)
+
+        except Exception as ex:
+            LOGGER.exception(
+                "emit_event - failed to compile",
+                name=event,
+                player=player.name,
+                args=args,
+                exception=ex,
+            )
+            return
+
+        # LOGGER.debug(
+        #    "emit_event - compiled",
+        #    name=event,
+        #    player=player.name,
+        #    operations=operations,
+        # )
+
+        # Execute the event handler
+        self.execute(
+            operations=operations,
+            player=player,
+            replace_program=False,
+            replace_globals=False,
+        )
+
+    def has_callable(self, player: Player, name: str) -> bool:
+        """Check if the player has a callable function with the given name"""
+        player_globals = self.get_player_globals(player)
+        handler = player_globals.get(name, None)
+        return handler is not None and handler.is_block
 
 
 class InterpreterWork(Work):
