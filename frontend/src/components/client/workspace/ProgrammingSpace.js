@@ -47,8 +47,28 @@ const ProgrammingSpace = ({}) => {
     }, [api, program]);
 
     return ( <>
-        <Grid container sx={{display: 'flex', flexDirection: 'column', overflow: 'auto'}}>
-            <Grid item sx={{ flex: 1, overflow: 'auto' }}>
+        <Grid container sx={{
+            display: 'flex',
+            justifyContent: 'right',
+            alignItems: 'center',
+            backgroundColor: '#d0d0d0',
+        }} spacing={3} >
+            <Grid item xs={2}>
+                <Button onClick={handleSave}>Save</Button>
+            </Grid>
+            <Grid item xs={2}>
+                <Button onClick={handleSaveAndRun}>Run</Button>
+            </Grid>
+            <Grid item xs={2}>
+                <Button onClick={handleStop}>Stop</Button>
+            </Grid>
+        </Grid>
+        <Grid container className="container"
+                sx={{display: 'flex', flexDirection: 'column', overflow: 'auto',
+                    backgroundColor: 'rgba(102, 153, 255, 0.043)'
+                }}>
+            <Grid item className="content"
+                    sx={{ flex: 1, overflow: 'auto' }}>
                 <ReactCodeMirror
                     className="editor"
                     value={program}
@@ -60,17 +80,6 @@ const ProgrammingSpace = ({}) => {
             </Grid>
         </Grid>
 
-        <Box container style={{ display: 'flex', flexDirection: 'row', justifyContext: 'flex-end' }}>
-            <Box>
-                <Button onClick={handleSave}>Save</Button>
-            </Box>
-            <Box>
-                <Button onClick={handleSaveAndRun}>Run</Button>
-            </Box>
-            <Box>
-                <Button onClick={handleStop}>Stop</Button>
-            </Box>
-        </Box>
         </>
     );
 };

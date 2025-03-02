@@ -30,25 +30,29 @@ return (
     <Box sx={{ display: 'flex', width: '100vw', height: '100vh', overflow: "hidden" }}>
         <PanelGroup direction="horizontal" >
             {/* Left Column */}
-            <Panel defaultSize={40} minSize={20}>
+            <Panel id="left-panel" defaultSize={40} minSize={20}
+                    style={{ backgroundColor: 'rgba(102, 153, 255, 0.043)' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: "hidden" }}>
-                    <PanelGroup direction="vertical">
-                        <Panel defaultSize={70} minSize={10}>
-                            <div style={{ overflow: "auto" }} >
-                                <ProgrammingSpace />
-                            </div>
+                    <PanelGroup direction="vertical" id="left-panel-group">
+                        <Panel defaultSize={70} minSize={10} id="programming-space"
+                            style={{ overflow: "auto", marginBottom: '1px',
+                                backgroundColor: 'rgb(40,44,52)'}}
+                        >
+                            <ProgrammingSpace />
                         </Panel>
                         <PanelResizeHandle />
-                        <Panel defaultSize={30} minSize={10}
-                            style={{ overflow: "auto", backgroundColor: '#252222' }}
-                            onClick={handleClick}>
-                                <TerminalComponent promptRef={promptRef} />
+                        <Panel defaultSize={30} minSize={10} id="terminal"
+                            style={{ overflow: "auto", marginTop: '1px',
+                                backgroundColor: '#252222' }}
+                            onClick={handleClick}
+                        >
+                            <TerminalComponent promptRef={promptRef} />
                         </Panel>
                     </PanelGroup>
                 </Box>
             </Panel>
             <PanelResizeHandle />
-            <Panel defaultSize={60} minSize={30}>
+            <Panel id="right-panel" defaultSize={60} minSize={30}>
                 {/* Right Column */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: "hidden" }}>
                     {/* Status Field */}
