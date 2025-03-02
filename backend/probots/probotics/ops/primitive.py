@@ -127,6 +127,6 @@ class Primitive:
             return [v.__output__() for v in self.value]
 
         if self.is_block:
-            return repr(self.value)
+            return f"<block>({', '.join(self.value.arg_names)})"
 
         return self.value
