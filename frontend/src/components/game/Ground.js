@@ -52,7 +52,7 @@ function Cell(props) {
             <boxGeometry args={[1, 0.001, 1]} />
             <meshStandardMaterial color={hovered ? '#222266' : cellColor(props.cell)} />
         </mesh>
-        {/*<GroundCrystals crystals={props.cell.crystals} position={[props.x, 0.0, -props.y]} scale={[]} />*/}
+        {/*<GroundCrystals crystals={props.cell.crystals} position={[props.x, 0.0, -props.y]} />*/}
         </>
     )
 }
