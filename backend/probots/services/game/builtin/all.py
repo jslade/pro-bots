@@ -1,3 +1,4 @@
+from .base import Builtin
 from .collect import Collect
 from .inspect import Inspect
 from .me import Me
