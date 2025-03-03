@@ -241,8 +241,6 @@ class Engine:
         LOGGER.info("\n" + self.grid.to_str(decorator=decorate_cell))
 
     def randomly_move(self, probot: Probot) -> None:
-        return
-
         # TODO: This is just for testing
         r = random.randint(0, 4)
         match r:
