@@ -36,6 +36,10 @@ const ProgrammingSpace = ({}) => {
         setProgram(value);
     }, [setProgram]);
 
+    const handleHelp = React.useCallback((event) => {
+        const helpUrl = "https://github.com/jslade/pro-bots/wiki/Probotics-Getttting-Started";
+        window.open(helpUrl, '_blank').focus();
+    }, []);
     const handleSave = React.useCallback((event) => {
         api.sendMessage('user', 'update_program', { program: program });
     }, [api, program]);
@@ -58,10 +62,13 @@ const ProgrammingSpace = ({}) => {
             zIndex: '1',
         }} spacing={1} >
             <Grid item xs={1}>
+                <Button onClick={handleHelp}>Help</Button>
+            </Grid>
+            <Grid item xs={1}>
                 <Button onClick={handleSave}>Save</Button>
             </Grid>
             <Grid item xs={1}>
-                <Button onClick={handleSaveAndRun}>Run</Button>
+                <Button variant="contained" onClick={handleSaveAndRun}>Run</Button>
             </Grid>
             <Grid item xs={2}>
                 <Button onClick={handleStop}>Stop</Button>
