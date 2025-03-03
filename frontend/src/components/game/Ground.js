@@ -1,6 +1,7 @@
 import { lighten } from '@mui/material';
 import React, { useMemo } from 'react';
 
+import { ApiContext } from '../../contexts/ApiContext';
 import { CrystalPlacement } from './Crystal';
 
 function Ground({ grid }) {
@@ -30,24 +31,26 @@ const cellColor = (cell) => {
 }
 
 function Cell(props) {
+    const api = React.useContext(ApiContext);
+
     const meshRef = React.useRef()
 
     const [hovered, setHovered] = React.useState(false)
 
     const handleClick = React.useCallback(() => {
-        console.log("clicked cell", props.cell);
-    }, [props.cell]);
+        api.sendMessage('manual_control', 'inspect', { x: props.x, y: props.y });
+    }, [props.cell, api]);
     
     return ( <>
         <mesh
             {...props}
             ref={meshRef}
-            position={[props.x, -0.5, -props.y]}
+            position={[props.x, 0, -props.y]}
             onClick={(event) => handleClick()}
-            onPointerOver={(event) => setHovered(false)}
+            onPointerOver={(event) => setHovered(true)}
             onPointerOut={(event) => setHovered(false)}>
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color={hovered ? 'hotpink' : cellColor(props.cell)} />
+            <boxGeometry args={[1, 0.001, 1]} />
+            <meshStandardMaterial color={hovered ? '#222266' : cellColor(props.cell)} />
         </mesh>
         {/*<GroundCrystals crystals={props.cell.crystals} position={[props.x, 0.0, -props.y]} scale={[]} />*/}
         </>

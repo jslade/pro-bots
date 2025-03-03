@@ -110,8 +110,6 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 
 # TODO
 
-[ ] builtins: `jump`, `say`, `give`, `builtins` (or `commands`)
-[ ] animation for give
 [ ] scripts for bots
 [ ] execution error info - line numbers, etc
 [ ] documentation / reference materials
@@ -120,4 +118,4 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 [ ] audio effects
 [ ] game end conditions - high score
 [ ] cookie to retain login session
-
+[ ] cell color updates on crystal amount

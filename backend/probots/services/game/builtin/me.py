@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 
 import structlog
@@ -6,6 +5,7 @@ import structlog
 from ....models.game.player import Player
 from ....probotics.ops.all import Primitive, ScopeVars
 from ....utils.callback_dict import CallbackDict
+from ..utils import enum_string
 from .base import Builtin
 
 if TYPE_CHECKING:
@@ -126,10 +126,3 @@ class Me(Builtin):
 
     def on_delete_color(self, key: str) -> None:
         raise KeyError(f"Not deletable: {key}")
-
-
-def enum_string(enum_value: Enum) -> str:
-    try:
-        return enum_value.value
-    except AttributeError:
-        return str(enum_value)

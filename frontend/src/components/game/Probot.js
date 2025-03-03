@@ -106,7 +106,7 @@ const ProbotModel = ({ player, probot, ...props }) => {
 
     const payload = useMemo(() => {
       if (!probot?.crystals) return null;
-      return (probot?.crystals > 0) && <Payload crystals={1} />
+      return (probot?.crystals > 0) && <Payload crystals={probot.crystals} />
     }, [probot?.crystals]);
 
     const collecting = useMemo(() => {
@@ -119,6 +119,11 @@ const ProbotModel = ({ player, probot, ...props }) => {
       return <SpeakingCone />
     }, [probot?.state]);
 
+    const giving = useMemo(() => {
+      if (probot?.state !== "giving") return null;
+      return <GivingCone />
+    }, [probot?.state]);
+
     return (<mesh ref={probotMeshRef}
             {...props}>
       {baseGeometry}
@@ -128,7 +133,7 @@ const ProbotModel = ({ player, probot, ...props }) => {
       {payload}
       {collecting}
       {saying}
-
+      {giving}
     </mesh>)
 };
 
@@ -274,7 +279,9 @@ const payloadPositions = [
 function Payload({ crystals, ...props }) {
   const groupRef = useRef();
 
-  const groupPositions = Array.from({ length: Math.ceil(crystals / (1000 / payloadPositions.length)) }, (_, i) => 
+  const pctFull = 1.0 * crystals / 1000;
+  const groupCount = Math.ceil(payloadPositions.length * pctFull);
+  const groupPositions = Array.from({ length: groupCount }, (_, i) => 
     payloadPositions[i % payloadPositions.length]
   );
 
@@ -345,6 +352,36 @@ const SpeakingCone = () => {
     <mesh ref={meshRef} position={[0.5, 0, 0]} rotation={[0, 0, Math.PI/2]}>
       <coneGeometry args={[0.1, 0.35, 32]} />
       <meshStandardMaterial color="yellow" transparent opacity={0.5} />
+    </mesh>
+  );
+};
+
+const GivingCone = () => {
+  const meshRef = useRef();
+  const scaleRef = useRef(0);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      scaleRef.current = (scaleRef.current + 0.2) % 1;
+  }, 100);
+
+    return () => {
+      clearInterval(interval);
+      meshRef?.current?.geometry.dispose();
+      meshRef?.current?.material.dispose();
+    }
+  }, []);
+
+  useFrame(() => {
+    if (!meshRef.current) return;
+    meshRef.current.scale.set(1, scaleRef.current, 1);
+    scaleRef.current = (scaleRef.current + 0.15) % 1;
+  });
+
+  return (
+    <mesh ref={meshRef} position={[0.5, 0, 0]} rotation={[0, 0, Math.PI/2]}>
+      <coneGeometry args={[0.1, 0.35, 32]} />
+      <meshStandardMaterial color="blue" transparent opacity={0.8} />
     </mesh>
   );
 };

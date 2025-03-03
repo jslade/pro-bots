@@ -100,7 +100,7 @@ class EnergyService:
             self.start_collection(probot, transit, required_energy)
 
         def update_collection(transit):
-            self.update_collection(probot, transit)
+            self.update_collection(probot, transit, per_collection)
 
         def complete_collection(transit):
             self.complete_collection(probot, transit, bonus)
@@ -127,10 +127,11 @@ class EnergyService:
         self.engine.notify_of_probot_change(probot)
         self.engine.programming.suspend_player(probot.player)
 
-    def update_collection(self, probot: Probot, transit: Transition) -> None:
-        dtick = 1.0 / transit.total_steps
+    def update_collection(self, probot: Probot, transit: Transition, total: int) -> None:
+        delta = int(1.0 * total / transit.total_steps)
+        probot.crystals += delta
 
-        # self.engine.notify_of_probot_change(probot)
+        self.engine.notify_of_probot_change(probot)
 
     def complete_collection(
         self, probot: Probot, transit: Transition, bonus: int = 0

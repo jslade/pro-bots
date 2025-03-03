@@ -1,5 +1,6 @@
 from .base import Builtin
 from .collect import Collect
+from .give import Give
 from .inspect import Inspect
 from .me import Me
 from .movement import IsIdle, Move, Turn, Wait

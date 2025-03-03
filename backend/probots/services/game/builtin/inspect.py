@@ -45,34 +45,7 @@ class Inspect(Builtin):
             x = Primitive.of(probot.x)
             y = Primitive.of(probot.y)
 
-        try:
-            cell, cell_probot = self.engine.get_cell(x.value, y.value)
-        except ValueError:
-            return Primitive.of(None)
-
-        probot_info = None
-        if cell_probot:
-            probot_info = {
-                "name": Primitive.of(cell_probot.player.display_name),
-                "state": Primitive.of(enum_string(cell_probot.state)),
-                "energy": Primitive.of(cell_probot.energy),
-                "crystals": Primitive.of(cell_probot.crystals),
-                "score": Primitive.of(cell_probot.player.score),
-                "x": Primitive.of(cell_probot.x),
-                "y": Primitive.of(cell_probot.y),
-                "orientation": Primitive.of(enum_string(cell_probot.orientation)),
-            }
-
-            if cell_probot.player != self.player:
-                bonus = 200
-
-        result = {
-            "x": Primitive.of(x),
-            "y": Primitive.of(y),
-            "crystals": Primitive.of(cell.crystals),
-            "probot": Primitive.of(probot_info),
-        }
-
+        result = self.engine.inspection.inspect(x.value, y.value)
         self.engine.update_score(self.player, bonus)
 
-        return Primitive.of(result)
+        return result

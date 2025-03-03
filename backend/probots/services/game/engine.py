@@ -5,7 +5,7 @@ from typing import Callable, Optional, TypeAlias
 
 import structlog
 
-from ...models.all import BaseSchema, Message, Session, User, ProgramState
+from ...models.all import BaseSchema, Message, ProgramState, Session, User
 from ...models.game.all import (
     Cell,
     ColorScheme,
@@ -19,6 +19,8 @@ from ..dispatcher import DISPATCHER
 from ..session_service import SESSIONS
 from .coloring import ColoringService
 from .energy import EnergyService
+from .giving import GivingService
+from .inspection import InspectionService
 from .map_maker import MapMaker
 from .movement import MovementDir, MovementService
 from .processor import Processor, Work
@@ -69,6 +71,8 @@ class Engine:
         # Helper services
         self.coloring = ColoringService()
         self.energy = EnergyService(self)
+        self.giving = GivingService(self)
+        self.inspection = InspectionService(self)
         self.mover = MovementService(self)
         self.programming = Programming(self)
         self.saying = SayingService(self)
@@ -241,6 +245,8 @@ class Engine:
         LOGGER.info("\n" + self.grid.to_str(decorator=decorate_cell))
 
     def randomly_move(self, probot: Probot) -> None:
+        return
+
         # TODO: This is just for testing
         r = random.randint(0, 4)
         match r:

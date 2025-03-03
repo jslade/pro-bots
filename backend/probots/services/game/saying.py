@@ -1,10 +1,8 @@
-import math
 from typing import TYPE_CHECKING
 
 import structlog
 
-from ...models.game.all import Cell, Probot, ProbotOrientation, ProbotState, Transition
-from ...models.game.probot import Probot, ProbotState
+from ...models.game.all import Probot, ProbotOrientation, ProbotState, Transition
 from ...probotics.ops.all import Primitive
 
 if TYPE_CHECKING:
@@ -65,7 +63,7 @@ class SayingService:
         # Execute
         #
 
-        bonus = 100
+        bonus = 1_000
 
         # Create a transition to animate the moving state
         def start_saying(transit):

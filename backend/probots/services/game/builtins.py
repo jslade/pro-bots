@@ -7,6 +7,7 @@ from ...probotics.ops.all import ScopeVars, Native, Primitive, StackFrame
 from .builtin.all import (
     Builtin,
     Collect,
+    Give,
     Inspect,
     IsIdle,
     Me,
@@ -53,6 +54,7 @@ class BuiltinsService:
 
         # Game-specific built-ins
         Collect.add(player, self.engine, builtins)
+        Give.add(player, self.engine, builtins)
         Inspect.add(player, self.engine, builtins)
         IsIdle.add(player, self.engine, builtins)
         Me.add(player, self.engine, builtins)
@@ -85,5 +87,5 @@ class Builtins(Builtin):
         self.builtins = builtins
 
     def list_all(self, frame: StackFrame) -> Primitive:
-        names = self.builtins.keys()
+        names = sorted(self.builtins.keys())
         return Primitive.of([Primitive.of(n) for n in names])

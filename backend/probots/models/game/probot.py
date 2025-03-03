@@ -23,6 +23,8 @@ class ProbotState(str, Enum):
     turning = "turning"
     collecting = "collecting"
     saying = "saying"
+    giving = "giving"
+    receiving = "receiving"
 
 
 class Probot(BaseSchema):
