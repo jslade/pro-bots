@@ -1,4 +1,5 @@
 import math
+from enum import Enum
 from typing import TYPE_CHECKING
 
 import structlog
@@ -15,7 +16,16 @@ class IllegalMove(Exception):
     pass
 
 
+class MovementDir(str, Enum):
+    forward = "forward"
+    backward = "backward"
+    left = "left"
+    right = "right"
+
+
 RADS_90 = math.pi / 2.0
+RADS_45 = math.pi / 4.0
+RADS_5 = RADS_45 / 9
 
 
 class MovementService:
@@ -26,9 +36,11 @@ class MovementService:
     def __init__(self, engine: "Engine") -> None:
         self.engine = engine
 
-    def move(self, probot: Probot, backward: bool = False, bonus: int = 0) -> bool:
-        """Initiate the move either forward or backward, one space"""
-        # LOGGER.info("MOVE", probot=probot, backward=backward)
+    def move(
+        self, probot: Probot, dir: MovementDir = MovementDir.forward, bonus: int = 0
+    ) -> bool:
+        """Initiate the move by one space"""
+        # LOGGER.info("MOVE", probot=probot, dir=dir)
 
         #
         # Validate move
@@ -40,11 +52,19 @@ class MovementService:
         x, y, orient = probot.position
 
         try:
-            new_x, new_y = self.next_location(x, y, orient, -1 if backward else 1)
+            new_x, new_y = self.next_location(x, y, orient, dir)
         except IllegalMove:
             return False
 
-        speed_factor = 2.5 if backward else 1
+        speed_factor = 1
+        match dir:
+            case MovementDir.left:
+                speed_factor = 1.5
+            case MovementDir.right:
+                speed_factor = 1.5
+            case MovementDir.backward:
+                speed_factor = 2.5
+
         required_energy = int(50 * speed_factor)
         if probot.energy < required_energy:
             self.engine.update_score(probot.player, -5)
@@ -61,10 +81,10 @@ class MovementService:
 
         # Create a transition to animate the moving state
         def start_move(transit):
-            self.start_move(probot, transit, backward, required_energy)
+            self.start_move(probot, transit, dir, required_energy)
 
         def update_move(transit):
-            self.update_move(probot, transit, backward)
+            self.update_move(probot, transit, dir)
 
         def complete_move(transit):
             self.complete_move(probot, transit, bonus)
@@ -83,17 +103,49 @@ class MovementService:
         return True
 
     def next_location(
-        self, x: int, y: int, orient: ProbotOrientation, delta: int
+        self, x: int, y: int, orient: ProbotOrientation, dir: MovementDir
     ) -> tuple[int, int]:
         match orient:
             case ProbotOrientation.N:
-                y += delta
+                match dir:
+                    case MovementDir.forward:
+                        y += 1
+                    case MovementDir.backward:
+                        y -= 1
+                    case MovementDir.left:
+                        x -= 1
+                    case MovementDir.right:
+                        x += 1
             case ProbotOrientation.S:
-                y -= delta
+                match dir:
+                    case MovementDir.forward:
+                        y -= 1
+                    case MovementDir.backward:
+                        y += 1
+                    case MovementDir.left:
+                        x += 1
+                    case MovementDir.right:
+                        x -= 1
             case ProbotOrientation.E:
-                x += delta
+                match dir:
+                    case MovementDir.forward:
+                        x += 1
+                    case MovementDir.backward:
+                        x -= 1
+                    case MovementDir.left:
+                        y += 1
+                    case MovementDir.right:
+                        y -= 1
             case ProbotOrientation.W:
-                x -= delta
+                match dir:
+                    case MovementDir.forward:
+                        x -= 1
+                    case MovementDir.backward:
+                        x += 1
+                    case MovementDir.left:
+                        y -= 1
+                    case MovementDir.right:
+                        y += 1
 
         if x < 0 or x >= self.engine.grid.width or y < 0 or y >= self.engine.grid.height:
             raise IllegalMove
@@ -102,6 +154,120 @@ class MovementService:
             raise IllegalMove
 
         return (x, y)
+
+    def start_move(
+        self, probot: Probot, transit: Transition, dir: MovementDir, required_energy: int
+    ) -> None:
+        probot.state = ProbotState.moving
+        probot.energy -= required_energy
+
+        match probot.orientation:
+            case ProbotOrientation.N:
+                match dir:
+                    case MovementDir.forward:
+                        probot.dy = -1.0
+                    case MovementDir.backward:
+                        probot.dy = 1.0
+                    case MovementDir.left:
+                        probot.dx = 1.0
+                        probot.dorient = RADS_5
+                    case MovementDir.right:
+                        probot.dx = -1.0
+                        probot.dorient = -RADS_5
+            case ProbotOrientation.S:
+                match dir:
+                    case MovementDir.forward:
+                        probot.dy = 1.0
+                    case MovementDir.backward:
+                        probot.dy = -1.0
+                    case MovementDir.left:
+                        probot.dx = -1.0
+                        probot.dorient = RADS_5
+                    case MovementDir.right:
+                        probot.dx = 1.0
+                        probot.dorient = -RADS_5
+            case ProbotOrientation.E:
+                match dir:
+                    case MovementDir.forward:
+                        probot.dx = -1.0
+                    case MovementDir.backward:
+                        probot.dx = 1.0
+                    case MovementDir.left:
+                        probot.dy = -1.0
+                        probot.dorient = RADS_5
+                    case MovementDir.right:
+                        probot.dy = 1.0
+                        probot.dorient = -RADS_5
+            case ProbotOrientation.W:
+                match dir:
+                    case MovementDir.forward:
+                        probot.dx = 1.0
+                    case MovementDir.backward:
+                        probot.dx = -1.0
+                    case MovementDir.left:
+                        probot.dy = 1.0
+                        probot.dorient = RADS_5
+                    case MovementDir.right:
+                        probot.dy = -1.0
+                        probot.dorient = -RADS_5
+
+        self.engine.programming.suspend_player(probot.player)
+        self.engine.notify_of_probot_change(probot)
+
+    def update_move(self, probot: Probot, transit: Transition, dir: MovementDir) -> None:
+        dtick = 1.0 / transit.total_steps
+
+        match probot.orientation:
+            case ProbotOrientation.N:
+                match dir:
+                    case MovementDir.forward:
+                        probot.dy += dtick
+                    case MovementDir.backward:
+                        probot.dy -= dtick
+                    case MovementDir.left:
+                        probot.dx -= dtick
+                    case MovementDir.right:
+                        probot.dx += dtick
+            case ProbotOrientation.S:
+                match dir:
+                    case MovementDir.forward:
+                        probot.dy -= dtick
+                    case MovementDir.backward:
+                        probot.dy += dtick
+                    case MovementDir.left:
+                        probot.dx += dtick
+                    case MovementDir.right:
+                        probot.dx -= dtick
+            case ProbotOrientation.E:
+                match dir:
+                    case MovementDir.forward:
+                        probot.dx += dtick
+                    case MovementDir.backward:
+                        probot.dx -= dtick
+                    case MovementDir.left:
+                        probot.dy += dtick
+                    case MovementDir.right:
+                        probot.dy -= dtick
+            case ProbotOrientation.W:
+                match dir:
+                    case MovementDir.forward:
+                        probot.dx -= dtick
+                    case MovementDir.backward:
+                        probot.dx += dtick
+                    case MovementDir.left:
+                        probot.dy -= dtick
+                    case MovementDir.right:
+                        probot.dy += dtick
+
+        self.engine.notify_of_probot_change(probot)
+
+    def complete_move(self, probot: Probot, transit: Transition, bonus: int = 0) -> None:
+        probot.dx = 0
+        probot.dy = 0
+        probot.dorient = 0
+
+        self.engine.probot_idle(probot)
+        self.engine.update_score(probot.player, 1 + bonus)
 
     TURN_FROM_TO = {
         (ProbotOrientation.N, "left"): ProbotOrientation.W,
@@ -113,47 +279,6 @@ class MovementService:
         (ProbotOrientation.W, "left"): ProbotOrientation.S,
         (ProbotOrientation.W, "right"): ProbotOrientation.N,
     }
-
-    def start_move(
-        self, probot: Probot, transit: Transition, backward: bool, required_energy: int
-    ) -> None:
-        probot.state = ProbotState.moving
-        probot.energy -= required_energy
-
-        match probot.orientation:
-            case ProbotOrientation.N:
-                probot.dy = 1.0 if backward else -1.0
-            case ProbotOrientation.S:
-                probot.dy = -1 if backward else 1.0
-            case ProbotOrientation.E:
-                probot.dx = 1.0 if backward else -1.0
-            case ProbotOrientation.W:
-                probot.dx = -1 if backward else 1.0
-
-        self.engine.notify_of_probot_change(probot)
-        self.engine.programming.suspend_player(probot.player)
-
-    def update_move(self, probot: Probot, transit: Transition, backward: bool) -> None:
-        dtick = (-1.0 if backward else 1.0) / transit.total_steps
-
-        match probot.orientation:
-            case ProbotOrientation.N:
-                probot.dy += dtick
-            case ProbotOrientation.S:
-                probot.dy -= dtick
-            case ProbotOrientation.E:
-                probot.dx += dtick
-            case ProbotOrientation.W:
-                probot.dx -= dtick
-
-        self.engine.notify_of_probot_change(probot)
-
-    def complete_move(self, probot: Probot, transit: Transition, bonus: int = 0) -> None:
-        probot.dx = 0
-        probot.dy = 0
-
-        self.engine.probot_idle(probot)
-        self.engine.update_score(probot.player, 1 + bonus)
 
     def turn(self, probot: Probot, dir: str, bonus: int = 0) -> bool:
         """Just rotating in place"""

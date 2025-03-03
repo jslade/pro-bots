@@ -6,6 +6,7 @@ from ...models.all import Message, Session
 from ...models.mixins.pydantic_base import BaseSchema
 from ..dispatcher import Dispatcher
 from ..game.engine import ENGINE
+from ..game.movement import MovementDir
 from .base import MessageHandler
 
 LOGGER = structlog.get_logger(__name__)
@@ -35,6 +36,11 @@ class ManualControlHandler(MessageHandler):
         # LOGGER.info("manual movement", ev=event, probot=probot)
 
         if event.move:
-            ENGINE.mover.move(probot, backward=event.move == "backward")
+            ENGINE.mover.move(
+                probot,
+                dir=MovementDir.backward
+                if event.move == "backward"
+                else MovementDir.forward,
+            )
         elif event.turn:
             ENGINE.mover.turn(probot, dir=event.turn)

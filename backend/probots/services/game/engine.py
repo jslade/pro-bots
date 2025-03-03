@@ -20,7 +20,7 @@ from ..session_service import SESSIONS
 from .coloring import ColoringService
 from .energy import EnergyService
 from .map_maker import MapMaker
-from .movement import MovementService
+from .movement import MovementDir, MovementService
 from .processor import Processor, Work
 from .programming import Programming
 from .saying import SayingService
@@ -245,7 +245,7 @@ class Engine:
         r = random.randint(0, 4)
         match r:
             case 0:
-                self.mover.move(probot, backward=True)
+                self.mover.move(probot, dir=MovementDir.backward)
             case 1:
                 self.mover.turn(probot, "left")
             case 2:
