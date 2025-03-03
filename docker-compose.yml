@@ -3,16 +3,18 @@ services:
     build:
       context: frontend/
     ports:
-      - '5000:5000'
+      - "5000:5000"
     volumes:
       - ./frontend:/app
+    environment:
+      DANGEROUSLY_DISABLE_HOST_CHECK: true
     restart: always
 
   backend:
     build:
       context: backend/
     ports:
-      - '5001:5001'
+      - "5001:5001"
     depends_on:
       - db
     volumes:
@@ -24,7 +26,7 @@ services:
   db:
     image: postgres:latest
     ports:
-      - '5432:5432'
+      - "5432:5432"
     environment:
       POSTGRES_DB: probots
       POSTGRES_USER: postgres
