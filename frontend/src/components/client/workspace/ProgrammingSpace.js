@@ -48,27 +48,29 @@ const ProgrammingSpace = ({}) => {
 
     return ( <>
         <Grid container sx={{
-            display: 'flex',
-            justifyContent: 'right',
+            display: 'box',
+            justifyContent: 'left',
             alignItems: 'center',
             backgroundColor: '#d0d0d0',
-        }} spacing={3} >
-            <Grid item xs={2}>
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            zIndex: '1',
+        }} spacing={1} >
+            <Grid item xs={1}>
                 <Button onClick={handleSave}>Save</Button>
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={1}>
                 <Button onClick={handleSaveAndRun}>Run</Button>
             </Grid>
             <Grid item xs={2}>
                 <Button onClick={handleStop}>Stop</Button>
             </Grid>
         </Grid>
-        <Grid container className="container"
-                sx={{display: 'flex', flexDirection: 'column', overflow: 'auto',
-                    backgroundColor: 'rgba(102, 153, 255, 0.043)'
+        <Grid container sx={{display: 'flex', flexDirection: 'column', overflow: 'auto',
+                    backgroundColor: 'rgba(102, 153, 255, 0.043)', position: 'relative'
                 }}>
-            <Grid item className="content"
-                    sx={{ flex: 1, overflow: 'auto' }}>
+            <Grid item sx={{ paddingTop: '2.5rem' }}>
                 <ReactCodeMirror
                     className="editor"
                     value={program}

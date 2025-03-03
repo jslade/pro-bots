@@ -110,11 +110,10 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 
 # TODO
 
-[ ] builtins: `jump`, `say`, `give`, `builtins` (or `commands`)
 [ ] animation for collect
 [ ] animation for say
+[ ] builtins: `jump`, `say`, `give`, `builtins` (or `commands`)
 [ ] animation for give
-[ ] fix code editor layout issues
 [ ] scripts for bots
 [ ] execution error info - line numbers, etc
 [ ] documentation / reference materials

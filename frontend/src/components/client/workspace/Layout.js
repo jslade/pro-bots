@@ -29,14 +29,14 @@ const Layout = () => {
 return (
     <Box sx={{ display: 'flex', width: '100vw', height: '100vh', overflow: "hidden" }}>
         <PanelGroup direction="horizontal" >
-            {/* Left Column */}
             <Panel id="left-panel" defaultSize={40} minSize={20}
                     style={{ backgroundColor: 'rgba(102, 153, 255, 0.043)' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: "hidden" }}>
                     <PanelGroup direction="vertical" id="left-panel-group">
-                        <Panel defaultSize={70} minSize={10} id="programming-space"
-                            style={{ overflow: "auto", marginBottom: '1px',
-                                backgroundColor: 'rgb(40,44,52)'}}
+                        <Panel defaultSize={70} minSize={10} id="program"
+                            style={{ overflow: 'auto', marginBottom: '1px',
+                                backgroundColor: 'rgb(40,44,52)',
+                                position: 'relative' }}
                         >
                             <ProgrammingSpace />
                         </Panel>
@@ -53,16 +53,14 @@ return (
             </Panel>
             <PanelResizeHandle />
             <Panel id="right-panel" defaultSize={60} minSize={30}>
-                {/* Right Column */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: "hidden" }}>
-                    {/* Status Field */}
-                    <Box sx={{ backgroundColor: '#d0d0d0', p: 1 }}>
+                    <Box sx={{ backgroundColor: '#d0d0d0', p: 1, zIndex: 900 }}>
                         <Typography variant="body1">{api ? `Connected [${session.sessionId}]` : 'Disconnected'}
                         </Typography>
-                        <div id="stats0" style={{position: 'fixed', top: 0, right: 0}} />
+                        <div id="stats0" style={{position: 'fixed', top: 0, right: 0, zIndex: 1000}} />
                         <StatsComponent container="#stats0"/>
                     </Box>
-                    {/* Overview and Main Scene */}
+
                     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                         <Box sx={{ flex: 1 }}>
                             <Box container style={{ display: 'flex', flexDirection: 'row'}}>
