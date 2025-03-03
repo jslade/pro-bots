@@ -110,8 +110,6 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 
 # TODO
 
-[ ] animation for collect
-[ ] animation for say
 [ ] builtins: `jump`, `say`, `give`, `builtins` (or `commands`)
 [ ] animation for give
 [ ] scripts for bots

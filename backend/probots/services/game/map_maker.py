@@ -23,4 +23,4 @@ class MapMaker:
         for _ in range(with_crystals):
             x = random.randint(0, grid.width - 1)
             y = random.randint(0, grid.height - 1)
-            grid.get(x, y).crystals = random.randint(50, int(Cell.MAX_CRYSTALS / 2))
+            grid.get(x, y).crystals = random.randint(50, int(Cell.MAX_CRYSTALS / 4))

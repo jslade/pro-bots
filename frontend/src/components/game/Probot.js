@@ -41,7 +41,7 @@ const StateCube = ({ color, ...props }) => {
   }, []);
 
   return (
-    <mesh ref={meshRef} position={[0.1, 0.1, 0]} {...props}>
+    <mesh ref={meshRef} position={[0.15, 0.08, 0]} {...props}>
       <boxGeometry args={[programStateSize, programStateSize, programStateSize]} />
       <meshStandardMaterial color={color} />
     </mesh>
@@ -109,6 +109,16 @@ const ProbotModel = ({ player, probot, ...props }) => {
       return (probot?.crystals > 0) && <Payload crystals={1} />
     }, [probot?.crystals]);
 
+    const collecting = useMemo(() => {
+      if (probot?.state !== "collecting") return null;
+      return <CollectingCone />
+    }, [probot?.state]);
+
+    const saying = useMemo(() => {
+      if (probot?.state !== "saying") return null;
+      return <SpeakingCone />
+    }, [probot?.state]);
+
     return (<mesh ref={probotMeshRef}
             {...props}>
       {baseGeometry}
@@ -116,6 +126,9 @@ const ProbotModel = ({ player, probot, ...props }) => {
       {energyRing}
       {crystalRing}
       {payload}
+      {collecting}
+      {saying}
+
     </mesh>)
 };
 
@@ -273,6 +286,68 @@ function Payload({ crystals, ...props }) {
     </group>
   );
 }
+
+
+const CollectingCone = () => {
+  const meshRef = useRef();
+  const scaleRef = useRef(0);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      scaleRef.current = (scaleRef.current + 0.2) % 1;
+    }, 800);
+
+    return () => {
+      clearInterval(interval);
+      meshRef?.current?.geometry.dispose();
+      meshRef?.current?.material.dispose();
+    }
+  }, []);
+
+  useFrame(() => {
+    if (!meshRef.current) return;
+    meshRef.current.scale.set(1, scaleRef.current, 1);
+    scaleRef.current = (scaleRef.current + 0.01) % 1;
+  });
+
+  return (
+    <mesh ref={meshRef} position={[-0.1, -0.18, 0]}>
+      <coneGeometry args={[0.35, 0.4, 32]} />
+      <meshStandardMaterial color="grey" transparent opacity={0.5} />
+    </mesh>
+  );
+};
+
+
+const SpeakingCone = () => {
+  const meshRef = useRef();
+  const scaleRef = useRef(0);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      scaleRef.current = (scaleRef.current + 0.2) % 1;
+  }, 300);
+
+    return () => {
+      clearInterval(interval);
+      meshRef?.current?.geometry.dispose();
+      meshRef?.current?.material.dispose();
+    }
+  }, []);
+
+  useFrame(() => {
+    if (!meshRef.current) return;
+    meshRef.current.scale.set(1, scaleRef.current, 1);
+    scaleRef.current = (scaleRef.current + 0.05) % 1;
+  });
+
+  return (
+    <mesh ref={meshRef} position={[0.5, 0, 0]} rotation={[0, 0, Math.PI/2]}>
+      <coneGeometry args={[0.1, 0.35, 32]} />
+      <meshStandardMaterial color="yellow" transparent opacity={0.5} />
+    </mesh>
+  );
+};
 
 
 export default ProbotModel;

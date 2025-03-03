@@ -26,7 +26,7 @@ function Ground({ grid }) {
 }
 
 const cellColor = (cell) => {
-    return lighten('#00aa00', cell.crystals / 3000.0);
+    return lighten('#004400', cell.crystals / 2000.0);
 }
 
 function Cell(props) {
@@ -42,14 +42,14 @@ function Cell(props) {
         <mesh
             {...props}
             ref={meshRef}
-            position={[props.x, 0, -props.y]}
+            position={[props.x, -0.5, -props.y]}
             onClick={(event) => handleClick()}
             onPointerOver={(event) => setHovered(false)}
             onPointerOut={(event) => setHovered(false)}>
-            <boxGeometry args={[1, 0, 1]} />
+            <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial color={hovered ? 'hotpink' : cellColor(props.cell)} />
         </mesh>
-        {/*<GroundCrystals crystals={props.cell.crystals} position={[props.x, 0.0, -props.y]} />*/}
+        {<GroundCrystals crystals={props.cell.crystals} position={[props.x, 0.0, -props.y]} scale={[]} />}
         </>
     )
 }
