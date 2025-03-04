@@ -42,7 +42,7 @@ LOGGER = structlog.get_logger(__name__)
 
 
 class ProboticsCodeGenerator(NodeWalker):
-    """Walks a parsed AST of probotics code and generates executable bits that
+    """Walks a parsed AST of probotics code and gencaerates executable bits that
     can be run by the interpreter.
     """
 
@@ -340,7 +340,7 @@ class ProboticsCodeGenerator(NodeWalker):
             self.operations.append(
                 Call(0, local=True)
             )  # TODO: maybe inline block instead of call
-            self.operations.append(Catch({"break": 2, "next": 1}))
+            self.operations.append(Catch({"break": 2, "next": 1, "wait": 1}))
             self.operations.append(jump_to_top)
             after_block = self.mark()
 
@@ -373,7 +373,7 @@ class ProboticsCodeGenerator(NodeWalker):
         num_args = len(node.args)
 
         self.operations.append(Call(num_args, local=False))
-        self.operations.append(Catch({"return": 1}))
+        self.operations.append(Catch({"return": 1, "wait": 1}))
 
     def walk_BareCommand(self, node: Node):  # NOT IMPLEMENTED
         len_before = len(self.operations)

@@ -347,7 +347,7 @@ class Engine:
         self.add_probot_work(
             probot,
             func=self.ensure_not_stopped,
-            repeat_interval=20,
+            repeat_interval=100,
         )
         self.add_probot_work(
             probot,

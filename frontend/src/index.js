@@ -14,6 +14,7 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 
 import Client from './components/client/Client';
+import CodeViewer from './components/client/CodeViewer';
 import Watcher from './components/watcher/Watcher';
 import ModelViewer from './components/game/ModelViewer';
 import { SessionProvider } from './contexts/SessionContext';
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
   {
     path: "/viewer",
     element: <ModelViewer />
+  },
+  {
+    path: "/code/:name",
+    element: <CodeViewer />
   },
 ]);
 

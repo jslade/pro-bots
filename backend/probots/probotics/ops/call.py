@@ -55,7 +55,7 @@ class Call(Operation):
         # Looks like we have a valid function call, so we can create a new frame
         new_frame = self.create_frame(
             name=block.name,
-            args=args,
+            args=frame.args if self.local else args,
             scope_vars=frame.scope_vars if self.local else None,
             global_vars=frame.global_vars,
             block=block,

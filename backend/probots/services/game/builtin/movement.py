@@ -83,8 +83,25 @@ class Turn(Builtin):
 class Wait(Builtin):
     @classmethod
     def add(cls, player: Player, engine: "Engine", builtins: ScopeVars) -> None:
-        def do_wait(frame: StackFrame) -> Primitive:
-            # Raise a break exception and stop the interpreter on this context
-            raise Breakpoint(reason="wait", stop=False)
+        inst = cls(engine, player)
 
-        builtins["wait"] = Primitive.block(operations=[Native(do_wait)], name="wait")
+        builtins["wait"] = Primitive.block(
+            operations=[Native(inst.wait)], name="wait", arg_names=["ticks"]
+        )
+
+    def __init__(self, engine: "Engine", player: Player) -> None:
+        self.engine = engine
+        self.player = player
+
+    def wait(self, frame: StackFrame) -> Primitive:
+        ticks = 1
+
+        if frame.args:
+            got = frame.args.get("ticks", None)
+            if got is not None and not got.is_null:
+                ticks = got.value
+
+        # Raise a break exception and stop the interpreter on this context
+        probot = self.engine.probot_for_player(self.player)
+        self.engine.add_probot_work(probot, self.engine.ensure_not_stopped, delay=ticks)
+        raise Breakpoint(reason="wait", stop=True)
