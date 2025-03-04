@@ -29,10 +29,26 @@ def load_fixtures():
 
 def load_users():
     users = [
-        User(name="admin", access_code="admin", admin=True),
+        User(
+            name="admin",
+            access_code="admin",
+            admin=True,
+            color_head="#2d2d2d",
+            color_tail="#131313",
+            color_body="#black",
+            programs=[
+                Program(
+                    name="bot-giver",
+                    content=Path("fixtures/admin.probot").read_text(),
+                ),
+            ],
+        ),
         User(
             name="bot-giver",
             access_code="admin",
+            color_head="purple",
+            color_tail="#131313",
+            color_body="darkgrey",
             programs=[
                 Program(
                     name="bot-giver",
@@ -43,6 +59,9 @@ def load_users():
         User(
             name="bot-tagger",
             access_code="admin",
+            color_head="darkred",
+            color_tail="#131313",
+            color_body="darkgrey",
             programs=[
                 Program(
                     name="bot-tagger",
@@ -53,6 +72,9 @@ def load_users():
         User(
             name="bot-walker",
             access_code="admin",
+            color_head="blue",
+            color_tail="#131313",
+            color_body="darkgrey",
             programs=[
                 Program(
                     name="bot-walker",
@@ -66,6 +88,15 @@ def load_users():
         found = User.with_name(user.name)
         if found:
             LOGGER.warning("Fixture User already exists", name=user.name)
+            if found.current_program.content == user.current_program.content:
+                LOGGER.info("Program already matches", name=user.name)
+            else:
+                LOGGER.info("Updating program", name=user.name)
+                found.current_program.content = user.current_program.content
+
+            found.color_body = user.color_body
+            found.color_head = user.color_head
+            found.color_tail = user.color_tail
         else:
             DB.session.add(user)
 

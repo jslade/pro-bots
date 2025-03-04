@@ -18,6 +18,7 @@ const ApiProvider = ({ children }) => {
     const session = useContext(SessionContext);
     const [connected, setConnected] = useState(false);
     const [accepted, setAccepted] = useState(false);
+    const [ignoreUnknown, setIgnoreUnknown] = useState(true);
     
     const wsSendJsonRef = useRef(null);
     const dispatchRef = useRef({});
@@ -102,7 +103,7 @@ const ApiProvider = ({ children }) => {
             }
         }
 
-        if (!handled) {
+        if (!handled && !ignoreUnknown) {
             console.warn("No handler for incoming message", message);
         }
 
@@ -113,7 +114,12 @@ const ApiProvider = ({ children }) => {
 
     return (
         <ApiContext.Provider value={
-            accepted ? { sendMessage, registerCallback, unregisterCallback } : null
+            accepted ? {
+                sendMessage,
+                registerCallback,
+                unregisterCallback,
+                setIgnoreUnknown
+            } : null
         }>
             {session?.sessionId ? <ApiWs 
                 onConnected={onConnected}

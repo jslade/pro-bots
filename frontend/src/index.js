@@ -40,7 +40,7 @@ const router = createBrowserRouter([
     element: <ModelViewer />
   },
   {
-    path: "/code/:name",
+    path: "/code",
     element: <CodeViewer />
   },
 ]);

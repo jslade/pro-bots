@@ -3,7 +3,7 @@ from typing import Optional
 import structlog
 
 from ...db import DB
-from ...models.all import Message, Program, Session
+from ...models.all import Message, Program, Session, User
 from ...models.mixins.pydantic_base import BaseSchema
 from ...probotics.interpreter import ExecutionContext
 from ...probotics.ops.base import Operation
@@ -18,7 +18,7 @@ LOGGER = structlog.get_logger(__name__)
 
 
 class GetProgramRequest(BaseSchema):
-    pass
+    profile: Optional[str] = None
 
 
 class GetProgramResponse(BaseSchema):
@@ -49,14 +49,27 @@ class UserHandler(MessageHandler):
     def handle_get_program(
         self, session: Session, message: Message, dispatcher: Dispatcher
     ) -> None:
-        # get_request = GetProgramRequest(**message.data)
+        get_request = GetProgramRequest(**message.data)
         user = session.user
 
         LOGGER.info(
             "Get program request",
             session=session.id,
             user=user.name,
+            profile=get_request.profile,
         )
+
+        if get_request.profile:
+            # Specifically for read-only code viewer:
+            for_user = User.with_name(get_request.profile)
+            content = for_user.current_program.content if for_user.current_program else ""
+            response = GetProgramResponse(
+                program=content,
+                compiled=False,
+                error=None,
+            )
+            dispatcher.send(session, "user", "get_program", response.as_msg())
+            return
 
         content = user.current_program.content if user.current_program else ""
 

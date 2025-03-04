@@ -1,0 +1,18 @@
+
+big_game := {
+    // several walkers
+    spawn_bot("walker-1", "bot-walker")
+    spawn_bot("walker-2", "bot-walker")
+    spawn_bot("walker-3", "bot-walker")
+    spawn_bot("walker-4", "bot-walker")
+    spawn_bot("walker-5", "bot-walker")
+
+    // a couple taggers
+    spawn_bot("tagger-1", "bot-tagger")
+    spawn_bot("tagger-2", "bot-tagger")
+    spawn_bot("tagger-3", "bot-tagger")
+
+    // a couple givers
+    spawn_bot("giver-1", "bot-giver")
+    spawn_bot("giver-2", "bot-giver")
+}
