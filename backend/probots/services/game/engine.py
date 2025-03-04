@@ -390,7 +390,7 @@ class Engine:
         self.add_probot_work(
             probot,
             func=self.wakeup_probot,
-            repeat_interval=200,
+            repeat_interval=50,
         )
 
     def probot_for_session(self, session: Session) -> Optional[Probot]:
