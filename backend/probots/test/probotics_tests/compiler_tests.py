@@ -16,6 +16,7 @@ from probots.probotics.ops.all import (
     Division,
     GetIndex,
     GetProperty,
+    GetValue,
     Immediate,
     Index,
     Jump,
@@ -31,7 +32,6 @@ from probots.probotics.ops.all import (
     Property,
     Return,
     Subtraction,
-    GetValue,
 )
 
 
@@ -449,7 +449,7 @@ class TestBlocks:
                         )
                     ),
                     Call(0, local=True),
-                    Catch({"break": 2, "next": 1}),
+                    Catch({"break": 2, "next": 1, "wait": 1}),
                     Jump(jump=-6),
                 ],
             ),
@@ -470,7 +470,7 @@ class TestBlocks:
                         )
                     ),
                     Call(0, local=True),
-                    Catch({"break": 2, "next": 1}),
+                    Catch({"break": 2, "next": 1, "wait": 1}),
                     Jump(jump=-6),
                 ],
             ),
@@ -509,7 +509,7 @@ class TestBlocks:
                         )
                     ),
                     Call(0, local=True),
-                    Catch({"break": 2, "next": 1}),
+                    Catch({"break": 2, "next": 1, "wait": 1}),
                     Jump(jump=-6),
                 ],
             ),
@@ -525,7 +525,7 @@ class TestBlocks:
                         )
                     ),
                     Call(0, local=True),
-                    Catch({"break": 2, "next": 1}),
+                    Catch({"break": 2, "next": 1, "wait": 1}),
                     Jump(jump=-6),
                 ],
             ),
@@ -546,7 +546,7 @@ class TestBlocks:
                         )
                     ),
                     Call(0, local=True),
-                    Catch({"break": 2, "next": 1}),
+                    Catch({"break": 2, "next": 1, "wait": 1}),
                     Jump(jump=-6),
                 ],
             ),
@@ -572,7 +572,7 @@ class TestCompilerCalls:
                 [
                     GetValue("blah"),
                     Call(0, local=False),
-                    Catch({"return": 1}),
+                    Catch({"return": 1, "wait": 1}),
                 ],
             ),
             (
@@ -581,7 +581,7 @@ class TestCompilerCalls:
                     Immediate(Primitive.symbol("a")),
                     GetValue("b"),
                     Call(0, local=False),
-                    Catch({"return": 1}),
+                    Catch({"return": 1, "wait": 1}),
                     Assignment(),
                 ],
             ),
@@ -592,7 +592,7 @@ class TestCompilerCalls:
                     Immediate(Primitive.of(1)),
                     Immediate(Primitive.of(2)),
                     Call(2, local=False),
-                    Catch({"return": 1}),
+                    Catch({"return": 1, "wait": 1}),
                     Immediate(Primitive.of(True)),
                     CompareEqual(),
                 ],
