@@ -29,6 +29,7 @@ from .ops.all import (
     LogicalOr,
     MaybeCall,
     Multiplication,
+    Next,
     Operation,
     Primitive,
     PrimitiveType,
@@ -195,6 +196,7 @@ class ProboticsCodeGenerator(NodeWalker):
     #
 
     MAP_CONDITION = {
+        "is": CompareEqual,
         "=": CompareEqual,
         "==": CompareEqual,
         "===": CompareEqual,
@@ -357,7 +359,7 @@ class ProboticsCodeGenerator(NodeWalker):
         self.operations.append(Break())
 
     def walk_Next(self, node: Node):
-        self.operations.append(())
+        self.operations.append(Next())
 
     #
     # Function calls

@@ -20,6 +20,7 @@ class User(DB.Model, PKId, UniquelyNamed):
     display_name: Mapped[str] = mapped_column(DB.String(40), nullable=True)
 
     session_id: Mapped[str] = mapped_column(DB.String(40), nullable=True, index=True)
+    admin: Mapped[bool] = mapped_column(DB.Boolean, nullable=False, default=False)
 
     updated_at: Mapped[datetime] = mapped_column(
         DB.DateTime, nullable=True, onupdate=datetime.now(tz=UTC)

@@ -157,6 +157,16 @@ class ExecutionContext:
                 except Exception as ex2:
                     LOGGER.exception("Exception in exception handler", exception=ex2)
 
+            else:
+                LOGGER.exception(
+                    "Operation execution error",
+                    exception=ex,
+                    frame=frame.name,
+                    parent=frame.parent.name if frame.parent else None,
+                )
+                for i, op in enumerate(frame.operations):
+                    print(f"{i}: {op}{' <---' if i == frame.op_index-1 else ''}")
+
     def execute_frame(self, frame: StackFrame) -> None:
         """Execute the next operations in the frame, until something
         causes a break (breakpoint, enter scope, exit scope)"""

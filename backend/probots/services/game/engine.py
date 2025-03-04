@@ -349,6 +349,11 @@ class Engine:
             func=self.ensure_not_stopped,
             repeat_interval=20,
         )
+        self.add_probot_work(
+            probot,
+            func=self.wakeup_probot,
+            repeat_interval=200,
+        )
 
         LOGGER.info(
             "Added probot",
@@ -421,7 +426,7 @@ class Engine:
             orientation=orientation,
             state=ProbotState.idle,
             energy=Probot.MAX_ENERGY / 2,
-            crystals=Probot.MAX_CRYSTALS / 2,
+            crystals=0,
         )
         self.add_probot(probot)
 
@@ -559,6 +564,12 @@ class Engine:
         self.programming.resume_player(probot.player)
         self.programming.emit_event("idle", probot.player, {})
         self.notify_of_probot_change(probot)
+
+    def wakeup_probot(self, probot: Probot) -> None:
+        """This is called periodically to wake up a probot that is idle.
+        This allows for event-based behaviors that change periodically"""
+        if probot.state == ProbotState.idle:
+            self.programming.emit_event("on_wakeup", probot.player, {})
 
     def notify_of_player_change(self, player: Player) -> None:
         """ "Send a message to all sessions about the change in this player.

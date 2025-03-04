@@ -10,17 +10,14 @@ import './ProgrammingSpace.css';
 const ProgrammingSpace = ({}) => {
     const api = React.useContext(ApiContext);
 
-    const [program, setProgram] = React.useState('');
+    const [program, setProgram] = React.useState(null);
 
     React.useEffect(() => {
         if (!api) return;
 
-        if (program === '') {
+        if (program === null) {
             api.registerCallback('user', 'get_program', (data) => {
                 setProgram(data.program);
-            });
-            api.registerCallback('user', 'update_program', (data) => {
-                console.log("Program updated:", data);
             });
 
             api.sendMessage('user', 'get_program', {});
@@ -28,7 +25,6 @@ const ProgrammingSpace = ({}) => {
 
         return () => {
             api?.unregisterCallback('user', 'get_program');
-            api?.unregisterCallback('user', 'update_program');
         }
     }, [api, program, setProgram]);
 
@@ -80,7 +76,7 @@ const ProgrammingSpace = ({}) => {
             <Grid item sx={{ paddingTop: '2.5rem' }}>
                 <ReactCodeMirror
                     className="editor"
-                    value={program}
+                    value={program || ''}
                     theme="dark"
                     extensions={[langs.go()]}
                     onChange={handleCodeChange}

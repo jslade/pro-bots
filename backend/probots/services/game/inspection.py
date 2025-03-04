@@ -25,18 +25,7 @@ class InspectionService:
         except ValueError:
             return Primitive.of(None)
 
-        probot_info = None
-        if cell_probot:
-            probot_info = {
-                "name": Primitive.of(cell_probot.player.display_name),
-                "state": Primitive.of(enum_string(cell_probot.state)),
-                "energy": Primitive.of(cell_probot.energy),
-                "crystals": Primitive.of(cell_probot.crystals),
-                "score": Primitive.of(cell_probot.player.score),
-                "x": Primitive.of(cell_probot.x),
-                "y": Primitive.of(cell_probot.y),
-                "orientation": Primitive.of(enum_string(cell_probot.orientation)),
-            }
+        probot_info = self.probot_info(cell_probot) if cell_probot else None
 
         result = {
             "x": Primitive.of(x),
@@ -46,3 +35,16 @@ class InspectionService:
         }
 
         return Primitive.of(result)
+
+    @classmethod
+    def probot_info(cls, probot):
+        return {
+            "name": Primitive.of(probot.player.display_name),
+            "state": Primitive.of(enum_string(probot.state)),
+            "energy": Primitive.of(probot.energy),
+            "crystals": Primitive.of(probot.crystals),
+            "score": Primitive.of(probot.player.score),
+            "x": Primitive.of(probot.x),
+            "y": Primitive.of(probot.y),
+            "orientation": Primitive.of(enum_string(probot.orientation)),
+        }

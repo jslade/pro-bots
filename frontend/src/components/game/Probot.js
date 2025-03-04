@@ -26,7 +26,7 @@ for (const i of Array.from({ length: 1001 }, (_, i) => i)) {
     position={[0, -0.0401, 0]} rotation={[-Math.PI/2, 0, -Math.PI/2]} />);
 }
 
-const programStateSize = 0.05;
+const programStateSize = 0.2;
 
 const StateCube = ({ color, ...props }) => {
   const meshRef = useRef();
@@ -42,7 +42,7 @@ const StateCube = ({ color, ...props }) => {
 
   return (
     <mesh ref={meshRef} position={[0.15, 0.08, 0]} {...props}>
-      <boxGeometry args={[programStateSize, programStateSize, programStateSize]} />
+      <boxGeometry args={[programStateSize, 0.02, programStateSize]} />
       <meshStandardMaterial color={color} />
     </mesh>
   );

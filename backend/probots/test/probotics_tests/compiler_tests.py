@@ -25,6 +25,7 @@ from probots.probotics.ops.all import (
     LogicalOr,
     MaybeCall,
     Multiplication,
+    Next,
     Operation,
     Primitive,
     Property,
@@ -247,6 +248,7 @@ class TestConditionals:
         "input,expected",
         [
             ("a == b", [GetValue("a"), GetValue("b"), CompareEqual()]),
+            ("a is b", [GetValue("a"), GetValue("b"), CompareEqual()]),
             ("a != b", [GetValue("a"), GetValue("b"), CompareNotEqual()]),
             ("a < b", [GetValue("a"), GetValue("b"), CompareLessThan()]),
             ("a <= b", [GetValue("a"), GetValue("b"), CompareLessThanOrEqual()]),
@@ -519,6 +521,27 @@ class TestBlocks:
                     Immediate(
                         Primitive.block(
                             [Immediate(Primitive.of(5)), Return(with_value=True)],
+                            name="WhileLoop",
+                        )
+                    ),
+                    Call(0, local=True),
+                    Catch({"break": 2, "next": 1}),
+                    Jump(jump=-6),
+                ],
+            ),
+            (
+                "while true { if false { next } }",
+                [
+                    Immediate(Primitive.of(True)),
+                    JumpIf(jump=4, sense=False),
+                    Immediate(
+                        Primitive.block(
+                            [
+                                Immediate(Primitive.of(False)),
+                                JumpIf(jump=2, sense=False),
+                                Immediate(Primitive.block([Next()], name="IfStatement")),
+                                Call(0, local=True),
+                            ],
                             name="WhileLoop",
                         )
                     ),

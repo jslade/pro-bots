@@ -50,13 +50,14 @@ class UserHandler(MessageHandler):
         self, session: Session, message: Message, dispatcher: Dispatcher
     ) -> None:
         # get_request = GetProgramRequest(**message.data)
+        user = session.user
 
         LOGGER.info(
             "Get program request",
             session=session.id,
+            user=user.name,
         )
 
-        user = session.user
         content = user.current_program.content if user.current_program else ""
 
         compiled, error = self.compile(content)
@@ -71,13 +72,14 @@ class UserHandler(MessageHandler):
         self, session: Session, message: Message, dispatcher: Dispatcher
     ) -> None:
         update_request = UpdateProgramRequest(**message.data)
+        user = session.user
 
         LOGGER.info(
             "Update program request",
             session=session.id,
+            user=user.name,
         )
 
-        user = session.user
         program = user.current_program
         if not user.current_program:
             program = Program(user=user, content="// Write your code here")
@@ -89,24 +91,23 @@ class UserHandler(MessageHandler):
         DB.session.commit()
 
         did_run = False
+        error_msg = None
 
         compiled, error = self.compile(content)
+
+        if error and not compiled:
+            lines = error.splitlines()
+            error_msg = "\n".join(lines[0:3])
 
         if update_request.run:
             did_run = self.run(session, compiled, dispatcher)
 
         response = UpdateProgramResponse(
             compiled=compiled is not None,
-            error=error,
+            error=error_msg,
             run=did_run,
         )
         dispatcher.send(session, "user", "update_program", response.as_msg())
-
-        # Easy way to show error for now:
-        if not compiled:
-            lines = error.splitlines()
-            term_output = TerminalOutput(output="\n".join(lines[0:3]))
-            dispatcher.send(session, "terminal", "output", term_output.as_msg())
 
     def compile(self, content: str) -> tuple[Optional[list[Operation]], Optional[str]]:
         try:
@@ -129,6 +130,8 @@ class UserHandler(MessageHandler):
         LOGGER.debug(
             "Executing user script",
             session=session.id,
+            user=player.name,
+            player=player.display_name,
         )
 
         def on_result(result: Primitive, context: ExecutionContext) -> None:
@@ -148,10 +151,13 @@ class UserHandler(MessageHandler):
             """Called when there is an exception during execution in the interpreter"""
             LOGGER.info(
                 "on_player_exception",
-                player=player.name,
+                user=player.name,
+                player=player.display_name,
                 ex=ex,
+                frame=frame.describe(),
             )
-            output = TerminalOutput(output=str(ex))
+            describe = f"Exception: {ex}\n{frame.describe()}"
+            output = TerminalOutput(output=describe)
             dispatcher.send(session, "terminal", "output", output.as_msg())
 
         ENGINE.programming.execute(
@@ -172,9 +178,13 @@ class UserHandler(MessageHandler):
     def handle_stop_program(
         self, session: Session, message: Message, dispatcher: Dispatcher
     ) -> None:
+        player = ENGINE.player_for_session(session)
+
         LOGGER.info(
             "Stop program request",
             session=session.id,
+            user=player.name,
+            player=player.display_name,
         )
 
         content = ""

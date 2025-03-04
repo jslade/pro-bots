@@ -85,17 +85,33 @@ const TerminalComponent = ({ promptRef }) => {
         setLines([...lines, output]);
     }, [lines]);
 
+    const onUpdate = useCallback((result) => {
+        if (result.error) {
+            onOutput(`ERROR: Update failed: ${result.error}`);
+        }
+        else if (result.run) {
+            onOutput(`OK: Program updated and run.`);
+        }
+        else if (result.compiled) {
+            onOutput(`OK: Saved.`);
+        }
+    }, [onOutput]);
+
     useEffect(() => {
         if (!api) return;
 
         api.registerCallback('terminal', 'output', (data) => {
             onOutput(data.output);
         });
+        api.registerCallback('user', 'update_program', (data) => {
+            onUpdate(data);
+        });
 
         return () => {
             api.unregisterCallback('terminal', 'output');
+            api.unregisterCallback('user', 'update_program');
         }
-    }, [api, api?.registerCallback, onOutput]);
+    }, [api, onOutput]);
 
 
     // Scroll to the bottom whenever terminalLines changes
@@ -109,7 +125,7 @@ const TerminalComponent = ({ promptRef }) => {
         return lines.map((line, index) => {
             return (
                 <div key={index} className="line">
-                    {line}
+                    <pre>{line}</pre>
                 </div>
             );
         });

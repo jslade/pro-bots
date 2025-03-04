@@ -72,3 +72,20 @@ class NewObject(Builtin):
     def new_object(self, frame: StackFrame) -> Primitive:
         new_object = {k: v for k, v in frame.args.items()}
         return Primitive.of(new_object)
+
+
+class Length(Builtin):
+    """return length of a thing"""
+
+    @classmethod
+    def add(cls, player: Player, engine: "Engine", builtins: ScopeVars) -> None:
+        inst = cls(engine, player)
+
+        builtins["len"] = Primitive.block(
+            operations=[Native(inst.length_of)], name="len", arg_names=["value"]
+        )
+        builtins["length"] = builtins["len"]
+
+    def length_of(self, frame: StackFrame) -> Primitive:
+        value = frame.args["value"]
+        return Primitive.of(len(value.value))

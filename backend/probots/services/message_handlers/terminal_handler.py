@@ -74,6 +74,8 @@ class TerminalHandler(MessageHandler):
             "Executing input",
             input=input.input,
             session=session.id,
+            user=player.name,
+            player=player.display_name,
             operations=operations,
         )
 
@@ -81,7 +83,8 @@ class TerminalHandler(MessageHandler):
             """Called when there is a result from the interpreter"""
             LOGGER.info(
                 "on_player_result",
-                player=player.name,
+                user=player.name,
+                player=player.display_name,
                 result=result,
             )
             if result:
@@ -92,12 +95,15 @@ class TerminalHandler(MessageHandler):
             ex: Exception, context: ExecutionContext, frame: StackFrame
         ) -> None:
             """Called when there is an exception during execution in the interpreter"""
-            LOGGER.info(
+            LOGGER.exception(
                 "on_player_exception",
-                player=player.name,
+                user=player.name,
+                player=player.display_name,
                 ex=ex,
+                frame=frame.describe(),
             )
-            output = TerminalOutput(output=str(ex))
+            describe = f"Exception: {ex}\n{frame.describe()}"
+            output = TerminalOutput(output=describe)
             dispatcher.send(session, "terminal", "output", output.as_msg())
 
         ENGINE.programming.execute(

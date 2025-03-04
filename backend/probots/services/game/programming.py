@@ -13,6 +13,7 @@ from ...probotics.interpreter import (
     ResultCallback,
 )
 from ...probotics.ops.all import Immediate, Operation, Primitive, ScopeVars, StackFrame
+from ..message_handlers.terminal_handler import TerminalOutput
 from .builtins import BuiltinsService
 from .processor import Work
 
@@ -245,10 +246,25 @@ class Programming:
         #    operations=operations,
         # )
 
+        def on_exception(
+            ex: Exception, context: ExecutionContext, frame: StackFrame
+        ) -> None:
+            LOGGER.info(
+                "on_player_exception",
+                user=player.name,
+                player=player.display_name,
+                ex=ex,
+                frame=frame.describe(),
+            )
+            describe = f"Exception: {ex}\n{frame.describe()}"
+            output = TerminalOutput(output=describe)
+            self.engine.send_to_player(player, "terminal", "output", output.as_msg())
+
         # Execute the event handler
         self.execute(
             operations=operations,
             player=player,
+            on_exception=on_exception,
             replace_program=False,
             replace_globals=False,
         )

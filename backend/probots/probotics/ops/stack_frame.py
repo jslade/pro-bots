@@ -98,7 +98,7 @@ class StackFrame:
                 ),
             )
         except KeyError:
-            raise UndefinedSymbol(f"No value for {name}")
+            raise UndefinedSymbol(f"undefined: {name}")
 
     def set(self, name: str, value: Primitive) -> None:
         """Set the value of a symbol in the current scope."""
@@ -162,6 +162,18 @@ class StackFrame:
             results=[],
         )
         return frame
+
+    def describe(self) -> str:
+        """Return a string description of the frame for debugging purposes."""
+        result = f"{self.name}@{self.op_index}/{len(self.operations)}"
+        op_before = self.operations[self.op_index - 2] if self.op_index > 1 else None
+        op_after = (
+            self.operations[self.op_index - 1]
+            if self.op_index > 0 and self.op_index < len(self.operations)
+            else None
+        )
+        result += f": {op_before or ''}{' <> ' if op_before and op_after else ''}{op_after or ''}"
+        return result
 
 
 class PushFrame(Operation):

@@ -132,7 +132,6 @@ class SayingService:
             },
         )
 
-        # Just for testing:
         self.engine.programming.emit_event(
             "on_said",
             player=probot.player,

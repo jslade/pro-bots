@@ -10,6 +10,7 @@
 @@keyword::False
 @@keyword::false
 @@keyword::if
+@@keyword::is
 @@keyword::next
 @@keyword::None
 @@keyword::none
@@ -111,7 +112,7 @@ block_with_args::BlockWithArgs =
 
 condition::Condition = left:term op:comparison_op ~ right:factor ;
 
-comparison_op = /={2,3}/ | /!={1,2}/ | "<=" | ">=" | "<" | ">" ;
+comparison_op = "is" | /={2,3}/ | /!={1,2}/ | "<=" | ">=" | "<" | ">" ;
 
 logical_op = "and" | "or" ;
 

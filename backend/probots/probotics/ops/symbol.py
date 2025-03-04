@@ -10,12 +10,9 @@ class GetValue(Operation):
         self.name = name
 
     def execute(self, frame: "StackFrame") -> None:
-        try:
-            value = frame.get(self.name)
-        except UndefinedSymbol:
-            pass
+        value = frame.get(self.name)
         if value is None:
-            value = Primitive.of(None)
+            raise UndefinedSymbol(f"undefined: {self.name}")
         frame.push(value)
 
     def __eq__(self, other: object) -> bool:

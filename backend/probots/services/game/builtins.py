@@ -2,18 +2,21 @@ from typing import TYPE_CHECKING
 
 import structlog
 
+from ...models.all import User
 from ...models.game.player import Player
-from ...probotics.ops.all import ScopeVars, Native, Primitive, StackFrame
+from ...probotics.ops.all import Native, Primitive, ScopeVars, StackFrame
 from .builtin.all import (
     Builtin,
     Collect,
     Give,
     Inspect,
     IsIdle,
+    Length,
     Me,
     Move,
     NewList,
     NewObject,
+    Players,
     Print,
     Random,
     Say,
@@ -45,7 +48,18 @@ class BuiltinsService:
         """Define a new set of built-ins bound to the player"""
         builtins: ScopeVars = {}
 
+        self.create_standard_builtins(player, builtins)
+
+        user = self.engine.user_for_player(player)
+        if user:
+            if user.admin:
+                self.create_admin_builtins(user, player, builtins)
+
+        return builtins
+
+    def create_standard_builtins(self, player: Player, builtins: ScopeVars) -> None:
         # Basic language features
+        Length.add(player, self.engine, builtins)
         NewList.add(player, self.engine, builtins)
         NewObject.add(player, self.engine, builtins)
         Random.add(player, self.engine, builtins)
@@ -59,6 +73,7 @@ class BuiltinsService:
         IsIdle.add(player, self.engine, builtins)
         Me.add(player, self.engine, builtins)
         Move.add(player, self.engine, builtins)
+        Players.add(player, self.engine, builtins)
         Print.add(player, self.engine, builtins)
         Say.add(player, self.engine, builtins)
         Turn.add(player, self.engine, builtins)
@@ -67,7 +82,10 @@ class BuiltinsService:
         # A command to list all the built-ins
         Builtins.add(player, self.engine, builtins)
 
-        return builtins
+    def create_admin_builtins(
+        self, user: User, player: Player, builtins: ScopeVars
+    ) -> None:
+        pass
 
 
 class Builtins(Builtin):
