@@ -30,7 +30,7 @@ random_walk := {
   else if r == 2 { move(right) }
   else if r == 3 { turn(left) }
   else if r == 4 { turn(right) }
-  else if r == 5 { square() }¯
+  else if r == 5 { square() }
   else if r == 6 { jazz_square() }
   else if r == 7 { move(backward) }
   else { move() }
