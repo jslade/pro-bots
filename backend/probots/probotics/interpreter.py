@@ -268,6 +268,10 @@ class ProboticsInterpreter:
             LOGGER.exception("Execution error", exception=ex)
             raise ex
 
+    def stop_all(self) -> None:
+        for context in [c for c in self.contexts]:
+            self.stop(context)
+
     def stop(self, context: ExecutionContext) -> None:
         if context not in self.stopped_contexts:
             self.stopped_contexts.append(context)

@@ -1,0 +1,120 @@
+// This bot periodically wakes up and chooses a player to "tag"
+// It "chases" them, then "tags" by saying "tag -- you're it!"
+
+target := none
+
+ONE := 1
+_ONE := (0-1) // TODO: implement negative numbers...
+
+// it will only chase for a certain number of moves, before
+// giving up and choosing another
+remaining_moves := 0
+
+on_wakeup := {
+  print("I'm awake")
+
+  reach_out_and_tag_someone()
+}
+
+reach_out_and_tag_someone := {
+  if (target is none) {
+    choose_target()
+    if (target is none) {
+      return
+    }
+  }
+
+  while target != none {
+    print("chasing " + target + ", " + str(remaining_moves) + " moves left")
+
+    remaining_moves := remaining_moves - 1
+    if (remaining_moves < 0) { return }
+
+    if (can_tag(target)) {
+      if (tag(target)) {
+        print("success!")
+        target := None
+      }
+    } else {
+      if (remaining_moves > 0) { move_closer_to(target) }
+      else {
+        print("failed :(")
+        target := None
+      }
+  
+      // randomly pickup crystals as we go, so we can move faster
+      if (me.crystals < 500) { collect() }
+    }
+  }
+}
+
+choose_target := {
+  print("choosing a new target")
+  while true {
+    player_list := players()
+    p := random(len(player_list))
+    probot := player_list[p]
+
+    if probot is none { next }
+    if probot.name == me.name { next }
+    
+    print("found someone: " + probot.name + " at ("+str(probot.x)+","+str(probot.y)+")")
+    target := probot.name
+
+    remaining_moves := 50
+    break
+  }
+}
+
+can_tag := { (name)
+  // I have to be facing it 
+  what := inspect(name)
+  dx := what.x - me.x
+  dy := what.y - me.y
+
+  if (me.orientation == 'N' and dx == 0 and dy == ONE) { return true }
+  if (me.orientation == 'S' and dx == 0 and dy == _ONE) { return true }
+  if (me.orientation == 'E' and dx == ONE and dy == 0) { return true }
+  if (me.orientation == 'W' and dx == _ONE and dy == 0) { return true }
+
+  print("can't tag "+what.probot.name+": orient="+me.orientation+" dx="+str(dx)+" dy="+str(dy))
+
+  return false
+}
+
+move_closer_to := { (name)
+  while (not is_idle()) { wait() }
+
+  what := inspect(name)
+  dx := what.x - me.x
+  dy := what.y - me.y
+
+  if (dx > 0) { relative_dir := 'E' }
+  else if (dx < 0) { relative_dir := 'W' }
+  else if (dy > 0) { relative_dir := 'N' }
+  else { relative_dir := 'S' }
+ 
+  // first make sure we're oriented toward them
+  if (me.orientation != relative_dir) {
+    print("need to orient to " + relative_dir + ", currently " + me.orientation)
+    if (relative_dir == 'N' and me.orientation == 'W') or
+       (relative_dir == 'W' and me.orientation == 'S') or
+       (relative_dir == 'S' and me.orientation == 'E') or
+       (relative_dir == 'E' and me.orientation == 'N') { turn(right) }
+    else { turn(left) }
+    return
+  }
+
+  // make a move if oriented correctly
+  print("oriented, so moving")
+  move()
+}
+
+tag := { (name)
+  print("tagging " + name)
+  say("TAG! You're it!", name)
+}
+
+on_said := { (what, to_whom)
+  print("I'll take a break now")
+}

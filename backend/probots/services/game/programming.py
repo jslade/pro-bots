@@ -43,6 +43,13 @@ class Programming:
         self.player_contexts: dict[str, ExecutionContext] = {}
         self.player_globals: dict[str, ScopeVars] = {}
 
+    def reset(self) -> None:
+        self.interpreter.stop_all()
+        self.interpreter = ProboticsInterpreter()
+
+        self.player_contexts.clear()
+        self.player_globals.clear()
+
     def compile(self, code: str) -> list[Operation]:
         """Compile the code into operations -- determine whether it is syntactically
         valid"""

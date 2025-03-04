@@ -8,13 +8,13 @@ import structlog
 from ...models.all import BaseSchema, Message, ProgramState, Session, User
 from ...models.game.all import (
     Cell,
-    ColorScheme,
     Grid,
     Player,
     Probot,
     ProbotOrientation,
     ProbotState,
 )
+from ...probotics.ops.all import Operation
 from ..dispatcher import DISPATCHER
 from ..session_service import SESSIONS
 from .coloring import ColoringService
@@ -22,7 +22,7 @@ from .energy import EnergyService
 from .giving import GivingService
 from .inspection import InspectionService
 from .map_maker import MapMaker
-from .movement import MovementDir, MovementService
+from .movement import MovementService
 from .processor import Processor, Work
 from .programming import Programming
 from .saying import SayingService
@@ -58,6 +58,7 @@ class Engine:
 
     def __init__(self) -> None:
         # Game communication / flow
+        self.ticks_per_sec = 10.0
         self.processor: Processor
         self.outgoing = queue.Queue()
         self.stopped = False
@@ -67,6 +68,7 @@ class Engine:
         self.grid: Grid = Grid.blank(1, 1)
         self.players: list[Player] = []
         self.probots: list[Probot] = []
+        self.player_startup: dict[str, list[Operation]] = {}
 
         # Helper services
         self.coloring = ColoringService()
@@ -159,28 +161,38 @@ class Engine:
         # Tell everyone about the new game state
         self.send_broadcast(event="reset", data=game.as_msg())
 
-        # Just now for testing purposes:
-        if not self.players:
-            for i in range(4):
-                name = f"bot-{i}"
-
-                def spawn_bot(name: str = name):
-                    self.spawn_bot_player(name)
-
-                self.processor.add_work(spawn_bot)
-
     def reset_player(self, player: Player) -> None:
         LOGGER.info("Resetting player", player=player.name)
         player.score = 0
 
+        if player.name in self.player_startup:
+            self.add_player_work(
+                player,
+                func=self.start_player,
+                delay=10,
+            )
+
     def reset_probot(self, probot: Probot) -> None:
         LOGGER.info("Resetting probot", probot=probot.name)
+        probot.state = ProbotState.idle
+        probot.energy = int(Probot.MAX_ENERGY / 2)
+        probot.crystals = 0
 
-        # The old one goes away:
-        # self.remove_probot(probot)
+        probot.dx = 0
+        probot.dy = 0
+        probot.dorient = 0
 
-        # Create a new one from the old:
-        # self.add_probot(self.duplicate_probot(probot))
+        self.add_probot_startup(probot)
+
+    def reset_game(self, ticks_per_sec: Optional[float] = None) -> None:
+        if ticks_per_sec is not None:
+            self.ticks_per_sec = ticks_per_sec
+
+        LOGGER.info("Resetting game", ticks_per_sec=self.ticks_per_sec)
+
+        if self.processor:
+            self.processor.stop()
+            self.programming.reset()
 
     def save_user_changes(self) -> None:
         """This is a somewhat hacky way to save changes to the user object
@@ -199,15 +211,12 @@ class Engine:
             DB.session.commit()
 
     def setup_processor(self) -> None:
-        LOGGER.info("Setting up processor")
-        self.processor = Processor()
+        LOGGER.info("Setting up processor", ticks_per_sec=self.ticks_per_sec)
+        self.processor = Processor(ticks_per_sec=self.ticks_per_sec)
         self.incoming = self.processor.incoming
 
-        # Some standard tasks
+        # Someefandard tasks
         self.processor.add_work(self.report_ticks)
-        # self.add_game_work(
-        #    self.report_game_state, repeat_interval_seconds=10
-        # )  # TODO: For testing
 
     def construct_current_state(self) -> GameCurrentStateData:
         return GameCurrentStateData(
@@ -218,7 +227,12 @@ class Engine:
 
     def report_ticks(self) -> None:
         # TODO: Move to a separate service
-        LOGGER.info("ticks", ticks=self.processor.ticks)
+        LOGGER.info(
+            "ticks",
+            queue=id(self.processor),
+            ticks=self.processor.ticks,
+            len=len(self.processor.work_queue),
+        )
 
         self.processor.add_work(self.report_ticks, delay_seconds=30)
 
@@ -244,22 +258,12 @@ class Engine:
 
         LOGGER.info("\n" + self.grid.to_str(decorator=decorate_cell))
 
-    def randomly_move(self, probot: Probot) -> None:
-        return
-
-        # TODO: This is just for testing
-        r = random.randint(0, 4)
-        match r:
-            case 0:
-                self.mover.move(probot, dir=MovementDir.backward)
-            case 1:
-                self.mover.turn(probot, "left")
-            case 2:
-                self.mover.turn(probot, "right")
-            case _:
-                self.mover.move(probot)
-
-    def add_player(self, player: Player, session: Optional[Session] = None) -> None:
+    def add_player(
+        self,
+        player: Player,
+        session: Optional[Session] = None,
+        start_ops: Optional[list[Operation]] = None,
+    ) -> None:
         if player in self.players:
             return
 
@@ -268,6 +272,13 @@ class Engine:
             player.session_id = session.id
 
         # Schedule work to make it run...
+        if start_ops:
+            self.player_startup[player.name] = start_ops
+            self.add_player_work(
+                player,
+                func=self.start_player,
+                delay=10,
+            )
 
         LOGGER.info(
             "Added player",
@@ -279,6 +290,22 @@ class Engine:
 
         # Notify all sessions
         self.processor.add_work(self.broadcast_current_state, delay=10)
+
+    def start_player(self, player: Player) -> None:
+        """Run the startup ops for a player"""
+        if player.name not in self.player_startup:
+            return
+
+        LOGGER.info("Running player startup", player=player.name)
+
+        ops = self.player_startup[player.name]
+
+        self.programming.execute(
+            operations=ops,
+            player=player,
+            replace_program=True,
+            replace_globals=True,
+        )
 
     def get_player(self, name: str) -> Optional[Player]:
         for player in self.players:
@@ -339,6 +366,17 @@ class Engine:
         self.probots.append(probot)
 
         # Schedule work to make it run...
+        self.add_probot_startup(probot)
+
+        LOGGER.info(
+            "Added probot",
+            probot=probot.name,
+            player=probot.player.name,
+            id=probot.id,
+            at=(probot.x, probot.y),
+        )
+
+    def add_probot_startup(self, probot: Probot) -> None:
         self.add_probot_work(
             probot,
             func=self.energy.collect_energy,
@@ -353,14 +391,6 @@ class Engine:
             probot,
             func=self.wakeup_probot,
             repeat_interval=200,
-        )
-
-        LOGGER.info(
-            "Added probot",
-            probot=probot.name,
-            player=probot.player.name,
-            id=probot.id,
-            at=(probot.x, probot.y),
         )
 
     def probot_for_session(self, session: Session) -> Optional[Probot]:
@@ -381,25 +411,6 @@ class Engine:
 
         self.processor.cancel_work_where(
             lambda item: isinstance(item, GameWork) and item.probot == probot
-        )
-
-    def spawn_bot_player(self, name: str) -> None:
-        """Create a new player that runs as a bot (primarily for testing)"""
-        player = Player(
-            name=name,
-            display_name=name,
-            colors=self.coloring.generate_random(theme="light"),
-            score=0,
-        )
-        self.add_player(player)
-
-        probot = self.spawn_probot(player)
-
-        self.add_probot_work(
-            probot,
-            self.randomly_move,
-            delay=random.randint(10, 20),
-            repeat_interval_seconds=1.5 + random.random() * 2.0,
         )
 
     def spawn_probot(
@@ -425,7 +436,7 @@ class Engine:
             y=y,
             orientation=orientation,
             state=ProbotState.idle,
-            energy=Probot.MAX_ENERGY / 2,
+            energy=int(Probot.MAX_ENERGY / 2),
             crystals=0,
         )
         self.add_probot(probot)

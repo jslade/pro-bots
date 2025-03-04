@@ -13,14 +13,14 @@ DEBUG = True
 
 
 def do_setup() -> None:
-    # Setup the various dispatch handlers
-    for handler in MESSAGE_HANDLERS:
-        handler.register(DISPATCHER)
-
     # Initialize the game monitor that oversees the whole operation
     # This ends up starting a background thread that runs separately
     # from the flask stuff happening in the main thread
     MONITOR.run()
+
+    # Setup the various dispatch handlers
+    for handler in MESSAGE_HANDLERS:
+        handler.register(DISPATCHER)
 
 
 # Flask debug causes a process fork, and it takes a bit to happen.

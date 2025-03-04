@@ -1,0 +1,77 @@
+// This bot will respond to anyone who says 'please' by giving some crystals
+
+target := none
+
+ONE := 1
+_ONE := 0-1
+
+on_message := { (what, from_whom) 
+  print("got a message from " + from_whom +": "+what)
+
+  if (what == "please") {
+    print("they asked so nicely! they=" + from_whom)
+    target := from_whom
+    give_the_gift()
+  } else {
+    print("that's not the magic word")
+    say("that's not the magic word!", from_whom)
+  }
+}
+
+on_idle := {
+  give_the_gift()
+  wander()
+}
+
+on_wakeup := {
+  wander()
+}
+
+give_the_gift := {
+  if (target) {
+    if (can_give(target)) {
+      give(300, target)
+      target := none
+      return
+    }
+  }
+}
+
+can_give := { (name)
+  // We have to be facing each other, one space apart
+  what := inspect(name)
+  dx := what.x - me.x
+  dy := what.y - me.y
+
+  me_o := me.orientation
+  they_o := what.probot.orientation
+
+  if (me_o == 'N' and they_o == 'S' and dx == 0 and dy == ONE) { return true }
+  if (me_o == 'S' and they_o == 'N' and dx == 0 and dy == _ONE) { return true }
+  if (me_o == 'E' and they_o == 'W' and dx == ONE and dy == 0) { return true }
+  if (me_o == 'W' and they_o == 'E' and dx == _ONE and dy == 0) { return true }
+
+  return false
+}
+
+wander := {
+  while (not is_idle()) { wait() }
+
+  if (not harvest()) {
+    move_randomly()
+  }
+}
+
+harvest := {
+  return collect()
+}
+
+move_randomly := {
+  r := random(6)
+  print("random walk:" + str(r))
+  if r == 1 { move(left) }
+  else if r == 2 { move(right) }
+  else if r == 3 { turn(left) }
+  else if r == 4 { turn(right) }
+  else { move() }  
+}

@@ -6,7 +6,7 @@ import structlog
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..db import DB, DbSession
-from .mixins import PKId, OptionallyNamed, Timestamped
+from .mixins import OptionallyNamed, PKId, Timestamped
 
 if TYPE_CHECKING:
     from .user import User

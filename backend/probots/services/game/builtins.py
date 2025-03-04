@@ -5,6 +5,7 @@ import structlog
 from ...models.all import User
 from ...models.game.player import Player
 from ...probotics.ops.all import Native, Primitive, ScopeVars, StackFrame
+from .builtin.admin.all import GameReset, SpawnBot, Password
 from .builtin.all import (
     Builtin,
     Collect,
@@ -85,7 +86,9 @@ class BuiltinsService:
     def create_admin_builtins(
         self, user: User, player: Player, builtins: ScopeVars
     ) -> None:
-        pass
+        GameReset.add(player, self.engine, builtins)
+        Password.add(player, self.engine, builtins)
+        SpawnBot.add(player, self.engine, builtins)
 
 
 class Builtins(Builtin):

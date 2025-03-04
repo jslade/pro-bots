@@ -33,7 +33,7 @@ const ProgrammingSpace = ({}) => {
     }, [setProgram]);
 
     const handleHelp = React.useCallback((event) => {
-        const helpUrl = "https://github.com/jslade/pro-bots/wiki/Probotics-Getttting-Started";
+        const helpUrl = "https://github.com/jslade/pro-bots/wiki/Probotics";
         window.open(helpUrl, '_blank').focus();
     }, []);
     const handleSave = React.useCallback((event) => {

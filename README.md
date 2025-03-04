@@ -111,10 +111,9 @@ At least for the initial usage, I plan to just deploy on a raspberry pi running 
 # TODO
 
 [ ] scripts for bots
-[ ] execution error info - line numbers, etc
+    - joker: randomly walks around and tells dad jokes
 [ ] documentation / reference materials
-[ ] admin stuff: game reset, password reset
-[ ] visual improvements in 3d view
+[ ] spawn location
 [ ] audio effects
 [ ] game end conditions - high score
 [ ] cookie to retain login session

@@ -1,0 +1,74 @@
+// This bot just wanders around, never collecting or saying anything
+
+on_wakeup := {
+  print("on_wakeup")
+  while (me.energy > 100) {
+    wander()
+  }
+}
+
+on_idle := {
+  print("on_idle")
+  wander()
+}
+
+wander := {
+  wait_for_energy()
+  random_walk()
+}
+
+wait_for_energy := {
+  while (not is_idle()) or (me.energy < 250) {
+    //wait()
+  }
+}
+
+random_walk := {
+  r := random(10)
+  print("random walk:" + str(r))
+  if r == 1 { move(left) }
+  else if r == 2 { move(right) }
+  else if r == 3 { turn(left) }
+  else if r == 4 { turn(right) }
+  else if r == 5 { square() }¯
+  else if r == 6 { jazz_square() }
+  else if r == 7 { move(backward) }
+  else { move() }
+}
+
+square := {
+  print("Starting square")
+  wait_for_energy()
+  move()
+  wait_for_energy()
+  turn(right)
+  wait_for_energy()
+  move()
+  wait_for_energy()
+  turn(right)
+  wait_for_energy()
+  move()
+  wait_for_energy()
+  turn(right)
+  wait_for_energy()
+  move()
+  wait_for_energy()
+  turn(right)
+  wait_for_energy()
+}
+
+jazz_square := {
+  print("LEFT")
+  move(left)
+  print("LEFT done")
+  wait_for_energy()
+  print("BACKWARD")
+  move(backward)
+  wait_for_energy()
+  print("RIGHT")
+  move(right)
+  wait_for_energy()
+  print("FORWARD")
+  move(forward)
+  wait_for_energy()
+}

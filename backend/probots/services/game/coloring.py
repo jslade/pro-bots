@@ -1,5 +1,7 @@
 import random
 
+from ...probotics.ops.primitive import Primitive
+
 from ...models.game.all import ColorScheme
 
 
@@ -47,3 +49,13 @@ class ColoringService:
     def color_from_base(self, base: int, variation: int = 40) -> tuple[int, int, int]:
         r, g, b = self.rgb_from_base(base)
         return f"#{r:02x}{g:02x}{b:02x}"
+
+    def generate_from_object(self, colors: Primitive) -> ColorScheme:
+        assert colors.is_dict, f"Colors must be a dict, got {colors}"
+        d: dict = colors.value
+
+        return ColorScheme(
+            body=d.get("body", "grey"),
+            head=d.get("head", "#d2d2d2"),
+            tail=d.get("tail", "#2d2d2d"),
+        )
