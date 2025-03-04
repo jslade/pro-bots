@@ -562,8 +562,9 @@ class Engine:
         probot.state = ProbotState.idle
 
         self.programming.resume_player(probot.player)
-        self.programming.emit_event("idle", probot.player, {})
         self.notify_of_probot_change(probot)
+
+        self.programming.emit_event("idle", probot.player, {})
 
     def wakeup_probot(self, probot: Probot) -> None:
         """This is called periodically to wake up a probot that is idle.

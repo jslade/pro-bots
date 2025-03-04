@@ -62,7 +62,11 @@ class Programming:
 
         def wrap_on_break(context: ExecutionContext, player: Player = player) -> None:
             self.on_break(player, context)
-            player.program_state = ProgramState.paused
+            player.program_state = (
+                ProgramState.paused
+                if self.is_player_waiting(player)
+                else ProgramState.running
+            )
 
         def wrap_on_result(
             result: Primitive, context: ExecutionContext, player: Player = player
@@ -72,7 +76,7 @@ class Programming:
 
             # The context is done executing, remove it from the interpreter
             if self.player_contexts.get(player.name, None) == context:
-                self.player_contexts.pop(player.name)
+                del self.player_contexts[player.name]
 
             # Award points for the amount of code that was executed
             self.engine.update_score(player, context.latest_operations)
@@ -102,7 +106,9 @@ class Programming:
         )
 
         if replace_program and context.name is not None:
-            # Only allow one context per player
+            # Only allow one named context per player
+            # This allows for other un-named contexts, like from the terminal and
+            # manual controls
             self.interpreter.remove(context.name)
             self.player_contexts[player.name] = context
 
@@ -202,7 +208,31 @@ class Programming:
         """Emit an event to the player. This will execute an event handler in the
         player's code, if one is defined."""
 
-        # LOGGER.debug("emit_event", name=event, player=player.name, args=args)
+        context = self.player_contexts.get(player.name, None)
+        # LOGGER.debug(
+        #    "emit_event",
+        #    name=event,
+        #    player=player.name,
+        #    args=args,
+        #    running=self.is_player_running(player),
+        #    waiting=self.is_player_waiting(player),
+        #    context=context,
+        #    is_finished=context.is_finished if context else None,
+        #    frame=context.current_frame.describe()
+        #    if context and context.current_frame
+        #    else None,
+        #    contexts=[(c.name, c.is_finished) for c in self.interpreter.contexts],
+        #    player_contexts=[(p, c.is_finished) for p, c in self.player_contexts.items()],
+        # )
+
+        if self.is_player_running(player):
+            # LOGGER.info(
+            #    "emit_event - player is already running",
+            #    name=event,
+            #    user=player.name,
+            #    player=player.display_name,
+            # )
+            return
 
         # Get the event handler
         # Don't do anything if the player does not have a handler defined
@@ -265,7 +295,7 @@ class Programming:
             operations=operations,
             player=player,
             on_exception=on_exception,
-            replace_program=False,
+            replace_program=True,  # can't have more than one context for the player
             replace_globals=False,
         )
 

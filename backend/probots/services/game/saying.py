@@ -122,6 +122,9 @@ class SayingService:
     def complete_saying(
         self, probot: Probot, transit: Transition, target: Probot, bonus: int = 0
     ) -> None:
+        self.engine.probot_idle(probot)
+        self.engine.update_score(probot.player, bonus)
+
         msg = transit.final
         self.engine.programming.emit_event(
             "on_message",
@@ -140,6 +143,3 @@ class SayingService:
                 "to_whom": Primitive.of(target.player.display_name),
             },
         )
-
-        self.engine.probot_idle(probot)
-        self.engine.update_score(probot.player, bonus)

@@ -172,6 +172,11 @@ class GivingService:
         if target.crystals > Probot.MAX_CRYSTALS:
             target.crystals = Probot.MAX_CRYSTALS
 
+        self.engine.probot_idle(probot)
+        self.engine.probot_idle(target)
+        self.engine.update_score(probot.player, bonus)
+        self.engine.update_score(target.player, bonus)
+
         self.engine.programming.emit_event(
             "on_received",
             player=target.player,
@@ -181,7 +186,6 @@ class GivingService:
             },
         )
 
-        # Just for testing:
         self.engine.programming.emit_event(
             "on_gave",
             player=probot.player,
@@ -190,8 +194,3 @@ class GivingService:
                 "to_whom": Primitive.of(target.player.display_name),
             },
         )
-
-        self.engine.probot_idle(probot)
-        self.engine.probot_idle(target)
-        self.engine.update_score(probot.player, bonus)
-        self.engine.update_score(target.player, bonus)

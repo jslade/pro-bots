@@ -85,7 +85,6 @@ class Wait(Builtin):
     def add(cls, player: Player, engine: "Engine", builtins: ScopeVars) -> None:
         def do_wait(frame: StackFrame) -> Primitive:
             # Raise a break exception and stop the interpreter on this context
-            # raise Breakpoint(reason="wait", stop=False)
-            pass
+            raise Breakpoint(reason="wait", stop=False)
 
         builtins["wait"] = Primitive.block(operations=[Native(do_wait)], name="wait")
