@@ -43,12 +43,8 @@ class ManualControlHandler(MessageHandler):
         # LOGGER.info("manual movement", ev=event, probot=probot)
 
         if event.move:
-            ENGINE.mover.move(
-                probot,
-                dir=MovementDir.backward
-                if event.move == "backward"
-                else MovementDir.forward,
-            )
+            ENGINE.mover.move(probot, dir=MovementDir(event.move))
+
         elif event.turn:
             ENGINE.mover.turn(probot, dir=event.turn)
 

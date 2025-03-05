@@ -15,6 +15,7 @@ from ...models.game.all import (
     ProbotState,
 )
 from ...probotics.ops.all import Operation
+from ...services.message_handlers.terminal_handler import TerminalOutput
 from ..dispatcher import DISPATCHER
 from ..session_service import SESSIONS
 from .coloring import ColoringService
@@ -614,6 +615,18 @@ class Engine:
             event="current_state",
             data=self.construct_current_state().as_msg(),
         )
+
+    def send_output_to_player(
+        self,
+        player: Player,
+        message: str,
+    ) -> None:
+        """Convenience method for printing output to player's terminal"""
+        LOGGER.info("Output to player", player=player.name, message=message)
+        session = self.player_session(player)
+        if session:
+            data = TerminalOutput(output=message)
+            self.send_to_session(session, "terminal", "output", data.as_msg())
 
     def send_to_player(
         self,

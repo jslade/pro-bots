@@ -13,11 +13,19 @@ const Controls = () => {
     }, [api]);
 
     const onTurnLeft = useCallback((e) => {
-        api.sendMessage("manual_control", "movement", {turn: "left"})
+        if (e.shiftKey) {
+            api.sendMessage("manual_control", "movement", {move: "left"})
+        } else {
+            api.sendMessage("manual_control", "movement", {turn: "left"})
+        }
     }, [api]);
 
     const onTurnRight = useCallback((e) => {
-        api.sendMessage("manual_control", "movement", {turn: "right"})
+        if (e.shiftKey) {
+            api.sendMessage("manual_control", "movement", {move: "right"})
+        } else {
+            api.sendMessage("manual_control", "movement", {turn: "right"})
+        }
     }, [api]);
 
     return (

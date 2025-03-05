@@ -67,14 +67,21 @@ class EnergyService:
         #
         if probot.state != ProbotState.idle:
             self.engine.update_score(probot.player, -10)
+            self.engine.send_output_to_player(
+                probot.player, f"collect: probot not idle ({probot.state})"
+            )
             return False
 
         x, y, _ = probot.position
         cell, _ = self.engine.get_cell(x, y)
 
         if cell.crystals <= 0:
+            self.engine.send_output_to_player(
+                probot.player, "collect: nothing to collect"
+            )
             return False
         if probot.crystals >= Probot.MAX_CRYSTALS:
+            self.engine.send_output_to_player(probot.player, "collect: already full")
             return False
 
         # Time and energy required inverse proportional to the number of crystals
@@ -83,6 +90,7 @@ class EnergyService:
         required_energy = int(100 * speed_factor)
         if probot.energy < required_energy:
             self.engine.update_score(probot.player, -5)
+            self.engine.send_output_to_player(probot.player, "collect: not enough energy")
             return False
 
         per_collection = 200

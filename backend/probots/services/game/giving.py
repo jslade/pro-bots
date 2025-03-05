@@ -25,30 +25,30 @@ class GivingService:
         #
         if probot.state != ProbotState.idle:
             self.engine.update_score(probot.player, -10)
-            LOGGER.info(
-                "give: probot not idle", probot=probot.player.name, state=probot.state
+            self.engine.send_output_to_player(
+                probot.player, f"giving: probot not idle ({probot.state})"
             )
             return False
 
         target_player = self.engine.get_player(to_whom)
         if not target_player:
             self.engine.update_score(probot.player, -10)
-            LOGGER.info(
-                "give: no target player", probot=probot.player.name, to_whom=to_whom
+            self.engine.send_output_to_player(
+                probot.player, f"giving: no recipient player"
             )
             return False
         target = self.engine.probot_for_player(target_player)
         if not target:
             self.engine.update_score(probot.player, -10)
-            LOGGER.info(
-                "give: no target probot", probot=probot.player.name, to_whom=to_whom
+            self.engine.send_output_to_player(
+                probot.player, f"giving: no recipient probot"
             )
             return False
 
         if target.state != ProbotState.idle:
             self.engine.update_score(probot.player, -10)
-            LOGGER.info(
-                "give: target not idle", probot=probot.player.name, to_whom=to_whom
+            self.engine.send_output_to_player(
+                probot.player, f"giving: receiver not idle ({target.state})"
             )
             return False
 
@@ -58,20 +58,22 @@ class GivingService:
         required_energy = 50
         if probot.energy < required_energy:
             self.engine.update_score(probot.player, -5)
-            LOGGER.info("give: no energy", probot=probot.player.name)
+            self.engine.send_output_to_player(probot.player, "giving: not enough energy")
             return False
 
         required_crystals = 10 + amount
         if probot.crystals < required_crystals:
             self.engine.update_score(probot.player, -5)
-            LOGGER.info("give: no crystals", probot=probot.player.name)
+            self.engine.send_output_to_player(
+                probot.player, "giving: not enough crystals"
+            )
             return False
 
         # Target must be in front of the probot, and facing
         if not self.is_in_front_and_facing(probot, target):
             self.engine.update_score(probot.player, -5)
-            LOGGER.info(
-                "give: not in front", probot=probot.player.name, target=target.player.name
+            self.engine.send_output_to_player(
+                probot.player, "giving: receiver not in front and facing"
             )
             return False
 

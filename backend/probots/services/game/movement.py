@@ -47,6 +47,9 @@ class MovementService:
         #
         if probot.state != ProbotState.idle:
             self.engine.update_score(probot.player, -10)
+            self.engine.send_output_to_player(
+                probot.player, f"move: probot not idle ({probot.state})"
+            )
             return False
 
         x, y, orient = probot.position
@@ -54,6 +57,7 @@ class MovementService:
         try:
             new_x, new_y = self.next_location(x, y, orient, dir)
         except IllegalMove:
+            self.engine.send_output_to_player(probot.player, "move: can't move there")
             return False
 
         speed_factor = 1
@@ -68,6 +72,7 @@ class MovementService:
         required_energy = int(50 * speed_factor)
         if probot.energy < required_energy:
             self.engine.update_score(probot.player, -5)
+            self.engine.send_output_to_player(probot.player, "move: not enough energy")
             return False
 
         #
@@ -295,17 +300,22 @@ class MovementService:
         #
         if probot.state != ProbotState.idle:
             self.engine.update_score(probot.player, -10)
+            self.engine.send_output_to_player(
+                probot.player, f"turn: probot not idle ({probot.state})"
+            )
             return False
 
         orient = probot.orientation
         key = (orient, dir)
         new_orient = self.TURN_FROM_TO.get(key, None)
         if not new_orient:
+            self.engine.send_output_to_player(probot.player, "turn: illegal turn")
             return False
 
         required_energy = 10
         if probot.energy < required_energy:
             self.engine.update_score(probot.player, -5)
+            self.engine.send_output_to_player(probot.player, "turn: not enough energy")
             return False
 
         #

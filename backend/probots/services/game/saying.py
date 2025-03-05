@@ -25,38 +25,33 @@ class SayingService:
         #
         if probot.state != ProbotState.idle:
             self.engine.update_score(probot.player, -10)
-            LOGGER.info(
-                "say: probot not idle", probot=probot.player.name, state=probot.state
+            self.engine.send_output_to_player(
+                probot.player, f"say: probot not idle ({probot.state})"
             )
             return False
 
         target_player = self.engine.get_player(to_whom)
         if not target_player:
             self.engine.update_score(probot.player, -10)
-            LOGGER.info(
-                "say: no target player", probot=probot.player.name, to_whom=to_whom
-            )
+            self.engine.send_output_to_player(probot.player, "say: no target player")
             return False
+
         target = self.engine.probot_for_player(target_player)
         if not target:
             self.engine.update_score(probot.player, -10)
-            LOGGER.info(
-                "say: no target probot", probot=probot.player.name, to_whom=to_whom
-            )
+            self.engine.send_output_to_player(probot.player, "say: no target probot")
             return False
 
         required_energy = 10
         if probot.energy < required_energy:
             self.engine.update_score(probot.player, -5)
-            LOGGER.info("say: no energy", probot=probot.player.name)
+            self.engine.send_output_to_player(probot.player, "say: not enough energy")
             return False
 
         # Target must be in front of the probot, though not necessarily facing
         if not self.is_in_front(probot, target):
             self.engine.update_score(probot.player, -5)
-            LOGGER.info(
-                "say: not in front", probot=probot.player.name, target=target.player.name
-            )
+            self.engine.send_output_to_player(probot.player, "say: receiver not in front")
             return False
 
         #
